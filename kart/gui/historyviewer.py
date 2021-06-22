@@ -1,46 +1,73 @@
-import math
-
 import os
 from functools import partial
 
-from qgis.core import QgsApplication, Qgis
+from kart.kartapi import executeskart
+
+from qgis.core import Qgis
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QPoint, QRectF, QPointF, QLineF
-from qgis.PyQt.QtGui import QIcon, QPixmap, QPainter, QColor, QPainterPath, QPen, QPolygonF
-from qgis.PyQt.QtWidgets import (QTreeWidget, QAbstractItemView, QAction, QMenu,
-                                 QTreeWidgetItem, QWidget, QVBoxLayout, QDialog,
-                                 QSizePolicy, QLabel, QInputDialog)
+from qgis.PyQt.QtCore import Qt, QPoint, QRectF
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QPixmap,
+    QPainter,
+    QColor,
+    QPainterPath,
+    QPen
+)
+
+from qgis.PyQt.QtWidgets import (
+    QTreeWidget,
+    QAbstractItemView,
+    QAction,
+    QMenu,
+    QTreeWidgetItem,
+    QWidget,
+    QVBoxLayout,
+    QDialog,
+    QSizePolicy,
+    QLabel,
+    QInputDialog,
+    QHeaderView
+)
+
+from kart.gui.diffviewer import DiffViewerDialog
 
 COMMIT_GRAPH_HEIGHT = 20
-RADIUS = 5
-PEN_WIDTH = 4
+RADIUS = 6
+PEN_WIDTH = 2
+MARGIN = 50
 
-COLORS = [QColor(Qt.red),
-          QColor(Qt.green),
-          QColor(Qt.blue),
-          QColor(Qt.black),
-          QColor(255,166,0),
-          QColor(Qt.darkGreen),
-          QColor(Qt.darkBlue),
-          QColor(Qt.cyan),
-          QColor(Qt.magenta)]
+COLORS = [
+    QColor(Qt.red),
+    QColor(Qt.green),
+    QColor(Qt.blue),
+    QColor(Qt.black),
+    QColor(255, 166, 0),
+    QColor(Qt.darkGreen),
+    QColor(Qt.darkBlue),
+    QColor(Qt.cyan),
+    QColor(Qt.magenta)
+]
+
 
 def icon(f):
-    return QIcon(os.path.join(os.path.dirname(__file__),
-                              "img", f))
+    return QIcon(
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
+
 
 resetIcon = icon("reset.png")
-diffIcon = icon("diff-selected.png")
-deleteIcon = QgsApplication.getThemeIcon('/mActionDeleteSelected.svg')
-infoIcon = icon("repo-summary.png")
-tagIcon = icon("tag.gif")
-mergeIcon = icon("merge-24.png")
+diffIcon = icon("changes.png")
+checkoutIcon = icon("checkout.png")
+mergeIcon = icon("merge.png")
+createBranchIcon = icon("createbranch.png")
+deleteIcon = icon("delete.png")
+createTagIcon = icon("label.png")
+restoreIcon = icon("checkout.png")
+
 
 class HistoryTree(QTreeWidget):
-
-    historyChanged = pyqtSignal()
 
     def __init__(self, repo, parent):
         super(HistoryTree, self).__init__()
@@ -48,17 +75,11 @@ class HistoryTree(QTreeWidget):
         self.parent = parent
         self.initGui()
 
-    def scrollTo(self, index, hint):
-        oldH = self.horizontalScrollBar().value()
-        super().scrollTo(index, hint)
-        self.horizontalScrollBar().setValue(oldH)
-
     def initGui(self):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.header().setStretchLastSection(True)
-        #self.setAlternatingRowColors(True)
-        self.setHeaderLabels(["Graph", "Description", "Author", "Date", "CommitID"])
+        #self.header().setStretchLastSection(True)
+        self.setHeaderLabels(
+            ["Graph", "Refs", "Description", "Author", "Date", "CommitID"])
         self.customContextMenuRequested.connect(self._showPopupMenu)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.populate()
@@ -67,183 +88,203 @@ class HistoryTree(QTreeWidget):
         point = self.mapToGlobal(point)
         selected = self.selectedItems()
         if selected and len(selected) == 1:
-            actions = {"Show changes for this commit": self.showChanges,
-                       "Reset current branch to this commit": self.resetBranch,
-                       "Create branch at this commit": self.createBranch}
             item = self.currentItem()
+            def _f(f, *args):
+                def wrapper():
+                    f(*args)
+                return wrapper
+            actions = {
+                "Show changes for this commit...":
+                (_f(self.showChangesInCommit, item), diffIcon),
+                "Reset current branch to this commit":
+                (_f(self.resetBranch, item), resetIcon),
+                "Create branch at this commit...":
+                (_f(self.createBranch, item), createBranchIcon),
+                "Create tag at this commit...":
+                (_f(self.createTag, item), createTagIcon),
+                "Restore working tree layers to this version...":
+                (_f(self.restoreLayers, item), restoreIcon)
+            }
+
             for ref in item.commit['refs']:
-                actions[f"Switch to branch '{ref}'"]: partial(self.switchBranch, ref)
+                if "HEAD" in ref:
+                    ref = ref.split("->")[-1].strip()
+                    actions[f"Switch to branch '{ref}'"] = (_f(
+                        self.switchBranch, ref), checkoutIcon)
+                elif "tag:" in ref:
+                    tag = ref[4:].strip()
+                    actions[f"Delete tag '{tag}'"] = (_f(
+                        self.deleteTag, tag), deleteIcon)
+                else:
+                    actions[f"Switch to branch '{ref}'"] = (_f(
+                        self.switchBranch, ref), checkoutIcon)
+                    actions[f"Delete branch '{ref}'"] = (_f(
+                        self.deleteBranch, ref), deleteIcon)
             menu = QMenu()
-            for text, func in actions.items():
-                action = QAction(text, menu)
-                action.triggered.connect(partial(func, item))
+            for text in actions:
+                func, icon = actions[text]
+                action = QAction(icon, text, menu)
+                action.triggered.connect(func)
                 menu.addAction(action)
             menu.exec_(point)
         elif selected and len(selected) == 2:
             itema = selected[0]
             itemb = selected[1]
+            actions = {
+                "Show changes between these commits...":
+                (_f(self.showChangesBetweenCommits, itema, itemb), diffIcon)
+            }
             menu = QMenu()
-            for text, func in actions.items():
-                action = QAction(text, menu)
-                action.triggered.connect(partial(func, itema, itemb))
+            for text in actions:
+                func, icon = actions[text]
+                action = QAction(icon, text, menu)
+                action.triggered.connect(func)
                 menu.addAction(action)
             menu.exec_(point)
 
-    def switchBranch(self, branch, item):
-        self.repo.checkout(branch)
-        self.populate()
-
-    def createBranch(self, item):
-        name, ok = QInputDialog.getText(self, "Create branch", "Enter name of branch to create")
+    @executeskart
+    def createTag(self, item):
+        name, ok = QInputDialog.getText(self, "Create branch",
+                                        "Enter name of branch to create")
         if ok and name:
-            self.repo.createBranch(name, item.commit['commit'])
-            self.message("Branch correctly created", Qgis.Success)
+            self.repo.createTag(name, item.commit['commit'])
+            self.message("Tag correctly created", Qgis.Info)
             self.populate()
 
-    def showChanges(self, item):
-        dialog = DiffDialog(self, item)
-        dialog.exec()
-
-    def resetBranch(self, item):
-        self.repo.reset(item.commit['commit'])
-        self.message("Branch correctly reset to selected commit", Qgis.Success)
+    @executeskart
+    def deleteTag(self, tag):
+        self.repo.deleteTag(tag)
+        self.message(f"Correctly deleted tag '{tag}'", Qgis.Info)
         self.populate()
 
+    @executeskart
+    def switchBranch(self, branch):
+        self.repo.checkoutBranch(branch)
+        self.message(f"Correctly switched to branch '{branch}'", Qgis.Info)
+        self.populate()
+
+    @executeskart
+    def deleteBranch(self, branch):
+        self.repo.deleteBranch(branch)
+        self.message(f"Correctly deleted branch '{branch}'", Qgis.Info)
+        self.populate()
+
+    @executeskart
+    def createBranch(self, item):
+        name, ok = QInputDialog.getText(self, "Create branch",
+                                        "Enter name of branch to create")
+        if ok and name:
+            self.repo.createBranch(name, item.commit['commit'])
+            self.message("Branch correctly created", Qgis.Info)
+            self.populate()
+
+    @executeskart
+    def showChangesInCommit(self, item):
+        refa = item.commit['commit']
+        parents = item.commit['parents']
+        refb = parents[0] if parents else "000000000"
+        changes = self.repo.diff(refa, refb)
+        dialog = DiffViewerDialog(self, changes)
+        dialog.exec()
+
+    @executeskart
+    def showChangesBetweenCommits(self, itema, itemb):
+        refa = itema.commit['commit']
+        refb = itema.commit['commit']
+        changes = self.repo.diff(refa, refb)
+        dialog = DiffViewerDialog(self, changes)
+        dialog.exec()
+
+    @executeskart
+    def resetBranch(self, item):
+        self.repo.reset(item.commit['commit'])
+        self.message("Branch correctly reset to selected commit", Qgis.Info)
+        self.populate()
+
+    @executeskart
+    def restoreLayers(self, item):
+        ALL_LAYERS = "Restore all layers"
+        layers = self.repo.layers()
+        layers.insert(0, ALL_LAYERS)
+        layer, ok = QInputDialog.getItem(iface.mainWindow(),
+                                          "Restore",
+                                          "Select layer to restore:",
+                                          layers,
+                                          editable=False)
+        if ok:
+            if layer == ALL_LAYERS:
+                layer = None
+            self.repo.restore(item.commit['commit'], layer)
+            self.message("Branch correctly reset to selected commit", Qgis.Info)
+
+
     def message(self, text, level):
-        self.parent.bar.pushMessage(text, level, duration = 5)
+        self.parent.bar.pushMessage(text, level, duration=5)
 
-    def drawLine(self, painter, commit, parent):
-        commitRow = self.commitRows[commit.commitid]
-        commitCol = self.commitColumns[commit.commitid]
-        parentRow = self.commitRows[parent.commitid]
-        parentCol = self.commitColumns[parent.commitid]
-        commitX = self.RADIUS * 3 + commitCol * self.COLUMN_SEPARATION
-        parentX = self.RADIUS * 3 + parentCol * self.COLUMN_SEPARATION
-        commitY = commitRow * self.COMMIT_GRAPH_HEIGHT
-        parentY = parentRow * self.COMMIT_GRAPH_HEIGHT
-        color = self._columnColor(parentCol)
-
-        if parent is not None and self.graph.isFauxLink(parent.commitid, commit.commitid)\
-                and len(parent.childrenIds)>1:
-            # draw a faux line
-            path = QPainterPath()
-            path.moveTo(parentX, parentY)
-            path.lineTo(commitX , commitY)
-
-            color = QColor(255,160,255)
-            pen = QPen()
-            pen.setWidth(2)
-            pen.setBrush(color)
-            pen.setStyle(Qt.DashLine)
-            painter.setPen(pen)
-            painter.drawPath(path)
-
-            # draw arrow
-            # draw arrow
-            ARROW_POINT_SIZE = 9
-            painter.setPen(color)
-            painter.setBrush(color)
-            line = QLineF(commitX , commitY, parentX, parentY)
-
-            angle = math.acos(line.dx() / line.length())
-            if line.dy() >= 0:
-                angle = 2.0 * math.pi - angle
-
-            sourcePoint = QPointF(commitX,commitY)
-            sourceArrowP1 = sourcePoint + QPointF(math.sin(angle + math.pi / 3) * ARROW_POINT_SIZE,
-                                                       math.cos(angle + math.pi / 3) * ARROW_POINT_SIZE)
-            sourceArrowP2 = sourcePoint + QPointF(math.sin(angle + math.pi - math.pi / 3) * ARROW_POINT_SIZE,
-                                                       math.cos(angle + math.pi - math.pi / 3) * ARROW_POINT_SIZE)
-            arrow = QPolygonF([line.p1(), sourceArrowP1, sourceArrowP2])
-            painter.drawPolygon(arrow)
-            return
-
-        path = QPainterPath()
-        painter.setBrush(color)
-        painter.setPen(color)
-
-        if parentCol != commitCol:
-            if parent.isFork() and commit.getParents()[0].commitid == parent.commitid:
-                path.moveTo(commitX, commitY)
-                path.lineTo(commitX, parentY)
-                if parentX<commitX:
-                    path.lineTo(parentX + self.RADIUS + 1, parentY)
-                else:
-                    path.lineTo(parentX - self.RADIUS, parentY)
-                color = self._columnColor(commitCol)
-            else:
-                path2 = QPainterPath()
-                path2.moveTo(commitX + self.RADIUS + 1, commitY)
-                path2.lineTo(commitX + self.RADIUS + self.COLUMN_SEPARATION / 2, commitY + self.COLUMN_SEPARATION / 3)
-                path2.lineTo(commitX + self.RADIUS + self.COLUMN_SEPARATION / 2, commitY - self.COLUMN_SEPARATION / 3)
-                path2.lineTo(commitX + + self.RADIUS + 1, commitY)
-                painter.setBrush(color)
-                painter.setPen(color)
-                painter.drawPath(path2)
-                path.moveTo(commitX + self.RADIUS + self.COLUMN_SEPARATION / 2, commitY)
-                path.lineTo(parentX, commitY)
-                path.lineTo(parentX, parentY)
-
-            if parent.isFork():
-                if commitCol in self.columnColor.keys():
-                    del self.columnColor[commitCol]
-
-        else:
-            path.moveTo(commitX, commitY)
-            path.lineTo(parentX, parentY)
-
-        pen = QPen(color, self.PEN_WIDTH, Qt.SolidLine, Qt.FlatCap, Qt.RoundJoin)
-        painter.strokePath(path, pen)
-
-        if not commit.commitid in self.linked:
-            y = commitRow * self.COLUMN_SEPARATION
-            x = self.RADIUS * 3 + commitCol * self.COLUMN_SEPARATION
-            painter.setPen(color)
-            painter.setBrush(color)
-            painter.drawEllipse(QPoint(x, y), self.RADIUS, self.RADIUS)
-            self.linked.append(commit.commitid)
-
-    def _columnColor(self, column):
-        if column in self.columnColor:
-            color = self.columnColor[column]
-        elif column == 0:
-            self.lastColor += 1
-            color = self.COLORS[0]
-            self.columnColor[column] = color
-        else:
-            self.lastColor += 1
-            color = self.COLORS[(self.lastColor % (len(self.COLORS)-1)) + 1]
-            self.columnColor[column] = color
-        return color
 
     def populate(self):
-        self.log = {c['commit']: c for c in self.repo.log()}
+        commits = self.repo.log()
 
+        self.log = {c['commit']: c for c in commits}
         self.clear()
 
-        maxcol = max([c['commitColumn'] for c in self.log.values()])
+        maxcol = max([c['commitColumn'] for c in commits])
         width = RADIUS * maxcol * 2 + 3 * RADIUS
 
-        for i, commit in enumerate(self.log.values()):
+        for i, commit in enumerate(commits):
             item = CommitTreeItem(commit, self)
             self.addTopLevelItem(item)
             img = self.graphImage(commit, width)
             w = GraphWidget(img)
             w.setFixedHeight(COMMIT_GRAPH_HEIGHT)
             self.setItemWidget(item, 0, w)
-            self.setColumnWidth(0, width)
 
-        for i in range(1, 4):
+        for i in range(1, 6):
             self.resizeColumnToContents(i)
-
-        self.expandAll()
-
-        self.header().resizeSection(0, width)
+        self.setColumnWidth(0, width + MARGIN)
+        self.header().setSectionResizeMode(0, QHeaderView.Fixed)
+        self.header().setSectionResizeMode(1, QHeaderView.Fixed)
 
     def graphImage(self, commit, width):
         image = QPixmap(width, COMMIT_GRAPH_HEIGHT).toImage()
         qp = QPainter(image)
-        qp.fillRect(QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), Qt.white);
+        qp.fillRect(QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), Qt.white)
+
+        path = QPainterPath()
+        for col in commit['graph'][0][r"\|"]:
+            x = RADIUS + RADIUS * 2 * col
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x, 0)
+        for col in commit['graph'][2][r"\|"]:
+            x = RADIUS + RADIUS * 2 * col
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x, COMMIT_GRAPH_HEIGHT)
+        for col in commit['graph'][0][r"/"]:
+            x = RADIUS + RADIUS * 2 * col
+            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x2, 0)
+        for col in commit['graph'][2][r"/"]:
+            x = RADIUS + RADIUS * 2 * (col + 1)
+            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
+        for col in commit['graph'][0][r"\\"]:
+            x = RADIUS + RADIUS * 2 * (col + 1)
+            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x2, 0)
+        for col in commit['graph'][2][r"\\"]:
+            x = RADIUS + RADIUS * 2 * (col)
+            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
+            path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
+        pen = QPen()
+        pen.setWidth(PEN_WIDTH)
+        pen.setBrush(QColor(Qt.black))
+        qp.setPen(pen)
+        qp.drawPath(path)
+
         col = commit['commitColumn']
         y = COMMIT_GRAPH_HEIGHT / 2
         x = RADIUS + RADIUS * 2 * col
@@ -252,10 +293,11 @@ class HistoryTree(QTreeWidget):
         qp.setBrush(color)
         qp.drawEllipse(QPoint(x, y), RADIUS, RADIUS)
         qp.end()
+
         return image
 
-class GraphWidget(QWidget):
 
+class GraphWidget(QWidget):
     def __init__(self, img):
         QWidget.__init__(self)
         self.setFixedWidth(img.width())
@@ -267,8 +309,8 @@ class GraphWidget(QWidget):
         painter.drawImage(0, 0, self.img)
         painter.end()
 
-class CommitTreeItem(QTreeWidgetItem):
 
+class CommitTreeItem(QTreeWidgetItem):
     def __init__(self, commit, parent):
         QTreeWidgetItem.__init__(self, parent)
         self.commit = commit
@@ -276,26 +318,32 @@ class CommitTreeItem(QTreeWidgetItem):
             labelslist = []
             for label in commit["refs"]:
                 if "HEAD" in label:
-                    labelslist.append('<span style="background-color:crimson; color:white"> '
-                                      f'&nbsp;&nbsp;{label.split("->")[0].strip()}&nbsp;&nbsp;</span>')
+                    labelslist.append(
+                        '<span style="background-color:crimson; color:white"> '
+                        f'&nbsp;&nbsp;{label.split("->")[-1].strip()}&nbsp;&nbsp;</span>'
+                    )
+                elif "tag:" in label:
+                    labelslist.append(
+                        '<span style="background-color:yellow; color:black"> '
+                        f'&nbsp;&nbsp;{label[4:].strip()}&nbsp;&nbsp;</span>'
+                    )
                 else:
-                    labelslist.append('<span style="background-color:salmon; color:white"> '
-                                      f'&nbsp;&nbsp;{label}&nbsp;&nbsp;</span>')
+                    labelslist.append(
+                        '<span style="background-color:salmon; color:white"> '
+                        f'&nbsp;&nbsp;{label}&nbsp;&nbsp;</span>')
             labels = " ".join(labelslist) + "&nbsp;&nbsp;"
         else:
             labels = ""
-        text = f"{labels}<b>{commit['message'].splitlines()[0]}</b>"
-        qlabel = QLabel(text)
-        qlabel.setStyleSheet("QLabel {padding-left: 15px;}");
+        qlabel = QLabel(labels)
+        qlabel.setStyleSheet("QLabel {padding-left: 15px;}")
         parent.setItemWidget(self, 1, qlabel)
-        self.setText(1, "")
-        self.setText(2, commit['authorName'])
-        self.setText(3, commit['authorTime'])
-        self.setText(4, commit['commit'])
+        self.setText(2, commit['message'].splitlines()[0])
+        self.setText(3, commit['authorName'])
+        self.setText(4, commit['authorTime'])
+        self.setText(5, commit['commit'])
 
 
 class HistoryDialog(QDialog):
-
     def __init__(self, repo):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setWindowFlags(Qt.Window)
@@ -309,4 +357,3 @@ class HistoryDialog(QDialog):
         self.setLayout(layout)
         self.setWindowTitle("History")
         self.resize(1024, 768)
-

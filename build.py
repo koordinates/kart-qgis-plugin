@@ -30,7 +30,7 @@ def make_zip(zipFile):
     for root, dirs, files in os.walk(src_dir):
         for f in filter_excludes(files):
             relpath = os.path.relpath(root, '.')
-            zipFile.write(os.path.join(root,  f), os.path.join(relpath, f))
+            zipFile.write(os.path.join(root, f), os.path.join(relpath, f))
         filter_excludes(dirs)
 
 

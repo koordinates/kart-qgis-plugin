@@ -8,6 +8,7 @@ import site
 
 site.addsitedir(os.path.abspath(os.path.dirname(__file__) + '/extlibs'))
 
+
 def classFactory(iface):
     from kart.plugin import KartPlugin
     return KartPlugin(iface)

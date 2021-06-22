@@ -1,300 +1,322 @@
-from qgis.utils import iface
+# -*- coding: utf-8 -*-
 
-from qgis.core import QgsApplication, QgsWkbTypes, QgsProject, QgsRectangle, QgsFeature
-from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
+import os
+import sys
+import json
+
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QIcon, QColor, QBrush
+from qgis.PyQt.QtWidgets import (
+    QVBoxLayout,
+    QTableWidgetItem,
+    QHeaderView,
+    QTreeWidgetItem,
+    QDialog,
+    QTreeWidgetItemIterator
+)
+
+from qgis.core import (
+    QgsProject,
+    QgsFeature,
+    QgsVectorLayer,
+    QgsJsonUtils,
+    QgsMarkerSymbol,
+    QgsLineSymbol,
+    QgsFillSymbol
+)
+
+from qgis.gui import QgsMapCanvas
+
+ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
+
+pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 
-class HistoryDiffViewerWidget(QWidget):
+def icon(f):
+    return QIcon(
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
 
-    def __init__(self, dialog, server, user, repo, graph, layer=None, initialSimplify=False):
-        self.graph = graph
-        self.dialog = dialog
-        self.server = server
-        self.user = user
-        self.repo = repo
-        self.layer = layer
-        self.afterLayer = None
-        self.beforeLayer = None
-        self.extraLayers = [] # layers for the "Map" tab
-        QWidget.__init__(self, iface.mainWindow())
+
+layerIcon = icon("layer_group.svg")
+featureIcon = icon("geometry.png")
+addedIcon = icon("add.png")
+removedIcon = icon("remove.png")
+modifiedIcon = icon("edit.png")
+
+sys.path.append(os.path.dirname(__file__))
+pluginPath = os.path.split(os.path.dirname(__file__))[0]
+WIDGET, BASE = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), 'diffviewerwidget.ui'))
+
+
+class DiffViewerDialog(QDialog):
+    def __init__(self, parent, changes):
+        super(QDialog, self).__init__(parent)
         self.setWindowFlags(Qt.Window)
-        self.simplifyLog = initialSimplify
-        self.initGui()
-        self.tabWidget.setVisible(False)
-        self.setLabelText("Select a commit to show its content")
-        self.label.setVisible(False)
-        if self.graph.commits:
-            self.history.setCurrentItem(self.history.topLevelItem(0))
-            self.itemChanged(self.history.topLevelItem(0), None)
-        self.history.currentItemChanged.connect(self.itemChanged)
-
-    def setShowPopup(self, show):
-        self.history.showPopup = show
-
-    def initGui(self):
+        self.history = DiffViewerWidget(changes)
         layout = QVBoxLayout()
-        splitter = QSplitter()
-        splitter.setOrientation(Qt.Vertical)
-
-        self.history = HistoryTree(self.dialog)
-        self.history.updateContent(self.server, self.user, self.repo, self.graph, self.layer)
-        self.historyWithFilter = HistoryTreeWrapper(self.history)
-        if self.simplifyLog:
-            self.historyWithFilter.simplify(True)
-        splitter.addWidget(self.historyWithFilter)
-        self.tabWidget = QTabWidget()
-        self.tabCanvas = QWidget()
-        tabLayout = QVBoxLayout()
-        tabLayout.setMargin(0)
-        self.canvas = QgsMapCanvas(self.tabCanvas)
-        self.canvas.setCanvasColor(Qt.white)
-        self.panTool = QgsMapToolPan(self.canvas)
-        self.canvas.setMapTool(self.panTool)
-        tabLayout.addWidget(self.canvas)
-        self.labelNoChanges = QLabel("This commit doesn't change any geometry")
-        self.labelNoChanges.setAlignment(Qt.AlignCenter)
-        self.labelNoChanges.setVisible(False)
-        tabLayout.addWidget(self.labelNoChanges)
-        self.tabCanvas.setLayout(tabLayout)
-        self.summaryTextBrowser = QTextBrowser()
-        self.summaryTextBrowser.setOpenLinks(False)
-        self.summaryTextBrowser.anchorClicked.connect(self.summaryTextBrowserAnchorClicked)
-        self.tabWidget.addTab(self.summaryTextBrowser, "Commit Summary")
-        self.tabWidget.addTab(self.tabCanvas, "Map")
-        tabLayout = QVBoxLayout()
-        tabLayout.setMargin(0)
-        self.tabDiffViewer = QWidget()
-        self.diffViewer = DiffViewerWidget({})
-        tabLayout.addWidget(self.diffViewer)
-        self.tabDiffViewer.setLayout(tabLayout)
-        self.tabWidget.addTab(self.tabDiffViewer, "Attributes")
-        splitter.addWidget(self.tabWidget)
-        self.label = QTextBrowser()
-        self.label.setVisible(False)
-        splitter.addWidget(self.label)
-        self.tabWidget.setCurrentWidget(self.tabDiffViewer)
-
-        layout.addWidget(splitter)
+        layout.setMargin(0)
+        layout.addWidget(self.history)
         self.setLayout(layout)
+        self.resize(1024, 768)
+        self.setWindowTitle("Diff viewer")
 
-        exportDiffButton = QPushButton("Export this commit's DIFF for all layers")
-        exportDiffButton.clicked.connect(self.exportDiffAllLayers)
+    def closeEvent(self, evt):
+        self.history.removeMapLayers()
+        evt.accept()
 
-        layout.addWidget(exportDiffButton)
-        self.label.setMinimumHeight(self.tabWidget.height())
-        self.setWindowTitle("Repository history")
 
-    def summaryTextBrowserAnchorClicked(self,url):
-        url = url.url() #convert to string
-        item = self.history.currentItem()
-        if item is None:
-            return
-        commitid = item.commit.commitid
+class DiffViewerWidget(WIDGET, BASE):
+    def __init__(self, changes):
+        super(DiffViewerWidget, self).__init__()
+        self.changes = changes
+        print(json.dumps(changes))
+        self.oldLayer = None
+        self.newLayer = None
 
-        cmd,layerName = url.split(".",1)
-        if cmd == "addLive":
-            execute(lambda: self.history.exportVersion(layerName,commitid,True))
-        elif cmd == "addGeoPKG":
-            self.history.exportVersion(layerName,commitid,False)
-        elif cmd == "exportDiff":
-            execute(lambda: self.history.exportDiff(item, None,layer=layerName))
+        self.setupUi(self)
 
-    def exportDiffAllLayers(self):
-        item = self.history.currentItem()
-        if item is not None:
-            self.history.exportDiff(item, None)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowSystemMenuHint)
 
-    def setLabelText(self,text):
-        self.label.setHtml("<br><br><br><center><b>{}</b></center>".format(text))
+        self.canvas = QgsMapCanvas(self.canvasWidget)
+        tabLayout = QVBoxLayout()
+        tabLayout.setMargin(0)
+        tabLayout.addWidget(self.canvas)
+        self.canvasWidget.setLayout(tabLayout)
 
-    def setContent(self, server, user, repo, graph, layer = None):
-        self.server = server
-        self.user = user
-        self.repo = repo
-        self.layer = layer
-        self.graph = graph
-        self.historyWithFilter.updateContent(server, user, repo, graph, layer)
-        if self.history.graph.commits:
-            self.history.setCurrentItem(self.history.topLevelItem(0))
+        self.featuresTree.currentItemChanged.connect(self.treeItemChanged)
+        self.featuresTree.header().hide()
 
-    def itemChanged(self, current, previous, THRESHOLD = 1500):
-        item = self.history.currentItem()
-        if item is not None:
-            commit = self.graph.getById(item.ref)
-            if commit is None:
-                self.tabWidget.setVisible(False)
-                self.setLabelText("Select a commit to show its content")
-                self.label.setVisible(True)
+        self.featuresTree.header().setStretchLastSection(True)
+
+        self.fillTree()
+
+        self.selectFirstChangedFeature()
+
+    def selectFirstChangedFeature(self):
+        iterator = QTreeWidgetItemIterator(self.featuresTree)
+        while iterator.value():
+            item = iterator.value()
+            if isinstance(item, FeatureItem):
+                self.featuresTree.setCurrentItem(item)
                 return
+            iterator += 1
 
-            commit2 = commit.commitid + "~1"
+    def treeItemChanged(self, current, previous):
+        if not isinstance(current, FeatureItem):
+            #self.attributesTable.setRowCount(0)
+            self.attributesTable.setVisible(False)
+            self.canvasWidget.setVisible(False)
+            return
+        else:
+            self.attributesTable.setVisible(True)
+            self.canvasWidget.setVisible(True)
+            self.fillAttributesDiff(current.old, current.new)
+            self.fillCanvas(current.old, current.new)
 
-            if not item.commit.hasParents():
-                commit2 = "0000000000000000"
+    def fillAttributesDiff(self, old, new):
+        self.attributesTable.clear()
+        fields = []
+        fields.extend(new.get('properties', {}).keys())
+        fields.extend(old.get('properties', {}).keys())
+        fields = list(set(fields))
 
-            total,details = self.server.diffSummary(self.user, self.repo,  commit2,commit.commitid)
-            tooLargeDiff = total > THRESHOLD
-            if tooLargeDiff:
-                 html = "<br><br><center><b><font size=+3>Commit <font size=-0.1><tt>{}</tt></font> DIFF is too large to be shown</b></font><br>".format(commit.commitid[:8])
+        changeTypeColor = [Qt.green, QColor(255, 170, 0), Qt.red, Qt.white]
+        changeTypeName = ["Added", "Modified", "Removed", "Unchanged"]
+        self.attributesTable.clear()
+        self.attributesTable.verticalHeader().show()
+        self.attributesTable.horizontalHeader().show()
+        labels = fields + ["geometry"]
+        self.attributesTable.setRowCount(len(labels))
+        self.attributesTable.setVerticalHeaderLabels(labels)
+        self.attributesTable.setHorizontalHeaderLabels(
+            ["Old value", "New value", "Change type"])
+        for i, attrib in enumerate(fields):
+            try:
+                if not bool(old):
+                    newvalue = new['properties'].get(attrib)
+                    oldvalue = ""
+                    changeType = ADDED
+                elif not bool(new):
+                    oldvalue = old['properties'].get(attrib)
+                    newvalue = ""
+                    changeType = REMOVED
+                else:
+                    oldvalue = old['properties'].get(attrib)
+                    newvalue = new['properties'].get(attrib)
+                    if oldvalue != newvalue:
+                        changeType = MODIFIED
+                    else:
+                        changeType = UNCHANGED
+            except:
+                oldvalue = newvalue = ""
+                changeType = UNCHANGED
+
+            self.attributesTable.setItem(i, 0, DiffItem(oldvalue))
+            self.attributesTable.setItem(i, 1, DiffItem(newvalue))
+            self.attributesTable.setItem(i, 2,
+                                         DiffItem(changeTypeName[changeType]))
+            for col in range(3):
+                cell = self.attributesTable.item(i, col)
+                if cell is not None:
+                    cell.setBackground(QBrush(changeTypeColor[changeType]))
+
+        row = len(fields)
+        if not bool(old):
+            newvalue = new['geometry']
+            oldvalue = ""
+            changeType = ADDED
+        elif not bool(new):
+            oldvalue = old['geometry']
+            newvalue = ""
+            changeType = REMOVED
+        else:
+            oldvalue = old['geometry']
+            newvalue = new['geometry']
+            if oldvalue != newvalue:
+                changeType = MODIFIED
             else:
-                html = "<br><br><center><b><font size=+3>Commit <font size=-0.1><tt>{}</tt></font> Summary</b></font><br>".format(commit.commitid[:8])
-            html += "<table>"
-            html += "<tr><Td style='padding:5px'><b>Layer&nbsp;Name</b></td><td style='padding:5px'><b>Additions</b></td><td style='padding:5px'><b>Deletions</b></td><td style='padding:5px'><b>Modifications</b></td><td></td><td></td><td></td></tr>"
-            for detail in details.values():
-                html += "<tr><td style='padding:5px'>{}</td><td style='padding:5px'><center>{:,}</center></td><td style='padding:5px'><center>{:,}</center></td><td style='padding:5px'><center>{:,}</center></td><td style='padding:5px'>{}</td><td style='padding:5px'>{}</td><td style='padding:5px'>{}</td></tr>".format(
-                    detail["path"],
-                    int(detail["featuresAdded"]), int(detail["featuresRemoved"]),int(detail["featuresChanged"]),
-                    "<a href='addLive.{}'>Add Live</a>".format(detail["path"]),
-                    "<a href='addGeoPKG.{}'>Add GeoPKG</a>".format(detail["path"]),
-                    "<a href='exportDiff.{}'>Export Diff</a>".format(detail["path"])
-                )
-            html += "<tr></tr>"
-            html += "<tr><td colspan=4>There is a total of {:,} features changed</td></tr>".format(total)
-            html += "</table>"
-            # html += "<br><br>There is a total of {:,} features changed".format(total)
-            self.summaryTextBrowser.setHtml(html)
-            self.label.setVisible(False)
-            self.tabWidget.setVisible(True)
-            self.tabWidget.setTabEnabled(1,not tooLargeDiff)
-            self.tabWidget.setTabEnabled(2,not tooLargeDiff)
-            if not tooLargeDiff:
-                self.setDiffContent(commit, commit2)
-        else:
-            self.tabWidget.setVisible(False)
-            self.setLabelText("Select a commit to show its content")
-            self.label.setVisible(True)
+                changeType = UNCHANGED
+        self.attributesTable.setItem(row, 0, DiffItem(oldvalue))
+        self.attributesTable.setItem(row, 1, DiffItem(newvalue))
+        self.attributesTable.setItem(row, 2,
+                                     DiffItem(changeTypeName[changeType]))
 
-    def setDiffContent(self, commit, commit2):
-        if self.layer is None:
-            layers = set(self.server.layers(self.user, self.repo, commit.commitid))
-            layers2 = set(self.server.layers(self.user, self.repo, commit2))
-            layers = layers.union(layers2)
-        else:
-            layers = [self.layer]
+        for col in range(3):
+            try:
+                self.attributesTable.item(row, col).setBackground(
+                    QBrush(changeTypeColor[changeType]))
+            except:
+                pass
 
-        diffs = {layer: execute(lambda: self.server.diff(self.user, self.repo, layer, commit.commitid, commit2)) for layer in layers}
-        diffs = {key:value for (key,value) in diffs.items() if len(value) !=0}
-        layers = [l for l in diffs.keys()]
-        self.diffViewer.setChanges(diffs)
+        self.attributesTable.horizontalHeader().setMinimumSectionSize(88)
+        self.attributesTable.resizeColumnsToContents()
+        header = self.attributesTable.horizontalHeader()
+        for column in range(header.count()):
+            header.setSectionResizeMode(column, QHeaderView.Fixed)
+            width = header.sectionSize(column)
+            header.resizeSection(column, width)
+            header.setSectionResizeMode(column, QHeaderView.Interactive)
 
+    def fillTree(self):
+        self.featuresTree.clear()
+        for layer, changes in self.changes.items():
+            layerItem = QTreeWidgetItem()
+            layerItem.setText(0, layer)
+            layerItem.setIcon(0, layerIcon)
+            addedItem = QTreeWidgetItem()
+            addedItem.setText(0, "Added")
+            addedItem.setIcon(0, addedIcon)
+            removedItem = QTreeWidgetItem()
+            removedItem.setText(0, "Removed")
+            removedItem.setIcon(0, removedIcon)
+            modifiedItem = QTreeWidgetItem()
+            modifiedItem.setText(0, "Modified")
+            modifiedItem.setIcon(0, modifiedIcon)
+
+            subItems = {'I': addedItem, 'U': modifiedItem, 'D': removedItem}
+            changes = {feat['id']: feat for feat in changes}
+            usedids = []
+            for feat in changes.values():
+                changetype, featid = feat['id'].split('::')
+                changetype = changetype[0]
+                if featid not in usedids:
+                    if changetype == "I":
+                        old = {}
+                        new = feat
+                    elif changetype == "D":
+                        old = feat
+                        new = {}
+                    else:
+                        old = changes[f"U-::{featid}"]
+                        new = changes[f"U+::{featid}"]
+                    usedids.append(featid)
+                    item = FeatureItem(featid, old, new)
+                    subItems[changetype].addChild(item)
+
+            for subItem in subItems.values():
+                if subItem.childCount():
+                    layerItem.addChild(subItem)
+            if layerItem.childCount():
+                self.featuresTree.addTopLevelItem(layerItem)
+
+        self.attributesTable.clear()
+        self.attributesTable.verticalHeader().hide()
+        self.attributesTable.horizontalHeader().hide()
+
+        self.featuresTree.expandAll()
+
+    def fillCanvas(self, old, new):
         self.canvas.setLayers([])
         self.removeMapLayers()
-        extent = QgsRectangle()
-        for layer in layers:
-            if not diffs[layer]:
-                continue
-            beforeLayer, afterLayer = execute(lambda: self._getLayers(diffs[layer]))
-            if afterLayer is not None:
-                resourcesPath =  os.path.join(os.path.dirname(__file__), os.pardir, "resources")
-                oldStylePath = os.path.join(resourcesPath, "{}_before.qml".format(
-                                            QgsWkbTypes.geometryDisplayString(beforeLayer.geometryType())))
-                newStylePath = os.path.join(resourcesPath, "{}_after.qml".format(
-                                            QgsWkbTypes.geometryDisplayString(afterLayer.geometryType())))
-
-                beforeLayer.loadNamedStyle(oldStylePath)
-                afterLayer.loadNamedStyle(newStylePath)
-
-                QgsProject.instance().addMapLayer(beforeLayer, False)
-                QgsProject.instance().addMapLayer(afterLayer, False)
-
-                extent.combineExtentWith(beforeLayer.extent())
-                extent.combineExtentWith(afterLayer.extent())
-                self.extraLayers.append(beforeLayer)
-                self.extraLayers.append(afterLayer)
-        # make extent a bit bit (10%) bigger
-        # this gives some margin around the dataset (not cut-off at edges)
-        if not extent.isEmpty():
-            widthDelta = extent.width() * 0.05
-            heightDelta = extent.height() * 0.05
-            extent = QgsRectangle(extent.xMinimum() - widthDelta,
-                                  extent.yMinimum() - heightDelta,
-                                  extent.xMaximum() + widthDelta,
-                                  extent.yMaximum() + heightDelta)
-
-        layers = self.extraLayers
-        hasChanges = False
-        for layer in layers:
-            if layer is not None and layer.featureCount() > 0:
-                hasChanges = True
-                break
-        self.canvas.setLayers(layers)
+        self._createLayers(old, new)
+        QgsProject.instance().addMapLayer(self.newLayer, False)
+        QgsProject.instance().addMapLayer(self.oldLayer, False)
+        self.canvas.setLayers([self.oldLayer, self.newLayer])
+        extent = self.oldLayer.extent()
+        extent.combineExtentWith(self.newLayer.extent())
+        extent.grow(max(extent.width(), 0.01))
         self.canvas.setExtent(extent)
         self.canvas.refresh()
 
-        self.canvas.setVisible(hasChanges)
-        self.labelNoChanges.setVisible(not hasChanges)
+    def _geom_from_geojson(self, geojson):
+        feats = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))
+        geom = feats[0].geometry()
+        return geom
 
-    def _getLayers(self, changes):
-        ADDED, MODIFIED, REMOVED,  = 0, 1, 2
-        def _feature(g, changeType):
-            feat = QgsFeature()
-            if g is not None:
-                feat.setGeometry(g)
-            feat.setAttributes([changeType])
-            return feat
-        if changes:
-            f = changes[0]
-            new = f["new"]
-            old = f["old"]
-            reference = new or old
-            geomtype = QgsWkbTypes.displayString(reference.geometry().wkbType())
-            oldLayer = loadLayerNoCrsDialog(geomtype + "?crs=epsg:4326&field=geogig.changeType:integer", "old", "memory")
-            newLayer = loadLayerNoCrsDialog(geomtype + "?crs=epsg:4326&field=geogig.changeType:integer", "new", "memory")
-            oldFeatures = []
-            newFeatures = []
-            for f in changes:
-                new = f["new"]
-                old = f["old"]
-                newGeom = new.geometry() if new is not None else None
-                oldGeom = old.geometry() if old is not None else None
-                if oldGeom is None:
-                    feature = _feature(newGeom, ADDED)
-                    newFeatures.append(feature)
-                elif newGeom is None:
-                    feature = _feature(oldGeom, REMOVED)
-                    oldFeatures.append(feature)
-                elif oldGeom.asWkt() != newGeom.asWkt():
-                    feature = _feature(oldGeom, MODIFIED)
-                    oldFeatures.append(feature)
-                    feature = _feature(newGeom, MODIFIED)
-                    newFeatures.append(feature)
-                else:
-                    feature = _feature(newGeom, MODIFIED)
-                    newFeatures.append(feature)
-            oldLayer.dataProvider().addFeatures(oldFeatures)
-            newLayer.dataProvider().addFeatures(newFeatures)
-        else:
-            oldLayer = None
-            newLayer = None
+    def _createLayers(self, old, new):
+        ref = new or old
+        geomtype = ref['geometry']['type']
+        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
+        geomclass = {
+            "Point": QgsMarkerSymbol,
+            "Line": QgsLineSymbol,
+            "Polygon": QgsFillSymbol
+        }
+        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+            {'color': '255,0,0,100'})
+        self.oldLayer.renderer().setSymbol(symbol)
+        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new", "memory")
+        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+            {'color': '0,255,0,100'})
+        self.newLayer.renderer().setSymbol(symbol)
+        if bool(old):
+            geom = self._geom_from_geojson(old)
+            feature = QgsFeature()
+            feature.setGeometry(geom)
+            self.oldLayer.dataProvider().addFeatures([feature])
+        if bool(new):
+            geom = self._geom_from_geojson(new)
+            feature = QgsFeature()
+            feature.setGeometry(geom)
+            self.newLayer.dataProvider().addFeatures([feature])
 
-        return oldLayer, newLayer
 
     def removeMapLayers(self):
-        for layer in self.extraLayers:
+        for layer in [self.oldLayer, self.newLayer]:
             if layer is not None:
-                    QgsProject.instance().removeMapLayer(layer.id())
-        self.extraLayers = []
+                QgsProject.instance().removeMapLayer(layer.id())
+        self.oldLayer = None
+        self.newLayer = None
 
-class HistoryDiffViewerDialog(QDialog):
 
-    def __init__(self, server, user, repo, graph, layer=None):
-        super(HistoryDiffViewerDialog, self).__init__()
-        self.resize(1024, 768)
-        layout = QVBoxLayout()
-        layout.setMargin(0)
-        self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
-        layout.addWidget(self.bar)
-        self.history = HistoryDiffViewerWidget(repo)
-        layout.addWidget(self.history)
-        self.setLayout(layout)
-        self.setWindowTitle("History")
-        setCurrentWindow(self)
+class FeatureItem(QTreeWidgetItem):
+    def __init__(self, fid, old, new):
+        QTreeWidgetItem.__init__(self)
+        self.setIcon(0, featureIcon)
+        self.setText(0, fid)
+        self.old = old
+        self.new = new
 
-    def messageBar(self):
-        return self.bar
 
-    def closeEvent(self, evt):
-        setCurrentWindow()
-        self.history.removeMapLayers()
-        evt.accept()
+class DiffItem(QTableWidgetItem):
+    def __init__(self, value):
+        self.value = value
+        if value is None:
+            s = ""
+        elif isinstance(value, dict):
+            s = value['type']
+        else:
+            s = str(value)
+        QTableWidgetItem.__init__(self, s)

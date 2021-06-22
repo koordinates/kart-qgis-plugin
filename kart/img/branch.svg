@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <circle id="icon-branch-a" cx="10.192" cy="9.935" r="9.593"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(1.668 2.185)">
+    <mask id="icon-branch-b" fill="#fff">
+      <use xlink:href="#icon-branch-a"/>
+    </mask>
+    <use fill="#48A2DF" opacity="0" xlink:href="#icon-branch-a"/>
+    <circle cx="10.329" cy="9.979" r="9.593" fill="#48A2DF" mask="url(#icon-branch-b)"/>
+    <g mask="url(#icon-branch-b)">
+      <g transform="translate(3.82 2.638)">
+        <g transform="translate(2.317 3.527)">
+          <polyline stroke="#FFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" points="1.087 .486 1.087 12.645 1.087 21.194"/>
+          <path stroke="#FFF" stroke-width="1.5" d="M9.08021408,3.38087904 L0.854075372,9.31104239"/>
+        </g>
+        <g transform="translate(.486 .602)">
+          <circle cx="3.079" cy="3.062" r="2.808" fill="#FFF"/>
+          <circle cx="3.079" cy="3.062" r="1.558" fill="#48A2DF"/>
+        </g>
+        <g transform="translate(.143 17.456)">
+          <circle cx="3.079" cy="3.062" r="2.808" fill="#4C6782"/>
+          <circle cx="3.079" cy="3.062" r="1.558" fill="#FFF"/>
+        </g>
+        <g transform="translate(7.01 4.601)">
+          <circle cx="3.079" cy="3.062" r="2.808" fill="#FFF"/>
+          <circle cx="3.079" cy="3.062" r="1.558" fill="#48A2DF"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
