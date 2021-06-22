@@ -7,24 +7,12 @@ import json
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QColor, QBrush
-from qgis.PyQt.QtWidgets import (
-    QVBoxLayout,
-    QTableWidgetItem,
-    QHeaderView,
-    QTreeWidgetItem,
-    QDialog,
-    QTreeWidgetItemIterator
-)
+from qgis.PyQt.QtWidgets import (QVBoxLayout, QTableWidgetItem, QHeaderView,
+                                 QTreeWidgetItem, QDialog,
+                                 QTreeWidgetItemIterator)
 
-from qgis.core import (
-    QgsProject,
-    QgsFeature,
-    QgsVectorLayer,
-    QgsJsonUtils,
-    QgsMarkerSymbol,
-    QgsLineSymbol,
-    QgsFillSymbol
-)
+from qgis.core import (QgsProject, QgsFeature, QgsVectorLayer, QgsJsonUtils,
+                       QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol)
 
 from qgis.gui import QgsMapCanvas
 
@@ -268,7 +256,8 @@ class DiffViewerWidget(WIDGET, BASE):
     def _createLayers(self, old, new):
         ref = new or old
         geomtype = ref['geometry']['type']
-        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
+        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old",
+                                       "memory")
         geomclass = {
             "Point": QgsMarkerSymbol,
             "Line": QgsLineSymbol,
@@ -277,7 +266,8 @@ class DiffViewerWidget(WIDGET, BASE):
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
             {'color': '255,0,0,100'})
         self.oldLayer.renderer().setSymbol(symbol)
-        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new", "memory")
+        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new",
+                                       "memory")
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
             {'color': '0,255,0,100'})
         self.newLayer.renderer().setSymbol(symbol)
@@ -291,7 +281,6 @@ class DiffViewerWidget(WIDGET, BASE):
             feature = QgsFeature()
             feature.setGeometry(geom)
             self.newLayer.dataProvider().addFeatures([feature])
-
 
     def removeMapLayers(self):
         for layer in [self.oldLayer, self.newLayer]:

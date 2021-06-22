@@ -11,6 +11,7 @@ from qgis.core import QgsMessageOutput
 
 KART_EXECUTABLE = r"c:\program files\kart\kart.exe"
 
+
 class KartException(Exception):
     pass
 
@@ -129,7 +130,8 @@ class Repository(object):
 
     def log(self, ref="HEAD"):
         log = {c['commit']: c for c in self.executeKart(["log", ref], True)}
-        logb = self.executeKart(["log", ref, "--graph", '--format=format:%H%n '])
+        logb = self.executeKart(
+            ["log", ref, "--graph", '--format=format:%H%n '])
         lines = logb.splitlines()
         lines.insert(0, "")
         lines.append("")
@@ -203,6 +205,7 @@ class Repository(object):
                     changes[layername] = json.load(f)['features']
             tmpdirname.cleanup()
         except:
+            raise
             pass
         return changes
 

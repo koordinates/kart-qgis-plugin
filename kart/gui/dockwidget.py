@@ -1,11 +1,8 @@
 import os
 
 from qgis.PyQt import uic
-
 from qgis.PyQt.QtCore import Qt
-
 from qgis.PyQt.QtGui import QIcon
-
 from qgis.PyQt.QtWidgets import (QDockWidget, QTreeWidgetItem,
                                  QAbstractItemView, QFileDialog, QAction,
                                  QMenu, QInputDialog)
@@ -14,7 +11,7 @@ from qgis.utils import iface
 from qgis.core import Qgis
 
 from kart.kartapi import repos, addRepo, Repository
-
+from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -36,6 +33,7 @@ resetIcon = icon('reset.png')
 layersIcon = icon('layer_group.svg')
 mergeIcon = icon("merge.png")
 addtoQgisIcon = icon('openinqgis.png')
+diffIcon = icon("changes.png")
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), 'dockwidget.ui'))
@@ -152,6 +150,7 @@ class RepoItem(RefreshableItem):
         actions = {
             "Show log...": (self.showLog, logIcon),
             "Import layer into repo...": (self.importLayer, importIcon),
+            "Show working tree changes": (self.showChanges, diffIcon),
             "Commit changes...": (self.commitChanges, commitIcon),
             "Switch branch...": (self.switchBranch, checkoutIcon),
             "Merge into current branch...": (self.mergeBranch, mergeIcon),
@@ -188,6 +187,11 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage("Commit",
                                            "Nothing to commit",
                                            level=Qgis.Warning)
+
+    def showChanges(self):
+        changes = self.repo.diff()
+        dialog = DiffViewerDialog(self, changes)
+        dialog.exec()
 
     def switchBranch(self):
         branches = self.repo.branches()

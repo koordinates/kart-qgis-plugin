@@ -1,41 +1,24 @@
 import os
-from functools import partial
 
 from kart.kartapi import executeskart
+from kart.gui.diffviewer import DiffViewerDialog
 
 from qgis.core import Qgis
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt.QtCore import Qt, QPoint, QRectF
-from qgis.PyQt.QtGui import (
-    QIcon,
-    QPixmap,
-    QPainter,
-    QColor,
-    QPainterPath,
-    QPen
-)
+from qgis.PyQt.QtGui import (QIcon, QPixmap, QPainter, QColor, QPainterPath,
+                             QPen)
 
-from qgis.PyQt.QtWidgets import (
-    QTreeWidget,
-    QAbstractItemView,
-    QAction,
-    QMenu,
-    QTreeWidgetItem,
-    QWidget,
-    QVBoxLayout,
-    QDialog,
-    QSizePolicy,
-    QLabel,
-    QInputDialog,
-    QHeaderView
-)
-
-from kart.gui.diffviewer import DiffViewerDialog
+from qgis.PyQt.QtWidgets import (QTreeWidget, QAbstractItemView, QAction,
+                                 QMenu, QTreeWidgetItem, QWidget, QVBoxLayout,
+                                 QDialog, QSizePolicy, QLabel, QInputDialog,
+                                 QHeaderView)
 
 COMMIT_GRAPH_HEIGHT = 20
-RADIUS = 6
+RADIUS = 4
+COL_SPACING = 20
 PEN_WIDTH = 2
 MARGIN = 50
 
@@ -68,7 +51,6 @@ restoreIcon = icon("checkout.png")
 
 
 class HistoryTree(QTreeWidget):
-
     def __init__(self, repo, parent):
         super(HistoryTree, self).__init__()
         self.repo = repo
@@ -85,14 +67,16 @@ class HistoryTree(QTreeWidget):
         self.populate()
 
     def _showPopupMenu(self, point):
+        def _f(f, *args):
+            def wrapper():
+                f(*args)
+
+            return wrapper
+
         point = self.mapToGlobal(point)
         selected = self.selectedItems()
         if selected and len(selected) == 1:
             item = self.currentItem()
-            def _f(f, *args):
-                def wrapper():
-                    f(*args)
-                return wrapper
             actions = {
                 "Show changes for this commit...":
                 (_f(self.showChangesInCommit, item), diffIcon),
@@ -100,8 +84,8 @@ class HistoryTree(QTreeWidget):
                 (_f(self.resetBranch, item), resetIcon),
                 "Create branch at this commit...":
                 (_f(self.createBranch, item), createBranchIcon),
-                "Create tag at this commit...":
-                (_f(self.createTag, item), createTagIcon),
+                "Create tag at this commit...": (_f(self.createTag,
+                                                    item), createTagIcon),
                 "Restore working tree layers to this version...":
                 (_f(self.restoreLayers, item), restoreIcon)
             }
@@ -113,20 +97,13 @@ class HistoryTree(QTreeWidget):
                         self.switchBranch, ref), checkoutIcon)
                 elif "tag:" in ref:
                     tag = ref[4:].strip()
-                    actions[f"Delete tag '{tag}'"] = (_f(
-                        self.deleteTag, tag), deleteIcon)
+                    actions[f"Delete tag '{tag}'"] = (_f(self.deleteTag,
+                                                         tag), deleteIcon)
                 else:
                     actions[f"Switch to branch '{ref}'"] = (_f(
                         self.switchBranch, ref), checkoutIcon)
                     actions[f"Delete branch '{ref}'"] = (_f(
                         self.deleteBranch, ref), deleteIcon)
-            menu = QMenu()
-            for text in actions:
-                func, icon = actions[text]
-                action = QAction(icon, text, menu)
-                action.triggered.connect(func)
-                menu.addAction(action)
-            menu.exec_(point)
         elif selected and len(selected) == 2:
             itema = selected[0]
             itemb = selected[1]
@@ -134,12 +111,15 @@ class HistoryTree(QTreeWidget):
                 "Show changes between these commits...":
                 (_f(self.showChangesBetweenCommits, itema, itemb), diffIcon)
             }
-            menu = QMenu()
-            for text in actions:
-                func, icon = actions[text]
-                action = QAction(icon, text, menu)
-                action.triggered.connect(func)
-                menu.addAction(action)
+        else:
+            actions = []
+        menu = QMenu()
+        for text in actions:
+            func, icon = actions[text]
+            action = QAction(icon, text, menu)
+            action.triggered.connect(func)
+            menu.addAction(action)
+        if actions:
             menu.exec_(point)
 
     @executeskart
@@ -190,7 +170,7 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def showChangesBetweenCommits(self, itema, itemb):
         refa = itema.commit['commit']
-        refb = itema.commit['commit']
+        refb = itemb.commit['commit']
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes)
         dialog.exec()
@@ -207,20 +187,19 @@ class HistoryTree(QTreeWidget):
         layers = self.repo.layers()
         layers.insert(0, ALL_LAYERS)
         layer, ok = QInputDialog.getItem(iface.mainWindow(),
-                                          "Restore",
-                                          "Select layer to restore:",
-                                          layers,
-                                          editable=False)
+                                         "Restore",
+                                         "Select layer to restore:",
+                                         layers,
+                                         editable=False)
         if ok:
             if layer == ALL_LAYERS:
                 layer = None
             self.repo.restore(item.commit['commit'], layer)
-            self.message("Branch correctly reset to selected commit", Qgis.Info)
-
+            self.message("Selected layer correctly restored in working tree",
+                         Qgis.Info)
 
     def message(self, text, level):
         self.parent.bar.pushMessage(text, level, duration=5)
-
 
     def populate(self):
         commits = self.repo.log()
@@ -229,7 +208,7 @@ class HistoryTree(QTreeWidget):
         self.clear()
 
         maxcol = max([c['commitColumn'] for c in commits])
-        width = RADIUS * maxcol * 2 + 3 * RADIUS
+        width = COL_SPACING * maxcol + 2 * RADIUS
 
         for i, commit in enumerate(commits):
             item = CommitTreeItem(commit, self)
@@ -252,31 +231,31 @@ class HistoryTree(QTreeWidget):
 
         path = QPainterPath()
         for col in commit['graph'][0][r"\|"]:
-            x = RADIUS + RADIUS * 2 * col
+            x = RADIUS + COL_SPACING * col
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x, 0)
         for col in commit['graph'][2][r"\|"]:
-            x = RADIUS + RADIUS * 2 * col
+            x = RADIUS + COL_SPACING * col
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x, COMMIT_GRAPH_HEIGHT)
         for col in commit['graph'][0][r"/"]:
-            x = RADIUS + RADIUS * 2 * col
-            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            x = RADIUS + COL_SPACING * col
+            x2 = RADIUS + COL_SPACING * (col + .5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, 0)
         for col in commit['graph'][2][r"/"]:
-            x = RADIUS + RADIUS * 2 * (col + 1)
-            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            x = RADIUS + COL_SPACING * (col + 1)
+            x2 = RADIUS + COL_SPACING * (col + .5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
         for col in commit['graph'][0][r"\\"]:
-            x = RADIUS + RADIUS * 2 * (col + 1)
-            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            x = RADIUS + COL_SPACING * (col + 1)
+            x2 = RADIUS + COL_SPACING * (col + .5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, 0)
         for col in commit['graph'][2][r"\\"]:
-            x = RADIUS + RADIUS * 2 * (col)
-            x2 = RADIUS + RADIUS * 2 * (col + .5)
+            x = RADIUS + COL_SPACING * (col)
+            x2 = RADIUS + COL_SPACING * (col + .5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
         pen = QPen()
@@ -287,7 +266,7 @@ class HistoryTree(QTreeWidget):
 
         col = commit['commitColumn']
         y = COMMIT_GRAPH_HEIGHT / 2
-        x = RADIUS + RADIUS * 2 * col
+        x = RADIUS + COL_SPACING * col
         color = COLORS[col]
         qp.setPen(color)
         qp.setBrush(color)
@@ -325,8 +304,7 @@ class CommitTreeItem(QTreeWidgetItem):
                 elif "tag:" in label:
                     labelslist.append(
                         '<span style="background-color:yellow; color:black"> '
-                        f'&nbsp;&nbsp;{label[4:].strip()}&nbsp;&nbsp;</span>'
-                    )
+                        f'&nbsp;&nbsp;{label[4:].strip()}&nbsp;&nbsp;</span>')
                 else:
                     labelslist.append(
                         '<span style="background-color:salmon; color:white"> '
