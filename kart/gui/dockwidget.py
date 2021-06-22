@@ -2,7 +2,7 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (QDockWidget, QTreeWidgetItem,
                                  QAbstractItemView, QFileDialog, QAction,
                                  QMenu, QInputDialog)
@@ -29,7 +29,7 @@ logIcon = icon('log.png')
 importIcon = icon('import.png')
 checkoutIcon = icon('checkout.png')
 commitIcon = icon('commit.png')
-resetIcon = icon('reset.png')
+discardIcon = icon('reset.png')
 layersIcon = icon('layer_group.svg')
 mergeIcon = icon("merge.png")
 addtoQgisIcon = icon('openinqgis.png')
@@ -44,6 +44,8 @@ class KartDockWidget(BASE, WIDGET):
         super(QDockWidget, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
+        pixmap = QPixmap(os.path.join(pluginPath, "img", "kart-logo.png"))
+        self.labelHeader.setPixmap(pixmap)
         self.tree.setFocusPolicy(Qt.NoFocus)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -151,10 +153,10 @@ class RepoItem(RefreshableItem):
             "Show log...": (self.showLog, logIcon),
             "Import layer into repo...": (self.importLayer, importIcon),
             "Show working tree changes": (self.showChanges, diffIcon),
-            "Commit changes...": (self.commitChanges, commitIcon),
+            "Commit working tree changes...": (self.commitChanges, commitIcon),
             "Switch branch...": (self.switchBranch, checkoutIcon),
             "Merge into current branch...": (self.mergeBranch, mergeIcon),
-            "Reset current changes": (self.resetBranch, resetIcon)
+            "Discard changes in working tree": (self.discardChanges, discardIcon)
         }
 
         return actions
@@ -190,7 +192,7 @@ class RepoItem(RefreshableItem):
 
     def showChanges(self):
         changes = self.repo.diff()
-        dialog = DiffViewerDialog(self, changes)
+        dialog = DiffViewerDialog(iface.mainWindow(), changes)
         dialog.exec()
 
     def switchBranch(self):
@@ -217,10 +219,10 @@ class RepoItem(RefreshableItem):
                                            "Branch correctly merged",
                                            level=Qgis.Info)
 
-    def resetBranch(self):
-        self.repo.reset()
-        iface.messageBar().pushMessage("Reset",
-                                       "Repository correctly resete",
+    def discardChanges(self):
+        self.repo.restore("HEAD")
+        iface.messageBar().pushMessage("Discard changes",
+                                       "Working tree changes have been discarded",
                                        level=Qgis.Info)
 
 

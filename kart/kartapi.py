@@ -126,7 +126,7 @@ class Repository(object):
         self.executeKart(commands)
 
     def reset(self, ref="HEAD"):
-        self.executeKart(["reset", ref])
+        self.executeKart(["reset", ref, "-f"])
 
     def log(self, ref="HEAD"):
         log = {c['commit']: c for c in self.executeKart(["log", ref], True)}
@@ -184,7 +184,7 @@ class Repository(object):
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
-    def diff(self, refa, refb):
+    def diff(self, refa=None, refb=None):
         changes = {}
         try:
             commands = ["diff"]
@@ -194,7 +194,7 @@ class Repository(object):
                 commands.append(refa)
             elif refb:
                 commands.append(refb)
-            commands.append("-ogeojson")
+            commands.extend(["-ogeojson", "--json-style", "extracompact"])
             tmpdirname = tempfile.TemporaryDirectory()
             commands.extend(["--output", tmpdirname.name])
             self.executeKart(commands)
@@ -205,11 +205,10 @@ class Repository(object):
                     changes[layername] = json.load(f)['features']
             tmpdirname.cleanup()
         except:
-            raise
             pass
         return changes
 
-    def restore(self, ref, layer):
+    def restore(self, ref, layer=None):
         if layer is not None:
             return self.executeKart(["restore", "-s", ref, layer])
         else:
