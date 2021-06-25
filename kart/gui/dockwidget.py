@@ -5,14 +5,15 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (QDockWidget, QTreeWidgetItem,
                                  QAbstractItemView, QFileDialog, QAction,
-                                 QMenu, QInputDialog)
+                                 QMenu, QInputDialog, QMessageBox)
 
 from qgis.utils import iface
 from qgis.core import Qgis
 
-from kart.kartapi import repos, addRepo, Repository
+from kart.kartapi import repos, addRepo, Repository, executeskart
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
+from kart.gui.conflictsdialog import ConflictsDialog
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -21,19 +22,20 @@ def icon(f):
     return QIcon(os.path.join(pluginPath, "img", f))
 
 
-repoIcon = icon("database.svg")
+repoIcon = icon("repository.png")
 addRepoIcon = icon("addrepo.png")
 createRepoIcon = icon("createrepo.png")
-layerIcon = icon('geometry.svg')
 logIcon = icon('log.png')
 importIcon = icon('import.png')
 checkoutIcon = icon('checkout.png')
 commitIcon = icon('commit.png')
 discardIcon = icon('reset.png')
-layersIcon = icon('layer_group.svg')
+layerIcon = icon('layer.png')
 mergeIcon = icon("merge.png")
 addtoQgisIcon = icon('openinqgis.png')
 diffIcon = icon("changes.png")
+abortIcon = icon("abort.png")
+resolveIcon = icon("resolve.png")
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), 'dockwidget.ui'))
@@ -65,11 +67,16 @@ class KartDockWidget(BASE, WIDGET):
         self.menu.popup(point)
 
     def createMenu(self, item):
+        def _f(f, *args):
+            def wrapper():
+                f(*args)
+            return wrapper
+
         menu = QMenu()
         for text in item.actions():
             func, icon = item.actions()[text]
             action = QAction(icon, text, menu)
-            action.triggered.connect(func)
+            action.triggered.connect(_f(func))
             menu.addAction(action)
 
         return menu
@@ -118,6 +125,7 @@ class ReposItem(RefreshableItem):
                     "The selected folder is not a Kart repository",
                     level=Qgis.Warning)
 
+    @executeskart
     def createRepo(self):
         folder = QFileDialog.getExistingDirectory(iface.mainWindow(),
                                                   "Repository Folder", "")
@@ -150,21 +158,32 @@ class RepoItem(RefreshableItem):
 
     def actions(self):
         actions = {
-            "Show log...": (self.showLog, logIcon),
-            "Import layer into repo...": (self.importLayer, importIcon),
-            "Show working tree changes": (self.showChanges, diffIcon),
-            "Commit working tree changes...": (self.commitChanges, commitIcon),
-            "Switch branch...": (self.switchBranch, checkoutIcon),
-            "Merge into current branch...": (self.mergeBranch, mergeIcon),
-            "Discard changes in working tree": (self.discardChanges, discardIcon)
         }
+        if self.repo.isMerging():
+            actions.update({
+                "Resolve conflicts...": (self.resolveConflicts, resolveIcon),
+                "Continue merge": (self.continueMerge, mergeIcon),
+                "Abort merge": (self.abortMerge, abortIcon)
+                })
+        else:
+            actions.update({
+                "Show log...": (self.showLog, logIcon),
+                "Show working tree changes...": (self.showChanges, diffIcon),
+                "Discard working tree changes": (self.discardChanges, discardIcon),
+                "Commit working tree changes...": (self.commitChanges, commitIcon),
+                "Switch branch...": (self.switchBranch, checkoutIcon),
+                "Merge into current branch...": (self.mergeBranch, mergeIcon),
+                "Import layer into repo...": (self.importLayer, importIcon)
+                })
 
         return actions
 
+    @executeskart
     def showLog(self):
         dialog = HistoryDialog(self.repo)
         dialog.exec()
 
+    @executeskart
     def importLayer(self):
         filename, _ = QFileDialog.getOpenFileName(
             iface.mainWindow(), "Select GPKG file to import", "", "*.gpkg")
@@ -175,26 +194,39 @@ class RepoItem(RefreshableItem):
                                            level=Qgis.Info)
             self.layersItem.refresh()
 
+    @executeskart
     def commitChanges(self):
-        status = self.repo.status()
-        if status:
-            msg, ok = QInputDialog.getText(iface.mainWindow(), 'Commit',
-                                           'Enter commit message:')
-            if ok:
+        if self.repo.isMerging():
+            iface.messageBar().pushMessage("Commit",
+                                           "Cannot commit if repository while repository is in merging status",
+                                           level=Qgis.Warning)
+        elif self.repo.isWorkingTreeClean():
+            iface.messageBar().pushMessage("Commit",
+                                           "Nothing to commit",
+                                           level=Qgis.Warning)
+        else:
+            msg, ok = QInputDialog.getMultiLineText(iface.mainWindow(),
+                                                    'Commit',
+                                                    'Enter commit message:')
+            if ok and msg:
                 self.repo.commit(msg)
                 iface.messageBar().pushMessage("Commit",
                                                "Changes correctly committed",
                                                level=Qgis.Info)
-        else:
-            iface.messageBar().pushMessage("Commit",
-                                           "Nothing to commit",
-                                           level=Qgis.Warning)
 
+    @executeskart
     def showChanges(self):
         changes = self.repo.diff()
-        dialog = DiffViewerDialog(iface.mainWindow(), changes)
-        dialog.exec()
+        hasChanges = any([bool(layerchanges) for layerchanges in changes.values()])
+        if hasChanges:
+            dialog = DiffViewerDialog(iface.mainWindow(), changes)
+            dialog.exec()
+        else:
+            iface.messageBar().pushMessage("Changes",
+                                           "There are no changes in the working tree",
+                                           level=Qgis.Warning)
 
+    @executeskart
     def switchBranch(self):
         branches = self.repo.branches()
         branch, ok = QInputDialog.getItem(iface.mainWindow(),
@@ -205,6 +237,7 @@ class RepoItem(RefreshableItem):
         if ok:
             self.repo.checkoutBranch(branch)
 
+    @executeskart
     def mergeBranch(self):
         branches = self.repo.branches()
         branch, ok = QInputDialog.getItem(
@@ -214,16 +247,59 @@ class RepoItem(RefreshableItem):
             branches,
             editable=False)
         if ok:
-            self.repo.mergeBranch(branch)
-            iface.messageBar().pushMessage("Merge",
-                                           "Branch correctly merged",
-                                           level=Qgis.Info)
+            conflicts = self.repo.mergeBranch(branch)
+            if conflicts:
+                QMessageBox.warning(iface.mainWindow(), "Merge",
+                                    "There were conflicts during the merge operation.\n"
+                                    "Resolve them and then commit your changes to \n"
+                                    "complete the merge.")
+            else:
+                iface.messageBar().pushMessage("Merge",
+                                               "Branch correctly merged",
+                                               level=Qgis.Info)
 
+    @executeskart
     def discardChanges(self):
         self.repo.restore("HEAD")
         iface.messageBar().pushMessage("Discard changes",
                                        "Working tree changes have been discarded",
                                        level=Qgis.Info)
+
+    @executeskart
+    def continueMerge(self):
+        if self.repo.conflicts():
+            iface.messageBar().pushMessage("Merge",
+                                           "Cannot continue. There are merge conflicts.",
+                                           level=Qgis.Warning)
+        else:
+            self.repo.continueMerge()
+            iface.messageBar().pushMessage("Merge",
+                                       "Merge operation was correctly continued and closed",
+                                       level=Qgis.Info)
+
+    @executeskart
+    def abortMerge(self):
+        self.repo.abortMerge()
+        iface.messageBar().pushMessage("Merge",
+                                       "Merge operation was correctly aborted",
+                                       level=Qgis.Info)
+
+    @executeskart
+    def resolveConflicts(self):
+        conflicts = self.repo.conflicts()
+        if conflicts:
+            dialog = ConflictsDialog(conflicts)
+            dialog.exec()
+            if dialog.okToMerge:
+                self.repo.resolveConflicts(dialog.resolvedFeatures)
+                self.repo.continueMerge()
+                iface.messageBar().pushMessage("Merge",
+                                           "Merge operation was correctly continued and closed",
+                                           level=Qgis.Info)
+        else:
+            iface.messageBar().pushMessage("Resolve",
+                                       "There are no conflicts to resolve",
+                                       level=Qgis.Warning)
 
 
 class LayersItem(RefreshableItem):
@@ -233,7 +309,7 @@ class LayersItem(RefreshableItem):
         self.repo = repo
 
         self.setText(0, "Layers")
-        self.setIcon(0, layersIcon)
+        self.setIcon(0, layerIcon)
 
         self.populate()
 
@@ -259,9 +335,13 @@ class LayerItem(QTreeWidgetItem):
 
     def actions(self):
         actions = {
-            "Add to QGIS project": (self.addToProject, addtoQgisIcon),
-            "Commit changes...": (self.commitChanges, commitIcon)
+            "Add to QGIS project": (self.addToProject, addtoQgisIcon)
         }
+
+        if not self.repo.isMerging():
+            actions.update({
+                "Commit working tree changes...": (self.commitChanges, commitIcon)
+            })
 
         return actions
 
@@ -271,14 +351,25 @@ class LayerItem(QTreeWidgetItem):
                             f"{name}.gpkg|layername={self.layername}")
         iface.addVectorLayer(path, self.layername, "ogr")
 
+
+    @executeskart
     def commitChanges(self):
-        status = self.repo.status().get(self.layername, {})
-        if status:
-            msg, ok = QInputDialog.getText(iface.mainWindow(), 'Commit',
-                                           'Enter commit message:')
-            if ok:
-                self.repo.commit(msg, self.layername)
-        else:
+        if self.repo.isMerging():
             iface.messageBar().pushMessage("Commit",
+                                           "Cannot commit if repository while repository is in merging status",
+                                           level=Qgis.Warning)
+        else:
+            changes = self.repo.changes().get(self.layername, {})
+            if changes:
+                msg, ok = QInputDialog.getMultiLineText(iface.mainWindow(),
+                                                        'Commit',
+                                                        'Enter commit message:')
+                if ok and msg:
+                    self.repo.commit(msg)
+                    iface.messageBar().pushMessage("Commit",
+                                                   "Changes correctly committed",
+                                                   level=Qgis.Info)
+            else:
+                iface.messageBar().pushMessage("Commit",
                                            "Nothing to commit",
                                            level=Qgis.Warning)

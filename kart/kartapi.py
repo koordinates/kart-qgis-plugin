@@ -15,6 +15,8 @@ KART_EXECUTABLE = r"c:\program files\kart\kart.exe"
 class KartException(Exception):
     pass
 
+class KartNotSupportedOperationException(Exception):
+    pass
 
 def executeskart(f):
     def inner(*args):
@@ -170,13 +172,14 @@ class Repository(object):
         return self.executeKart(["branch", "-d", branch])
 
     def mergeBranch(self, branch):
-        return self.executeKart(["merge", branch])
+        ret = self.executeKart(["merge", branch], True)
+        return list(ret.values())[0].get("conflicts", [])
 
     def abortMerge(self):
-        return self.executeKart(["merge", "abort"])
+        return self.executeKart(["merge", "--abort"])
 
     def continueMerge(self):
-        return self.executeKart(["merge", "continue"])
+        return self.executeKart(["merge", "--continue", "-m", self.mergeMessage()])
 
     def createTag(self, tag, ref):
         return self.executeKart(["tag", tag, ref])
@@ -214,9 +217,47 @@ class Repository(object):
         else:
             return self.executeKart(["restore", "-s", ref])
 
-    def status(self):
+    def changes(self):
         return list(self.executeKart(
-            ["status"], True).values())[0]["workingCopy"].get("changes") or {}
+            ["status"], True).values())[0].get("workingCopy", {}).get("changes") or {}
 
     def isWorkingTreeClean(self):
-        return bool(self.status())
+        return not bool(self.changes())
+
+    def isMerging(self):
+        return os.path.exists(os.path.join(self.path, ".kart", "MERGE_MSG"))
+
+    def mergeMessage(self):
+        filepath = os.path.join(self.path, ".kart", "MERGE_MSG")
+        msg = "Merge branch"
+        if os.path.exists(filepath):
+            with open(filepath) as f:
+                msg = f.read()
+        return msg
+
+    def conflicts(self):
+        commands = ["conflicts", "-ogeojson", "--json-style", "extracompact"]
+        features = json.loads(self.executeKart(commands)).get("features", [])
+        conflicts = {}
+        for feature in features:
+            layer, elementtype, fid, version = feature["id"].split(":")
+            if elementtype != "feature":
+                raise KartNotSupportedOperationException()
+            if layer not in conflicts:
+                conflicts[layer] = {}
+            if fid not in conflicts[layer]:
+                conflicts[layer][fid] = {"ancestor": None, "theirs":None, "ours":None}
+            conflicts[layer][fid][version] = feature
+        return conflicts
+
+    def resolveConflicts(self, resolved):
+        for feature in resolved:
+            fc = {"type": "FeatureCollection",
+                  "features": [feature]}
+            tmpfile = tempfile.NamedTemporaryFile("w+t", delete=False)
+            json.dump(fc, tmpfile)
+            tmpfile.close()
+            self.executeKart(["resolve", "--with-file", tmpfile.name, feature["id"]])
+            os.unlink(tmpfile.name)
+
+

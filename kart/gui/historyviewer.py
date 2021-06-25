@@ -70,7 +70,6 @@ class HistoryTree(QTreeWidget):
         def _f(f, *args):
             def wrapper():
                 f(*args)
-
             return wrapper
 
         point = self.mapToGlobal(point)
@@ -92,9 +91,7 @@ class HistoryTree(QTreeWidget):
 
             for ref in item.commit['refs']:
                 if "HEAD" in ref:
-                    ref = ref.split("->")[-1].strip()
-                    actions[f"Switch to branch '{ref}'"] = (_f(
-                        self.switchBranch, ref), checkoutIcon)
+                    continue
                 elif "tag:" in ref:
                     tag = ref[4:].strip()
                     actions[f"Delete tag '{tag}'"] = (_f(self.deleteTag,
