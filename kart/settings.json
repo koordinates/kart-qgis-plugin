@@ -1,0 +1,9 @@
+[
+  {
+    "name": "KartPath",
+    "label": "Kart executable folder",
+    "description": "Location of the Kart executable file",
+    "type": "folder",
+    "default": ""
+  }
+]

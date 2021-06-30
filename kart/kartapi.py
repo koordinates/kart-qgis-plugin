@@ -251,13 +251,16 @@ class Repository(object):
         return conflicts
 
     def resolveConflicts(self, resolved):
-        for feature in resolved:
-            fc = {"type": "FeatureCollection",
-                  "features": [feature]}
-            tmpfile = tempfile.NamedTemporaryFile("w+t", delete=False)
-            json.dump(fc, tmpfile)
-            tmpfile.close()
-            self.executeKart(["resolve", "--with-file", tmpfile.name, feature["id"]])
-            os.unlink(tmpfile.name)
+        for fid, feature in resolved.items():
+            if feature is not None:
+                fc = {"type": "FeatureCollection",
+                      "features": [feature]}
+                tmpfile = tempfile.NamedTemporaryFile("w+t", delete=False)
+                json.dump(fc, tmpfile)
+                tmpfile.close()
+                self.executeKart(["resolve", "--with-file", tmpfile.name, fid])
+                os.unlink(tmpfile.name)
+            else:
+                self.executeKart(["resolve", "--with", "delete", fid])
 
 

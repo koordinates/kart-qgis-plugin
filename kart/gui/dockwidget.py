@@ -314,7 +314,6 @@ class LayersItem(RefreshableItem):
         self.populate()
 
     def populate(self):
-
         layers = self.repo.layers()
         for layer in layers:
             item = LayerItem(layer, self.repo)

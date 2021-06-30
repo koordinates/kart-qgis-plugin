@@ -41,7 +41,7 @@ class ConflictsDialog(BASE, WIDGET):
 
         self.resize(1024, 768)
 
-        self.resolvedFeatures = []
+        self.resolvedFeatures = {}
 
         self.tableAttributes.setSortingEnabled(False)
         self.treeConflicts.itemClicked.connect(self.updateFromCurrentSelectedItem)
@@ -51,6 +51,9 @@ class ConflictsDialog(BASE, WIDGET):
         self.btnSolveOurs.clicked.connect(self.solveOurs)
         self.btnSolveTheirs.clicked.connect(self.solveTheirs)
         self.btnSolveFeature.clicked.connect(self.solveFeature)
+        self.btnUseModified.clicked.connect(self.solveWithModified)
+        self.btnUseAncestor.clicked.connect(self.solveWithAncestor)
+        self.btnDeleteFeature.clicked.connect(self.solveWithDeleted)
 
         self.lastSelectedItem = None
 
@@ -106,8 +109,12 @@ class ConflictsDialog(BASE, WIDGET):
             self.btnSolveTheirs.setEnabled(True)
             self.btnSolveOurs.setEnabled(True)
             self.btnSolveFeature.setEnabled(True)
-            self.showFeatureAttributes()
+            if None in list(item.conflict.values()):
+                self.showSolveDeleted()
+            else:
+                self.showFeatureAttributes()
         else:
+            self.stackedWidget.setCurrentWidget(self.pageSolveNormal)
             self.tableAttributes.setRowCount(0)
             self.btnSolveTheirs.setEnabled(False)
             self.btnSolveOurs.setEnabled(False)
@@ -148,8 +155,10 @@ class ConflictsDialog(BASE, WIDGET):
                                      Qgis.Warning)
             return
         feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
-        self.resolvedFeatures.append(feature)
+        self.resolvedFeatures[feature["id"]] = feature
+        self.updateAfterSolvingCurrentItem()
 
+    def updateAfterSolvingCurrentItem(self):
         parent = self.lastSelectedItem.parent()
         parent.removeChild(self.lastSelectedItem)
         if not parent.childCount():
@@ -158,10 +167,9 @@ class ConflictsDialog(BASE, WIDGET):
             if not self.treeConflicts.topLevelItemCount():
                 ret = QMessageBox.warning(self, "Solve conflicts",
                                         "All conflicts are solved. The merge operation will now be closed",
-                                        QMessageBox.Ok | QMessageBox.Cancel,
+                                        QMessageBox.Ok,
                                         QMessageBox.Ok)
-                if ret == QMessageBox.Ok:
-                    self.okToMerge = True
+                self.okToMerge = True
                 self.close()
                 return
 
@@ -170,26 +178,45 @@ class ConflictsDialog(BASE, WIDGET):
 
 
     def solveOurs(self):
-        for row in range(self.tableAttributes.rowCount()):
-            item = self.tableAttributes.item(row, 1)
-            finalItem = self.tableAttributes.item(row, 4)
-            finalItem.setValue(item.value)
+        conflict = self.lastSelectedItem.conflict
+        feature = dict(conflict["ours"])
+        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        self.resolvedFeatures[feature["id"]] = feature
+        self.updateAfterSolvingCurrentItem()
 
     def solveTheirs(self):
-        for row in range(self.tableAttributes.rowCount()):
-            item = self.tableAttributes.item(row, 2)
-            finalItem = self.tableAttributes.item(row, 4)
-            finalItem.setValue(item.value)
+        conflict = self.lastSelectedItem.conflict
+        feature = dict(conflict["theirs"])
+        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        self.resolvedFeatures[feature["id"]] = feature
+        self.updateAfterSolvingCurrentItem()
 
-    def showFeatureDeletedChoice(self):
-        pass
+    def solveWithDeleted(self):
+        fid = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        self.resolvedFeatures[fid] = None
+        self.updateAfterSolvingCurrentItem()
+
+    def solveWithModified(self):
+        conflict = self.lastSelectedItem.conflict
+        feature = conflict["ours"] or conflict["theirs"]
+        feature = dict(feature)
+        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        self.resolvedFeatures[feature["id"]] = feature
+        self.updateAfterSolvingCurrentItem()
+
+    def solveWithAncestor(self):
+        conflict = self.lastSelectedItem.conflict
+        feature = dict(conflict["ancestor"])
+        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        self.resolvedFeatures[feature["id"]] = feature
+        self.updateAfterSolvingCurrentItem()
+
+    def showSolveDeleted(self):
+        self.stackedWidget.setCurrentWidget(self.pageSolveWithDeleted)
 
     def showFeatureAttributes(self):
-        conflictItem = self.lastSelectedItem
-        conflict = conflictItem.conflict
-        if None in list(conflict.values()):
-            self.showFeatureDeletedChoice()
-            return
+        conflict = self.lastSelectedItem.conflict
+        self.stackedWidget.setCurrentWidget(self.pageSolveNormal)
         attribs = list(conflict["ancestor"]["properties"].keys())
         attribs.append("geometry")
         self.tableAttributes.setRowCount(len(attribs))
