@@ -14,7 +14,7 @@ def package():
 
 def make_zip(zipFile):
     print("Creating zip...")
-    excludes = {"test", "tests", '*.pyc', ".git", "metadata.txt"}
+    excludes = {"test", "tests", "*.pyc", ".git", "metadata.txt"}
     src_dir = os.path.dir(os.path.dirname(__file__), "kart")
     exclude = lambda p: any([fnmatch.fnmatch(p, e) for e in excludes])
 
@@ -22,11 +22,11 @@ def make_zip(zipFile):
     cfg = SafeConfigParser()
     cfg.optionxform = str
     cfg.read(metadata_file)
-    base_version = cfg.get('general', 'version')
-    head_path = path('.git/HEAD')
-    head_ref = head_path.open('rU').readline().strip()[5:]
+    base_version = cfg.get("general", "version")
+    head_path = path(".git/HEAD")
+    head_ref = head_path.open("rU").readline().strip()[5:]
     ref_file = path(".git/" + head_ref)
-    ref = ref_file.open('rU').readline().strip()
+    ref = ref_file.open("rU").readline().strip()
     cfg.set("general", "version", f"{base_version}-{ref}")
 
     buf = StringIO()
@@ -44,7 +44,7 @@ def make_zip(zipFile):
 
     for root, dirs, files in os.walk(src_dir):
         for f in filter_excludes(files):
-            relpath = os.path.relpath(root, '.')
+            relpath = os.path.relpath(root, ".")
             zipFile.write(os.path.join(root, f), os.path.join(relpath, f))
         filter_excludes(dirs)
 

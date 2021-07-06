@@ -7,12 +7,24 @@ import json
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QIcon, QColor, QBrush
-from qgis.PyQt.QtWidgets import (QVBoxLayout, QTableWidgetItem, QHeaderView,
-                                 QTreeWidgetItem, QDialog,
-                                 QTreeWidgetItemIterator)
+from qgis.PyQt.QtWidgets import (
+    QVBoxLayout,
+    QTableWidgetItem,
+    QHeaderView,
+    QTreeWidgetItem,
+    QDialog,
+    QTreeWidgetItemIterator,
+)
 
-from qgis.core import (QgsProject, QgsFeature, QgsVectorLayer, QgsJsonUtils,
-                       QgsMarkerSymbol, QgsLineSymbol, QgsFillSymbol)
+from qgis.core import (
+    QgsProject,
+    QgsFeature,
+    QgsVectorLayer,
+    QgsJsonUtils,
+    QgsMarkerSymbol,
+    QgsLineSymbol,
+    QgsFillSymbol,
+)
 
 from qgis.gui import QgsMapCanvas
 
@@ -22,8 +34,7 @@ pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 
 def icon(f):
-    return QIcon(
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
+    return QIcon(os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
 
 
 layerIcon = icon("layer_group.svg")
@@ -35,7 +46,8 @@ modifiedIcon = icon("edit.png")
 sys.path.append(os.path.dirname(__file__))
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), 'diffviewerwidget.ui'))
+    os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui")
+)
 
 
 class DiffViewerDialog(QDialog):
@@ -93,7 +105,7 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def treeItemChanged(self, current, previous):
         if not isinstance(current, FeatureItem):
-            #self.attributesTable.setRowCount(0)
+            # self.attributesTable.setRowCount(0)
             self.attributesTable.setVisible(False)
             self.canvasWidget.setVisible(False)
             return
@@ -106,8 +118,8 @@ class DiffViewerWidget(WIDGET, BASE):
     def fillAttributesDiff(self, old, new):
         self.attributesTable.clear()
         fields = []
-        fields.extend(new.get('properties', {}).keys())
-        fields.extend(old.get('properties', {}).keys())
+        fields.extend(new.get("properties", {}).keys())
+        fields.extend(old.get("properties", {}).keys())
         fields = list(set(fields))
 
         changeTypeColor = [Qt.green, QColor(255, 170, 0), Qt.red, Qt.white]
@@ -119,20 +131,21 @@ class DiffViewerWidget(WIDGET, BASE):
         self.attributesTable.setRowCount(len(labels))
         self.attributesTable.setVerticalHeaderLabels(labels)
         self.attributesTable.setHorizontalHeaderLabels(
-            ["Old value", "New value", "Change type"])
+            ["Old value", "New value", "Change type"]
+        )
         for i, attrib in enumerate(fields):
             try:
                 if not bool(old):
-                    newvalue = new['properties'].get(attrib)
+                    newvalue = new["properties"].get(attrib)
                     oldvalue = ""
                     changeType = ADDED
                 elif not bool(new):
-                    oldvalue = old['properties'].get(attrib)
+                    oldvalue = old["properties"].get(attrib)
                     newvalue = ""
                     changeType = REMOVED
                 else:
-                    oldvalue = old['properties'].get(attrib)
-                    newvalue = new['properties'].get(attrib)
+                    oldvalue = old["properties"].get(attrib)
+                    newvalue = new["properties"].get(attrib)
                     if oldvalue != newvalue:
                         changeType = MODIFIED
                     else:
@@ -143,8 +156,7 @@ class DiffViewerWidget(WIDGET, BASE):
 
             self.attributesTable.setItem(i, 0, DiffItem(oldvalue))
             self.attributesTable.setItem(i, 1, DiffItem(newvalue))
-            self.attributesTable.setItem(i, 2,
-                                         DiffItem(changeTypeName[changeType]))
+            self.attributesTable.setItem(i, 2, DiffItem(changeTypeName[changeType]))
             for col in range(3):
                 cell = self.attributesTable.item(i, col)
                 if cell is not None:
@@ -152,29 +164,29 @@ class DiffViewerWidget(WIDGET, BASE):
 
         row = len(fields)
         if not bool(old):
-            newvalue = new['geometry']
+            newvalue = new["geometry"]
             oldvalue = ""
             changeType = ADDED
         elif not bool(new):
-            oldvalue = old['geometry']
+            oldvalue = old["geometry"]
             newvalue = ""
             changeType = REMOVED
         else:
-            oldvalue = old['geometry']
-            newvalue = new['geometry']
+            oldvalue = old["geometry"]
+            newvalue = new["geometry"]
             if oldvalue != newvalue:
                 changeType = MODIFIED
             else:
                 changeType = UNCHANGED
         self.attributesTable.setItem(row, 0, DiffItem(oldvalue))
         self.attributesTable.setItem(row, 1, DiffItem(newvalue))
-        self.attributesTable.setItem(row, 2,
-                                     DiffItem(changeTypeName[changeType]))
+        self.attributesTable.setItem(row, 2, DiffItem(changeTypeName[changeType]))
 
         for col in range(3):
             try:
                 self.attributesTable.item(row, col).setBackground(
-                    QBrush(changeTypeColor[changeType]))
+                    QBrush(changeTypeColor[changeType])
+                )
             except:
                 pass
 
@@ -203,11 +215,11 @@ class DiffViewerWidget(WIDGET, BASE):
             modifiedItem.setText(0, "Modified")
             modifiedItem.setIcon(0, modifiedIcon)
 
-            subItems = {'I': addedItem, 'U': modifiedItem, 'D': removedItem}
-            changes = {feat['id']: feat for feat in changes}
+            subItems = {"I": addedItem, "U": modifiedItem, "D": removedItem}
+            changes = {feat["id"]: feat for feat in changes}
             usedids = []
             for feat in changes.values():
-                changetype, featid = feat['id'].split('::')
+                changetype, featid = feat["id"].split("::")
                 changetype = changetype[0]
                 if featid not in usedids:
                     if changetype == "I":
@@ -255,21 +267,21 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def _createLayers(self, old, new):
         ref = new or old
-        geomtype = ref['geometry']['type']
-        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old",
-                                       "memory")
+        geomtype = ref["geometry"]["type"]
+        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
         geomclass = {
             "Point": QgsMarkerSymbol,
             "Line": QgsLineSymbol,
-            "Polygon": QgsFillSymbol
+            "Polygon": QgsFillSymbol,
         }
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {'color': '255,0,0,100'})
+            {"color": "255,0,0,100"}
+        )
         self.oldLayer.renderer().setSymbol(symbol)
-        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new",
-                                       "memory")
+        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new", "memory")
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {'color': '0,255,0,100'})
+            {"color": "0,255,0,100"}
+        )
         self.newLayer.renderer().setSymbol(symbol)
         if bool(old):
             geom = self._geom_from_geojson(old)
@@ -305,7 +317,7 @@ class DiffItem(QTableWidgetItem):
         if value is None:
             s = ""
         elif isinstance(value, dict):
-            s = value['type']
+            s = value["type"]
         else:
             s = str(value)
         QTableWidgetItem.__init__(self, s)

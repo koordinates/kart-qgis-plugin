@@ -2,7 +2,20 @@ import os
 import json
 
 from qgis.PyQt.QtCore import Qt, QSettings
-from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QCheckBox, QComboBox, QLabel, QLineEdit, QDialogButtonBox, QFileDialog, QWidget, QSizePolicy, QTextEdit
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QCheckBox,
+    QComboBox,
+    QLabel,
+    QLineEdit,
+    QDialogButtonBox,
+    QFileDialog,
+    QWidget,
+    QSizePolicy,
+    QTextEdit,
+)
 from qgis.gui import QgsMapLayerComboBox
 from qgis.core import QgsMapLayerProxyModel
 from qgis.utils import iface
@@ -10,7 +23,7 @@ from qgis.utils import iface
 BOOL = "bool"
 STRING = "string"
 PASSWORD = "password"
-TEXT = "text" # a multiline string
+TEXT = "text"  # a multiline string
 NUMBER = "number"
 FILES = "files"
 FOLDER = "folder"
@@ -57,10 +70,11 @@ class TextBoxWithLink(QWidget):
 
 
 class SettingsDialog(QDialog):
-
     def __init__(self):
         QDialog.__init__(self, iface.mainWindow())
-        filepath = os.path.join(os.path.dirname(os.path.dirname(__file__)), "settings.json")
+        filepath = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)), "settings.json"
+        )
         with open(filepath) as f:
             self.params = json.load(f)
         self.widgets = {}
@@ -101,16 +115,20 @@ class SettingsDialog(QDialog):
     def widgetFromParameter(self, param):
         paramtype = param["type"]
         if paramtype == FILES:
+
             def edit(textbox):
                 f = QFileDialog.getOpenFileNames(self, "Select file", "", "*.*")
                 if f:
                     textbox.value = ",".join(f)
+
             return TextBoxWithLink("Browse", edit, None, True)
         elif paramtype == FOLDER:
+
             def edit(textbox):
                 f = QFileDialog.getExistingDirectory(self, "Select folder", "")
                 if f:
                     textbox.value = f
+
             return TextBoxWithLink("Browse", edit, None, True)
         elif paramtype == BOOL:
             check = QCheckBox(param["label"])
@@ -179,7 +197,7 @@ class SettingsDialog(QDialog):
             elif paramtype in [FILES, FOLDER]:
                 widget.value = value
             elif paramtype in [RASTER, VECTOR]:
-                widget.currentLayer() #TODO
+                widget.currentLayer()  # TODO
             else:
                 widget.setText(str(value))
         except:
@@ -188,10 +206,12 @@ class SettingsDialog(QDialog):
     def accept(self):
         for name, widget in self.widgets.items():
             try:
-                value = self.valueFromWidget(widget, parameterFromName(self.params, name)["type"])
+                value = self.valueFromWidget(
+                    widget, parameterFromName(self.params, name)["type"]
+                )
                 QSettings().setValue(f"kart/{name}", value)
             except WrongValueException:
-                #show warning
+                # show warning
                 return
 
         QDialog.accept(self)

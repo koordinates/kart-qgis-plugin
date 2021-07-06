@@ -36,10 +36,10 @@ def executeskart(f):
                 if line.strip():
                     msglines.append(line)
             errors = "<br>".join(msglines)
-            msg = f'''
+            msg = f"""
                 <p><b>Kart failed with the following message:</b></p>
                 <p style="color:red">{errors}</p>
-                '''
+                """
 
             dlg.setMessage(msg, QgsMessageOutput.MessageHtml)
             dlg.showMessage()
@@ -57,10 +57,12 @@ def isKartInstalled():
     try:
         QApplication.setOverrideCursor(Qt.WaitCursor)
         print([kartExecutable(), "--version"])
-        ret = subprocess.Popen([kartExecutable(), "--version"],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               shell=True)
+        ret = subprocess.Popen(
+            [kartExecutable(), "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+        )
         stdout, stderr = ret.communicate()
         print(stdout.decode("utf-8", "ignore"))
         print(stderr.decode("utf-8", "ignore"))
@@ -117,17 +119,16 @@ class Repository(object):
         print(commands)
         try:
             QApplication.setOverrideCursor(Qt.WaitCursor)
-            ret = subprocess.Popen(commands,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True)
+            ret = subprocess.Popen(
+                commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+            )
             stdout, stderr = ret.communicate()
             if ret.returncode:
                 raise Exception(stderr.decode("utf-8"))
-            '''
+            """
             print(stdout)
             print(stderr)
-            '''
+            """
             if jsonoutput:
                 return json.loads(stdout)
             else:
@@ -156,9 +157,8 @@ class Repository(object):
         self.executeKart(["reset", ref, "-f"])
 
     def log(self, ref="HEAD"):
-        log = {c['commit']: c for c in self.executeKart(["log", ref], True)}
-        logb = self.executeKart(
-            ["log", ref, "--graph", '--format=format:%H%n '])
+        log = {c["commit"]: c for c in self.executeKart(["log", ref], True)}
+        logb = self.executeKart(["log", ref, "--graph", "--format=format:%H%n "])
         lines = logb.splitlines()
         lines.insert(0, "")
         lines.append("")
@@ -166,16 +166,16 @@ class Repository(object):
         for i in range(len(log)):
             commitline = lines[i * 2 + 1]
             commitid = commitline.split(" ")[-1]
-            log[commitid]['commitColumn'] = (commitline.index("*")) // 2
+            log[commitid]["commitColumn"] = (commitline.index("*")) // 2
             graph = []
             for j in range(3):
                 graph.append({})
-                for char in [r'\|', '/', r'\\']:
+                for char in [r"\|", "/", r"\\"]:
                     line = lines[i * 2 + j]
                     matches = re.finditer(char, line)
                     positions = [match.start() // 2 for match in matches]
                     graph[j][char] = positions
-            log[commitid]['graph'] = graph
+            log[commitid]["graph"] = graph
             commits.append(log[commitid])
         return commits
 
@@ -183,8 +183,7 @@ class Repository(object):
         return list(self.executeKart(["data", "ls"], True).values())[0]
 
     def branches(self):
-        branches = list(self.executeKart(["branch"],
-                                         True).values())[0]["branches"]
+        branches = list(self.executeKart(["branch"], True).values())[0]["branches"]
         return list(b.split("->")[-1].strip() for b in branches.keys())
 
     def checkoutBranch(self, branch):
@@ -230,7 +229,7 @@ class Repository(object):
                 path = os.path.join(tmpdirname.name, filename)
                 layername = os.path.splitext(filename)[0]
                 with open(path) as f:
-                    changes[layername] = json.load(f)['features']
+                    changes[layername] = json.load(f)["features"]
             tmpdirname.cleanup()
         except:
             pass
@@ -243,8 +242,12 @@ class Repository(object):
             return self.executeKart(["restore", "-s", ref])
 
     def changes(self):
-        return list(self.executeKart(
-            ["status"], True).values())[0].get("workingCopy", {}).get("changes") or {}
+        return (
+            list(self.executeKart(["status"], True).values())[0]
+            .get("workingCopy", {})
+            .get("changes")
+            or {}
+        )
 
     def isWorkingTreeClean(self):
         return not bool(self.changes())
@@ -278,8 +281,7 @@ class Repository(object):
     def resolveConflicts(self, resolved):
         for fid, feature in resolved.items():
             if feature is not None:
-                fc = {"type": "FeatureCollection",
-                      "features": [feature]}
+                fc = {"type": "FeatureCollection", "features": [feature]}
                 tmpfile = tempfile.NamedTemporaryFile("w+t", delete=False)
                 json.dump(fc, tmpfile)
                 tmpfile.close()
@@ -289,4 +291,6 @@ class Repository(object):
                 self.executeKart(["resolve", "--with", "delete", fid])
 
     def layerBelongsToRepo(self, layer):
-        return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(self.path)
+        return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(
+            self.path
+        )

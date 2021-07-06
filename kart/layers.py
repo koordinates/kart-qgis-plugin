@@ -8,8 +8,7 @@ from qgis.PyQt.QtCore import QSettings
 from kart.kartapi import repoForLayer
 
 
-class LayerTracker():
-
+class LayerTracker:
     def __init__(self):
         pass
 
@@ -30,6 +29,6 @@ class LayerTracker():
             if auto:
                 name = layer.source().split("layername=")[-1]
                 repo.commit(f"Changed layer '{name}'", layer=name)
-                iface.messageBar().pushMessage("Commit",
-                                               "Changes correctly committed",
-                                               level=Qgis.Info)
+                iface.messageBar().pushMessage(
+                    "Commit", "Changes correctly committed", level=Qgis.Info
+                )

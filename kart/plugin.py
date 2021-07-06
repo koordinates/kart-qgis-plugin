@@ -22,13 +22,13 @@ class KartPlugin(object):
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-        self.explorerAction = QAction('Kart explorer', self.iface.mainWindow())
-        self.iface.addPluginToMenu('Kart', self.explorerAction)
+        self.explorerAction = QAction("Kart explorer", self.iface.mainWindow())
+        self.iface.addPluginToMenu("Kart", self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
-        self.settingsAction = QAction('Kart settings', self.iface.mainWindow())
-        self.iface.addPluginToMenu('Kart', self.settingsAction)
+        self.settingsAction = QAction("Kart settings", self.iface.mainWindow())
+        self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
         self.tracker = LayerTracker()
@@ -40,9 +40,10 @@ class KartPlugin(object):
             self.dock.show()
         else:
             self.iface.messageBar().pushMessage(
-                    "Error",
-                    "Kart folder is not configured or Kart is not installed in the specified folder",
-                    level=Qgis.Warning)
+                "Error",
+                "Kart folder is not configured or Kart is not installed in the specified folder",
+                level=Qgis.Warning,
+            )
 
     def openSettings(self):
         dlg = SettingsDialog()
@@ -51,7 +52,7 @@ class KartPlugin(object):
     def unload(self):
         self.iface.removeDockWidget(self.dock)
         self.dock = None
-        self.iface.removePluginMenu('Kart', self.action)
+        self.iface.removePluginMenu("Kart", self.action)
 
         QgsProject.instance().layerWillBeRemoved.disconnect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)

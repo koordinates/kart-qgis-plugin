@@ -8,13 +8,22 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt.QtCore import Qt, QPoint, QRectF
-from qgis.PyQt.QtGui import (QIcon, QPixmap, QPainter, QColor, QPainterPath,
-                             QPen)
+from qgis.PyQt.QtGui import QIcon, QPixmap, QPainter, QColor, QPainterPath, QPen
 
-from qgis.PyQt.QtWidgets import (QTreeWidget, QAbstractItemView, QAction,
-                                 QMenu, QTreeWidgetItem, QWidget, QVBoxLayout,
-                                 QDialog, QSizePolicy, QLabel, QInputDialog,
-                                 QHeaderView)
+from qgis.PyQt.QtWidgets import (
+    QTreeWidget,
+    QAbstractItemView,
+    QAction,
+    QMenu,
+    QTreeWidgetItem,
+    QWidget,
+    QVBoxLayout,
+    QDialog,
+    QSizePolicy,
+    QLabel,
+    QInputDialog,
+    QHeaderView,
+)
 
 COMMIT_GRAPH_HEIGHT = 20
 RADIUS = 4
@@ -31,13 +40,12 @@ COLORS = [
     QColor(Qt.darkGreen),
     QColor(Qt.darkBlue),
     QColor(Qt.cyan),
-    QColor(Qt.magenta)
+    QColor(Qt.magenta),
 ]
 
 
 def icon(f):
-    return QIcon(
-        os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
+    return QIcon(os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
 
 
 resetIcon = icon("reset.png")
@@ -59,9 +67,10 @@ class HistoryTree(QTreeWidget):
 
     def initGui(self):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
-        #self.header().setStretchLastSection(True)
+        # self.header().setStretchLastSection(True)
         self.setHeaderLabels(
-            ["Graph", "Refs", "Description", "Author", "Date", "CommitID"])
+            ["Graph", "Refs", "Description", "Author", "Date", "CommitID"]
+        )
         self.customContextMenuRequested.connect(self._showPopupMenu)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.populate()
@@ -70,6 +79,7 @@ class HistoryTree(QTreeWidget):
         def _f(f, *args):
             def wrapper():
                 f(*args)
+
             return wrapper
 
         point = self.mapToGlobal(point)
@@ -77,36 +87,54 @@ class HistoryTree(QTreeWidget):
         if selected and len(selected) == 1:
             item = self.currentItem()
             actions = {
-                "Show changes for this commit...":
-                (_f(self.showChangesInCommit, item), diffIcon),
-                "Reset current branch to this commit":
-                (_f(self.resetBranch, item), resetIcon),
-                "Create branch at this commit...":
-                (_f(self.createBranch, item), createBranchIcon),
-                "Create tag at this commit...": (_f(self.createTag,
-                                                    item), createTagIcon),
-                "Restore working tree layers to this version...":
-                (_f(self.restoreLayers, item), restoreIcon)
+                "Show changes for this commit...": (
+                    _f(self.showChangesInCommit, item),
+                    diffIcon,
+                ),
+                "Reset current branch to this commit": (
+                    _f(self.resetBranch, item),
+                    resetIcon,
+                ),
+                "Create branch at this commit...": (
+                    _f(self.createBranch, item),
+                    createBranchIcon,
+                ),
+                "Create tag at this commit...": (
+                    _f(self.createTag, item),
+                    createTagIcon,
+                ),
+                "Restore working tree layers to this version...": (
+                    _f(self.restoreLayers, item),
+                    restoreIcon,
+                ),
             }
 
-            for ref in item.commit['refs']:
+            for ref in item.commit["refs"]:
                 if "HEAD" in ref:
                     continue
                 elif "tag:" in ref:
                     tag = ref[4:].strip()
-                    actions[f"Delete tag '{tag}'"] = (_f(self.deleteTag,
-                                                         tag), deleteIcon)
+                    actions[f"Delete tag '{tag}'"] = (
+                        _f(self.deleteTag, tag),
+                        deleteIcon,
+                    )
                 else:
-                    actions[f"Switch to branch '{ref}'"] = (_f(
-                        self.switchBranch, ref), checkoutIcon)
-                    actions[f"Delete branch '{ref}'"] = (_f(
-                        self.deleteBranch, ref), deleteIcon)
+                    actions[f"Switch to branch '{ref}'"] = (
+                        _f(self.switchBranch, ref),
+                        checkoutIcon,
+                    )
+                    actions[f"Delete branch '{ref}'"] = (
+                        _f(self.deleteBranch, ref),
+                        deleteIcon,
+                    )
         elif selected and len(selected) == 2:
             itema = selected[0]
             itemb = selected[1]
             actions = {
-                "Show changes between these commits...":
-                (_f(self.showChangesBetweenCommits, itema, itemb), diffIcon)
+                "Show changes between these commits...": (
+                    _f(self.showChangesBetweenCommits, itema, itemb),
+                    diffIcon,
+                )
             }
         else:
             actions = []
@@ -121,10 +149,11 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def createTag(self, item):
-        name, ok = QInputDialog.getText(self, "Create branch",
-                                        "Enter name of branch to create")
+        name, ok = QInputDialog.getText(
+            self, "Create branch", "Enter name of branch to create"
+        )
         if ok and name:
-            self.repo.createTag(name, item.commit['commit'])
+            self.repo.createTag(name, item.commit["commit"])
             self.message("Tag correctly created", Qgis.Info)
             self.populate()
 
@@ -148,17 +177,18 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def createBranch(self, item):
-        name, ok = QInputDialog.getText(self, "Create branch",
-                                        "Enter name of branch to create")
+        name, ok = QInputDialog.getText(
+            self, "Create branch", "Enter name of branch to create"
+        )
         if ok and name:
-            self.repo.createBranch(name, item.commit['commit'])
+            self.repo.createBranch(name, item.commit["commit"])
             self.message("Branch correctly created", Qgis.Info)
             self.populate()
 
     @executeskart
     def showChangesInCommit(self, item):
-        refa = item.commit['commit']
-        parents = item.commit['parents']
+        refa = item.commit["commit"]
+        parents = item.commit["parents"]
         refb = parents[0] if parents else "000000000"
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes)
@@ -166,15 +196,15 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def showChangesBetweenCommits(self, itema, itemb):
-        refa = itema.commit['commit']
-        refb = itemb.commit['commit']
+        refa = itema.commit["commit"]
+        refb = itemb.commit["commit"]
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes)
         dialog.exec()
 
     @executeskart
     def resetBranch(self, item):
-        self.repo.reset(item.commit['commit'])
+        self.repo.reset(item.commit["commit"])
         self.message("Branch correctly reset to selected commit", Qgis.Info)
         self.populate()
 
@@ -183,17 +213,18 @@ class HistoryTree(QTreeWidget):
         ALL_LAYERS = "Restore all layers"
         layers = self.repo.layers()
         layers.insert(0, ALL_LAYERS)
-        layer, ok = QInputDialog.getItem(iface.mainWindow(),
-                                         "Restore",
-                                         "Select layer to restore:",
-                                         layers,
-                                         editable=False)
+        layer, ok = QInputDialog.getItem(
+            iface.mainWindow(),
+            "Restore",
+            "Select layer to restore:",
+            layers,
+            editable=False,
+        )
         if ok:
             if layer == ALL_LAYERS:
                 layer = None
-            self.repo.restore(item.commit['commit'], layer)
-            self.message("Selected layer correctly restored in working tree",
-                         Qgis.Info)
+            self.repo.restore(item.commit["commit"], layer)
+            self.message("Selected layer correctly restored in working tree", Qgis.Info)
 
     def message(self, text, level):
         self.parent.bar.pushMessage(text, level, duration=5)
@@ -201,10 +232,10 @@ class HistoryTree(QTreeWidget):
     def populate(self):
         commits = self.repo.log()
 
-        self.log = {c['commit']: c for c in commits}
+        self.log = {c["commit"]: c for c in commits}
         self.clear()
 
-        maxcol = max([c['commitColumn'] for c in commits])
+        maxcol = max([c["commitColumn"] for c in commits])
         width = COL_SPACING * maxcol + 2 * RADIUS
 
         for i, commit in enumerate(commits):
@@ -227,32 +258,32 @@ class HistoryTree(QTreeWidget):
         qp.fillRect(QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), Qt.white)
 
         path = QPainterPath()
-        for col in commit['graph'][0][r"\|"]:
+        for col in commit["graph"][0][r"\|"]:
             x = RADIUS + COL_SPACING * col
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x, 0)
-        for col in commit['graph'][2][r"\|"]:
+        for col in commit["graph"][2][r"\|"]:
             x = RADIUS + COL_SPACING * col
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x, COMMIT_GRAPH_HEIGHT)
-        for col in commit['graph'][0][r"/"]:
+        for col in commit["graph"][0][r"/"]:
             x = RADIUS + COL_SPACING * col
-            x2 = RADIUS + COL_SPACING * (col + .5)
+            x2 = RADIUS + COL_SPACING * (col + 0.5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, 0)
-        for col in commit['graph'][2][r"/"]:
+        for col in commit["graph"][2][r"/"]:
             x = RADIUS + COL_SPACING * (col + 1)
-            x2 = RADIUS + COL_SPACING * (col + .5)
+            x2 = RADIUS + COL_SPACING * (col + 0.5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
-        for col in commit['graph'][0][r"\\"]:
+        for col in commit["graph"][0][r"\\"]:
             x = RADIUS + COL_SPACING * (col + 1)
-            x2 = RADIUS + COL_SPACING * (col + .5)
+            x2 = RADIUS + COL_SPACING * (col + 0.5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, 0)
-        for col in commit['graph'][2][r"\\"]:
+        for col in commit["graph"][2][r"\\"]:
             x = RADIUS + COL_SPACING * (col)
-            x2 = RADIUS + COL_SPACING * (col + .5)
+            x2 = RADIUS + COL_SPACING * (col + 0.5)
             path.moveTo(x, COMMIT_GRAPH_HEIGHT / 2)
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
         pen = QPen()
@@ -261,7 +292,7 @@ class HistoryTree(QTreeWidget):
         qp.setPen(pen)
         qp.drawPath(path)
 
-        col = commit['commitColumn']
+        col = commit["commitColumn"]
         y = COMMIT_GRAPH_HEIGHT / 2
         x = RADIUS + COL_SPACING * col
         color = COLORS[col]
@@ -281,7 +312,7 @@ class GraphWidget(QWidget):
 
     def paintEvent(self, e):
         painter = QPainter(self)
-        #painter.begin(self);
+        # painter.begin(self);
         painter.drawImage(0, 0, self.img)
         painter.end()
 
@@ -301,21 +332,23 @@ class CommitTreeItem(QTreeWidgetItem):
                 elif "tag:" in label:
                     labelslist.append(
                         '<span style="background-color:yellow; color:black"> '
-                        f'&nbsp;&nbsp;{label[4:].strip()}&nbsp;&nbsp;</span>')
+                        f"&nbsp;&nbsp;{label[4:].strip()}&nbsp;&nbsp;</span>"
+                    )
                 else:
                     labelslist.append(
                         '<span style="background-color:salmon; color:white"> '
-                        f'&nbsp;&nbsp;{label}&nbsp;&nbsp;</span>')
+                        f"&nbsp;&nbsp;{label}&nbsp;&nbsp;</span>"
+                    )
             labels = " ".join(labelslist) + "&nbsp;&nbsp;"
         else:
             labels = ""
         qlabel = QLabel(labels)
         qlabel.setStyleSheet("QLabel {padding-left: 15px;}")
         parent.setItemWidget(self, 1, qlabel)
-        self.setText(2, commit['message'].splitlines()[0])
-        self.setText(3, commit['authorName'])
-        self.setText(4, commit['authorTime'])
-        self.setText(5, commit['commit'])
+        self.setText(2, commit["message"].splitlines()[0])
+        self.setText(3, commit["authorName"])
+        self.setText(4, commit["authorTime"])
+        self.setText(5, commit["commit"])
 
 
 class HistoryDialog(QDialog):

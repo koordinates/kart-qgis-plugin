@@ -7,12 +7,15 @@ from qgis.gui import QgsMessageBar
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QSize, Qt
 from qgis.PyQt.QtGui import QIcon, QFont
-from qgis.PyQt.QtWidgets import (QDialog,
-                                 QTreeWidgetItem,
-                                 QMessageBox,
-                                 QTableWidgetItem,
-                                 QHeaderView, QSizePolicy,
-                                 QTreeWidgetItemIterator)
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QTreeWidgetItem,
+    QMessageBox,
+    QTableWidgetItem,
+    QHeaderView,
+    QSizePolicy,
+    QTreeWidgetItemIterator,
+)
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -21,11 +24,12 @@ def icon(f):
     return QIcon(os.path.join(pluginPath, "img", f))
 
 
-layerIcon = icon('layer.png')
-featureIcon = icon('layer.png')
+layerIcon = icon("layer.png")
+featureIcon = icon("layer.png")
 
 WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), 'conflictsdialog.ui'))
+    os.path.join(os.path.dirname(__file__), "conflictsdialog.ui")
+)
 
 
 class ConflictsDialog(BASE, WIDGET):
@@ -88,14 +92,12 @@ class ConflictsDialog(BASE, WIDGET):
                 topItem.addChild(conflictItem)
                 self.treeItems[path][fid] = conflictItem
 
-
     def cellClicked(self, row, col):
         if col > 2:
             return
         item = self.tableAttributes.item(row, col)
         finalItem = self.tableAttributes.item(row, 4)
         finalItem.setValue(item.value)
-
 
     def updateFromCurrentSelectedItem(self):
         if not self.treeConflicts.selectedItems():
@@ -121,18 +123,24 @@ class ConflictsDialog(BASE, WIDGET):
             self.btnSolveFeature.setEnabled(False)
 
     def solveAllOurs(self):
-        ret = QMessageBox.warning(self, "Solve conflicts",
-                                "Are you sure you want to solve all conflicts using the 'ours' version?",
-                                QMessageBox.Yes | QMessageBox.No,
-                                QMessageBox.Yes)
+        ret = QMessageBox.warning(
+            self,
+            "Solve conflicts",
+            "Are you sure you want to solve all conflicts using the 'ours' version?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
         if ret == QMessageBox.Yes:
             pass
 
     def solveAllTheirs(self):
-        ret = QMessageBox.warning(self, "Solve conflicts",
-                                "Are you sure you want to solve all conflicts using the 'theirs' version?",
-                                QMessageBox.Yes | QMessageBox.No,
-                                QMessageBox.Yes)
+        ret = QMessageBox.warning(
+            self,
+            "Solve conflicts",
+            "Are you sure you want to solve all conflicts using the 'theirs' version?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.Yes,
+        )
         if ret == QMessageBox.Yes:
             pass
 
@@ -144,17 +152,21 @@ class ConflictsDialog(BASE, WIDGET):
             if finalItem.hasValue:
                 feature["properties"][attrib] = finalItem.value
             else:
-                self.bar.pushMessage("", "There are still conflicts in the current feature",
-                                     Qgis.Warning)
+                self.bar.pushMessage(
+                    "", "There are still conflicts in the current feature", Qgis.Warning
+                )
                 return
         geomItem = self.tableAttributes.item(self.tableAttributes.rowCount() - 1, 4)
         if geomItem.hasValue:
             feature["geometry"] = geomItem.value
         else:
-            self.bar.pushMessage("", "There are still conflicts in the current feature",
-                                     Qgis.Warning)
+            self.bar.pushMessage(
+                "", "There are still conflicts in the current feature", Qgis.Warning
+            )
             return
-        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        feature[
+            "id"
+        ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
         self.resolvedFeatures[feature["id"]] = feature
         self.updateAfterSolvingCurrentItem()
 
@@ -165,10 +177,13 @@ class ConflictsDialog(BASE, WIDGET):
             idx = self.treeConflicts.indexOfTopLevelItem(parent)
             self.treeConflicts.takeTopLevelItem(idx)
             if not self.treeConflicts.topLevelItemCount():
-                ret = QMessageBox.warning(self, "Solve conflicts",
-                                        "All conflicts are solved. The merge operation will now be closed",
-                                        QMessageBox.Ok,
-                                        QMessageBox.Ok)
+                ret = QMessageBox.warning(
+                    self,
+                    "Solve conflicts",
+                    "All conflicts are solved. The merge operation will now be closed",
+                    QMessageBox.Ok,
+                    QMessageBox.Ok,
+                )
                 self.okToMerge = True
                 self.close()
                 return
@@ -176,18 +191,21 @@ class ConflictsDialog(BASE, WIDGET):
         self.treeConflicts.setCurrentItem(self.treeConflicts.topLevelItem(0))
         self.updateFromCurrentSelectedItem()
 
-
     def solveOurs(self):
         conflict = self.lastSelectedItem.conflict
         feature = dict(conflict["ours"])
-        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        feature[
+            "id"
+        ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
         self.resolvedFeatures[feature["id"]] = feature
         self.updateAfterSolvingCurrentItem()
 
     def solveTheirs(self):
         conflict = self.lastSelectedItem.conflict
         feature = dict(conflict["theirs"])
-        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        feature[
+            "id"
+        ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
         self.resolvedFeatures[feature["id"]] = feature
         self.updateAfterSolvingCurrentItem()
 
@@ -200,14 +218,18 @@ class ConflictsDialog(BASE, WIDGET):
         conflict = self.lastSelectedItem.conflict
         feature = conflict["ours"] or conflict["theirs"]
         feature = dict(feature)
-        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        feature[
+            "id"
+        ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
         self.resolvedFeatures[feature["id"]] = feature
         self.updateAfterSolvingCurrentItem()
 
     def solveWithAncestor(self):
         conflict = self.lastSelectedItem.conflict
         feature = dict(conflict["ancestor"])
-        feature["id"] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
+        feature[
+            "id"
+        ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
         self.resolvedFeatures[feature["id"]] = feature
         self.updateAfterSolvingCurrentItem()
 
@@ -239,7 +261,11 @@ class ConflictsDialog(BASE, WIDGET):
                     value = feature["properties"][name]
                 values.append(value)
 
-            ok = values[0] == values[1] or values[1] == values[2] or values[0] == values[2]
+            ok = (
+                values[0] == values[1]
+                or values[1] == values[2]
+                or values[0] == values[2]
+            )
 
             for i, v in enumerate(values):
                 self.tableAttributes.setItem(idx, i, ValueItem(v, not ok))
@@ -248,7 +274,6 @@ class ConflictsDialog(BASE, WIDGET):
             if ok:
                 finalItem.setValue(values[1] if values[0] == values[2] else values[2])
             self.tableAttributes.setItem(idx, 4, finalItem)
-
 
         self.tableAttributes.horizontalHeader().setMinimumSectionSize(100)
         self.tableAttributes.horizontalHeader().setStretchLastSection(True)
@@ -262,16 +287,19 @@ class ConflictsDialog(BASE, WIDGET):
 
     def closeEvent(self, evnt):
         if not self.okToMerge:
-            ret = QMessageBox.warning(self, "Conflict resolution",
-                                  "Do you really want to exit without resolving conflicts?",
-                                  QMessageBox.Yes | QMessageBox.No)
+            ret = QMessageBox.warning(
+                self,
+                "Conflict resolution",
+                "Do you really want to exit without resolving conflicts?",
+                QMessageBox.Yes | QMessageBox.No,
+            )
             if ret == QMessageBox.No:
                 evnt.ignore()
             else:
                 self.resolvedFeatures = None
 
-class ValueItem(QTableWidgetItem):
 
+class ValueItem(QTableWidgetItem):
     def __init__(self, value, conflicted):
         QTableWidgetItem.__init__(self)
         self.value = value
@@ -284,8 +312,8 @@ class ValueItem(QTableWidgetItem):
         self.setText(str(value))
         self.setFlags(Qt.ItemIsEnabled)
 
-class FinalValueItem(QTableWidgetItem):
 
+class FinalValueItem(QTableWidgetItem):
     def __init__(self):
         QTableWidgetItem.__init__(self)
         self.hasValue = False
@@ -293,7 +321,7 @@ class FinalValueItem(QTableWidgetItem):
 
         self.setText("")
         self.setBackground(Qt.yellow)
-        #self.setFlags(Qt.ItemIsEnabled)
+        # self.setFlags(Qt.ItemIsEnabled)
 
     def setValue(self, value):
         self.value = value
@@ -303,7 +331,6 @@ class FinalValueItem(QTableWidgetItem):
 
 
 class ConflictItem(QTreeWidgetItem):
-
     def __init__(self, path, fid, conflict):
         QTreeWidgetItem.__init__(self)
         self.setText(0, fid)
