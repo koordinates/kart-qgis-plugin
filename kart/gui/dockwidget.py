@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt
@@ -15,7 +16,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from qgis.utils import iface
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter
 
 from kart.kartapi import repos, addRepo, Repository, executeskart
 from kart.gui.diffviewer import DiffViewerDialog
@@ -198,14 +199,36 @@ class RepoItem(RefreshableItem):
     @executeskart
     def importLayer(self):
         filename, _ = QFileDialog.getOpenFileName(
-            iface.mainWindow(), "Select GPKG file to import", "", "*.gpkg"
+            iface.mainWindow(), "Select vector layer to import", "", "*.*"
         )
         if filename:
-            self.repo.importGpkg(filename)
+            if os.path.splitext(filename)[-1].lower() != ".gpkg":
+                layer = QgsVectorLayer(filename, "", "ogr")
+                if not layer.isValid():
+                    iface.messageBar().pushMessage(
+                        "Import", "The selected file is not a valid vector layer",
+                        level=Qgis.Warning
+                    )
+                    return
+                tmpfolder = tempfile.TemporaryDirectory()
+                filename = os.path.splitext(os.path.basename(filename))[0]
+                gpkgfilename = os.path.join(tmpfolder.name, f"{filename}.gpkg")
+                ret = QgsVectorFileWriter.writeAsVectorFormat(layer, gpkgfilename, "utf-8", layer.crs())
+                if ret == QgsVectorFileWriter.NoError:
+                    iface.messageBar().pushMessage(
+                        "Import", "Could not convert the selected layer to a gpkg file",
+                        level=Qgis.Warning
+                    )
+            else:
+                tmpfolder = None
+                gpkgfilename = filename
+            self.repo.importGpkg(gpkgfilename)
             iface.messageBar().pushMessage(
                 "Import", "Layer correctly imported", level=Qgis.Info
             )
-            self.layersItem.refresh()
+            self.layersItem.refreshContent()
+            if tmpfolder is not None:
+                tmpfolder.cleanup()
 
     @executeskart
     def commitChanges(self):
