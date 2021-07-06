@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import subprocess
 import json
 import tempfile
@@ -9,14 +10,14 @@ from qgis.PyQt.QtWidgets import QApplication
 
 from qgis.core import QgsMessageOutput
 
-KART_EXECUTABLE = r"c:\program files\kart\kart.exe"
-
 
 class KartException(Exception):
     pass
 
+
 class KartNotSupportedOperationException(Exception):
     pass
+
 
 def executeskart(f):
     def inner(*args):
@@ -46,13 +47,31 @@ def executeskart(f):
     return inner
 
 
+def kartExecutable():
+    folder = QSettings().value("kart/KartPath", "")
+    path = os.path.join(folder, "kart.exe")
+    return path
+
+
 def isKartInstalled():
     try:
-        ret = subprocess.run([KART_EXECUTABLE, "--version"],
-                             stdout=subprocess.PIPE).stdout.decode('utf-8')
-        return ret.startswith("Kart v")
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        print([kartExecutable(), "--version"])
+        ret = subprocess.Popen([kartExecutable(), "--version"],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               shell=True)
+        stdout, stderr = ret.communicate()
+        print(stdout.decode("utf-8", "ignore"))
+        print(stderr.decode("utf-8", "ignore"))
+        if ret.returncode:
+            return False
+        return stdout.decode("utf-8", "ignore").startswith("Kart v")
     except Exception:
+        raise
         return False
+    finally:
+        QApplication.restoreOverrideCursor()
 
 
 def repos():
@@ -80,12 +99,18 @@ def saveRepos(repos):
     QSettings().setValue("kart/repos", s)
 
 
+def repoForLayer(layer):
+    for repo in repos():
+        if repo.layerBelongsToRepo(layer):
+            return repo
+
+
 class Repository(object):
     def __init__(self, path):
         self.path = path
 
     def executeKart(self, commands, jsonoutput=False):
-        commands.insert(0, KART_EXECUTABLE)
+        commands.insert(0, kartExecutable())
         if jsonoutput:
             commands.append("-ojson")
         os.chdir(self.path)
@@ -246,7 +271,7 @@ class Repository(object):
             if layer not in conflicts:
                 conflicts[layer] = {}
             if fid not in conflicts[layer]:
-                conflicts[layer][fid] = {"ancestor": None, "theirs":None, "ours":None}
+                conflicts[layer][fid] = {"ancestor": None, "theirs": None, "ours": None}
             conflicts[layer][fid][version] = feature
         return conflicts
 
@@ -263,4 +288,5 @@ class Repository(object):
             else:
                 self.executeKart(["resolve", "--with", "delete", fid])
 
-
+    def layerBelongsToRepo(self, layer):
+        return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(self.path)

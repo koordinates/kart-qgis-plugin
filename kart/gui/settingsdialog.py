@@ -7,8 +7,6 @@ from qgis.gui import QgsMapLayerComboBox
 from qgis.core import QgsMapLayerProxyModel
 from qgis.utils import iface
 
-#Types to use for defining parameters
-
 BOOL = "bool"
 STRING = "string"
 PASSWORD = "password"
@@ -16,7 +14,7 @@ TEXT = "text" # a multiline string
 NUMBER = "number"
 FILES = "files"
 FOLDER = "folder"
-CHOICE  ="choice"
+CHOICE = "choice"
 VECTOR = "vector"
 RASTER = "raster"
 
@@ -29,7 +27,7 @@ def parameterFromName(params, name):
 
 class TextBoxWithLink(QWidget):
     def __init__(self, text, func, value, editable=True):
-        self.value = value
+        self._value = value
         QWidget.__init__(self)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -43,8 +41,19 @@ class TextBoxWithLink(QWidget):
             linkLabel = QLabel()
             linkLabel.setText("<a href='#'> %s</a>" % text)
             layout.addWidget(linkLabel)
-            linkLabel.linkActivated.connect(lambda: func(self.lineEdit))
+            linkLabel.linkActivated.connect(lambda: func(self))
         self.setLayout(layout)
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+        print(1)
+        print(value)
+        self.lineEdit.setText(value)
 
 
 class SettingsDialog(QDialog):
@@ -65,16 +74,21 @@ class SettingsDialog(QDialog):
         verticalLayout = QVBoxLayout()
 
         for param in self.params:
+            name = param["name"]
             horizontalLayout = QHBoxLayout()
-            horizontalLayout.addWidget(QLabel(param["label"]))
-            self.widgets[param["name"]] = self.widgetFromParameter(param)
-            horizontalLayout.addWidget(self.widgets[param["name"]])
+            if param["type"] not in [BOOL]:
+                horizontalLayout.addWidget(QLabel(param["label"]))
+            self.widgets[name] = self.widgetFromParameter(param)
+            horizontalLayout.addWidget(self.widgets[name])
+            value = QSettings().value(f"kart/{name}", None)
+            if value:
+                self.setValueInWidget(self.widgets[name], param["type"], value)
             verticalLayout.addLayout(horizontalLayout)
 
         horizontalLayout = QHBoxLayout()
         self.buttonBox = QDialogButtonBox()
         self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Ok)
         horizontalLayout.addWidget(self.buttonBox)
         verticalLayout.addStretch()
         verticalLayout.addLayout(horizontalLayout)
@@ -86,47 +100,45 @@ class SettingsDialog(QDialog):
 
     def widgetFromParameter(self, param):
         paramtype = param["type"]
-        if paramtype== FILES:
+        if paramtype == FILES:
             def edit(textbox):
                 f = QFileDialog.getOpenFileNames(self, "Select file", "", "*.*")
                 if f:
                     textbox.value = ",".join(f)
-                    textbox.lineEdit.setText(",".join(f))
             return TextBoxWithLink("Browse", edit, None, True)
-        elif paramtype== FOLDER:
+        elif paramtype == FOLDER:
             def edit(textbox):
                 f = QFileDialog.getExistingDirectory(self, "Select folder", "")
                 if f:
                     textbox.value = f
-                    textbox.lineEdit.setText(f)
             return TextBoxWithLink("Browse", edit, None, True)
-        elif paramtype== BOOL:
+        elif paramtype == BOOL:
             check = QCheckBox(param["label"])
             if param["default"]:
                 check.setCheckState(Qt.Checked)
             else:
                 check.setCheckState(Qt.Unchecked)
             return check
-        elif paramtype== CHOICE:
+        elif paramtype == CHOICE:
             combo = QComboBox()
             for option in param["options"]:
                 combo.addItem(option)
             idx = combo.findText(str(param["default"]))
             combo.setCurrentIndex(idx)
             return combo
-        elif paramtype== TEXT:
+        elif paramtype == TEXT:
             textEdit = QTextEdit()
             textEdit.setPlainText(param["default"])
             return textEdit
-        elif paramtype==VECTOR:
+        elif paramtype == VECTOR:
             combo = QgsMapLayerComboBox()
             combo.setFilters(QgsMapLayerProxyModel.VectorLayer)
             return combo
-        elif paramtype==RASTER:
+        elif paramtype == RASTER:
             combo = QgsMapLayerComboBox()
             combo.setFilters(QgsMapLayerProxyModel.RasterLayer)
             return combo
-        elif paramtype==PASSWORD:
+        elif paramtype == PASSWORD:
             lineEdit = QLineEdit()
             lineEdit.setEchoMode(QLineEdit.Password)
             return lineEdit
@@ -138,7 +150,7 @@ class SettingsDialog(QDialog):
     def valueFromWidget(self, widget, paramtype):
         try:
             if paramtype == BOOL:
-                return widget.checkState(1) == Qt.Checked
+                return widget.isChecked()
             elif paramtype == NUMBER:
                 return float(widget.text())
             elif paramtype == CHOICE:
@@ -154,22 +166,39 @@ class SettingsDialog(QDialog):
             else:
                 return widget.text()
         except:
-            raise #WrongValueException()
+            raise  # WrongValueException()
+
+    def setValueInWidget(self, widget, paramtype, value):
+        try:
+            if paramtype == BOOL:
+                widget.setChecked(value)
+            elif paramtype == CHOICE:
+                widget.setCurrentText(value)
+            elif paramtype == TEXT:
+                widget.setPlainText(value)
+            elif paramtype in [FILES, FOLDER]:
+                widget.value = value
+            elif paramtype in [RASTER, VECTOR]:
+                widget.currentLayer() #TODO
+            else:
+                widget.setText(str(value))
+        except:
+            pass
 
     def accept(self):
         for name, widget in self.widgets.items():
             try:
                 value = self.valueFromWidget(widget, parameterFromName(self.params, name)["type"])
-                QSettings().setSetting(f"kart/{name}", value)
+                QSettings().setValue(f"kart/{name}", value)
             except WrongValueException:
                 #show warning
                 return
 
         QDialog.accept(self)
 
-
     def reject(self):
         QDialog.reject(self)
+
 
 class WrongValueException(Exception):
     pass

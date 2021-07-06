@@ -5,5 +5,12 @@
     "description": "Location of the Kart executable file",
     "type": "folder",
     "default": ""
+  },
+  {
+    "name": "AutoCommit",
+    "label": "Auto commit",
+    "description": "Commit changes automatically when a layer has been modified",
+    "type": "bool",
+    "default": ""
   }
 ]
