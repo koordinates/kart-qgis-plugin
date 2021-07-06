@@ -1,9 +1,9 @@
 import os
 import re
-import sys
 import subprocess
 import json
 import tempfile
+import locale
 
 from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import QApplication
@@ -56,7 +56,6 @@ def kartExecutable():
 def isKartInstalled():
     try:
         QApplication.setOverrideCursor(Qt.WaitCursor)
-        print([kartExecutable(), "--version"])
         ret = subprocess.Popen(
             [kartExecutable(), "--version"],
             stdout=subprocess.PIPE,
@@ -64,13 +63,11 @@ def isKartInstalled():
             shell=True,
         )
         stdout, stderr = ret.communicate()
-        print(stdout.decode("utf-8", "ignore"))
-        print(stderr.decode("utf-8", "ignore"))
         if ret.returncode:
             return False
-        return stdout.decode("utf-8", "ignore").startswith("Kart v")
+        encoding = locale.getdefaultlocale()[1]
+        return stdout.decode(encoding).startswith("Kart v")
     except Exception:
-        raise
         return False
     finally:
         QApplication.restoreOverrideCursor()
@@ -118,21 +115,22 @@ class Repository(object):
         os.chdir(self.path)
         print(commands)
         try:
+            encoding = locale.getdefaultlocale()[1]
             QApplication.setOverrideCursor(Qt.WaitCursor)
             ret = subprocess.Popen(
                 commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
             )
             stdout, stderr = ret.communicate()
             if ret.returncode:
-                raise Exception(stderr.decode("utf-8"))
+                raise Exception(stderr.decode(encoding))
             """
             print(stdout)
             print(stderr)
             """
             if jsonoutput:
-                return json.loads(stdout)
+                return json.loads(stdout, encoding=encoding)
             else:
-                return stdout.decode("utf-8")
+                return stdout.decode(encoding)
         except Exception as e:
             raise KartException(str(e))
         finally:
@@ -142,7 +140,7 @@ class Repository(object):
         return os.path.exists(os.path.join(self.path, ".kart"))
 
     def init(self):
-        self.executeKart(["init"], True)
+        self.executeKart(["init"], False)
 
     def importGpkg(self, path):
         self.executeKart(["import", f"GPKG:{path}"])
@@ -231,7 +229,7 @@ class Repository(object):
                 with open(path) as f:
                     changes[layername] = json.load(f)["features"]
             tmpdirname.cleanup()
-        except:
+        except Exception:
             pass
         return changes
 
