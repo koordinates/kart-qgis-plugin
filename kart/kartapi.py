@@ -8,7 +8,7 @@ import locale
 from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import QApplication
 
-from qgis.core import QgsMessageOutput
+from qgis.core import QgsMessageOutput, QgsProject
 
 
 class KartException(Exception):
@@ -104,7 +104,7 @@ def repoForLayer(layer):
             return repo
 
 
-class Repository(object):
+class Repository:
     def __init__(self, path):
         self.path = path
 
@@ -128,7 +128,7 @@ class Repository(object):
             print(stderr)
             """
             if jsonoutput:
-                return json.loads(stdout, encoding=encoding)
+                return json.loads(stdout.decode(encoding))
             else:
                 return stdout.decode(encoding)
         except Exception as e:
@@ -153,6 +153,7 @@ class Repository(object):
 
     def reset(self, ref="HEAD"):
         self.executeKart(["reset", ref, "-f"])
+        self._updateCanvas()
 
     def log(self, ref="HEAD"):
         log = {c["commit"]: c for c in self.executeKart(["log", ref], True)}
@@ -185,7 +186,8 @@ class Repository(object):
         return list(b.split("->")[-1].strip() for b in branches.keys())
 
     def checkoutBranch(self, branch):
-        return self.executeKart(["checkout", branch])
+        self.executeKart(["checkout", branch])
+        self._updateCanvas()
 
     def createBranch(self, branch, commit="HEAD"):
         return self.executeKart(["branch", branch, commit])
@@ -195,6 +197,7 @@ class Repository(object):
 
     def mergeBranch(self, branch):
         ret = self.executeKart(["merge", branch], True)
+        self._updateCanvas()
         return list(ret.values())[0].get("conflicts", [])
 
     def abortMerge(self):
@@ -287,8 +290,14 @@ class Repository(object):
                 os.unlink(tmpfile.name)
             else:
                 self.executeKart(["resolve", "--with", "delete", fid])
+        self._updateCanvas()
 
     def layerBelongsToRepo(self, layer):
         return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(
             self.path
         )
+
+    def _updateCanvas(self):
+        for layer in QgsProject.instance().mapLayers().values():
+            if self.layerBelongsToRepo(layer):
+                layer.triggerRepaint()

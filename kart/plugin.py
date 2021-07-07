@@ -31,7 +31,7 @@ class KartPlugin(object):
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
-        self.tracker = LayerTracker()
+        self.tracker = LayerTracker.instance()
         QgsProject.instance().layerWillBeRemoved.connect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.connect(self.tracker.layerAdded)
 

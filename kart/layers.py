@@ -9,8 +9,19 @@ from kart.kartapi import repoForLayer
 
 
 class LayerTracker:
+
+    __instance = None
+    @staticmethod
+    def instance():
+        if LayerTracker.__instance is None:
+            LayerTracker()
+        return LayerTracker.__instance
+
     def __init__(self):
-        pass
+        if LayerTracker.__instance is not None:
+            raise Exception("Singleton class")
+
+        LayerTracker.__instance = self
 
     def layerAdded(self, layer):
         try:
