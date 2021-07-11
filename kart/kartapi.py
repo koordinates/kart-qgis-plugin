@@ -55,20 +55,37 @@ def kartExecutable():
 
 def isKartInstalled():
     try:
+        return executeKart(["--version"]).startswith("Kart v")
+    except Exception:
+        return False
+
+
+def executeKart(commands, path=None, jsonoutput=False):
+    commands.insert(0, kartExecutable())
+    if jsonoutput:
+        commands.append("-ojson")
+    if path is not None:
+        os.chdir(path)
+    print(commands)
+    try:
+        encoding = locale.getdefaultlocale()[1]
         QApplication.setOverrideCursor(Qt.WaitCursor)
         ret = subprocess.Popen(
-            [kartExecutable(), "--version"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
+            commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
         )
         stdout, stderr = ret.communicate()
         if ret.returncode:
-            return False
-        encoding = locale.getdefaultlocale()[1]
-        return stdout.decode(encoding).startswith("Kart v")
-    except Exception:
-        return False
+            raise Exception(stderr.decode(encoding))
+        """
+        print(stdout)
+        print(stderr)
+        """
+        if jsonoutput:
+            return json.loads(stdout.decode(encoding))
+        else:
+            return stdout.decode(encoding)
+    except Exception as e:
+        raise KartException(str(e))
     finally:
         QApplication.restoreOverrideCursor()
 
@@ -109,38 +126,18 @@ class Repository:
         self.path = path
 
     def executeKart(self, commands, jsonoutput=False):
-        commands.insert(0, kartExecutable())
-        if jsonoutput:
-            commands.append("-ojson")
-        os.chdir(self.path)
-        print(commands)
-        try:
-            encoding = locale.getdefaultlocale()[1]
-            QApplication.setOverrideCursor(Qt.WaitCursor)
-            ret = subprocess.Popen(
-                commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
-            )
-            stdout, stderr = ret.communicate()
-            if ret.returncode:
-                raise Exception(stderr.decode(encoding))
-            """
-            print(stdout)
-            print(stderr)
-            """
-            if jsonoutput:
-                return json.loads(stdout.decode(encoding))
-            else:
-                return stdout.decode(encoding)
-        except Exception as e:
-            raise KartException(str(e))
-        finally:
-            QApplication.restoreOverrideCursor()
+        return executeKart(commands, self.path, jsonoutput)
+
+    @staticmethod
+    def clone(src, dst):
+        executeKart(["clone", src, dst])
+        return Repository(dst)
 
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
 
     def init(self):
-        self.executeKart(["init"], False)
+        self.executeKart(["init"])
 
     def importGpkg(self, path):
         self.executeKart(["import", f"GPKG:{path}"])

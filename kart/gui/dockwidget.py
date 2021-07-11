@@ -22,6 +22,7 @@ from kart.kartapi import repos, addRepo, Repository, executeskart
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.conflictsdialog import ConflictsDialog
+from kart.gui.clonedialog import CloneDialog
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -157,7 +158,13 @@ class ReposItem(RefreshableItem):
 
     @executeskart
     def cloneRepo(self):
-        pass
+        dialog = CloneDialog()
+        if dialog.exec() == dialog.Accepted:
+            src, dst = dialog.result
+            repo = Repository.clone(src, dst)
+            item = RepoItem(repo)
+            self.addChild(item)
+
 
 class RepoItem(RefreshableItem):
     def __init__(self, repo):
