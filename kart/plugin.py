@@ -4,6 +4,7 @@ from qgis.core import Qgis, QgsProject
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon
 
 from kart.gui.dockwidget import KartDockWidget
 from kart.gui.settingsdialog import SettingsDialog
@@ -11,6 +12,14 @@ from kart.kartapi import isKartInstalled
 from kart.layers import LayerTracker
 
 pluginPath = os.path.dirname(__file__)
+
+
+def icon(f):
+    return QIcon(os.path.join(pluginPath, "img", f))
+
+
+kartIcon = icon("kart.png")
+settingsIcon = icon("settings.png")
 
 
 class KartPlugin(object):
@@ -22,12 +31,12 @@ class KartPlugin(object):
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-        self.explorerAction = QAction("Kart explorer", self.iface.mainWindow())
+        self.explorerAction = QAction(kartIcon, "Kart explorer", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
-        self.settingsAction = QAction("Kart settings", self.iface.mainWindow())
+        self.settingsAction = QAction(settingsIcon, "Kart settings", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 

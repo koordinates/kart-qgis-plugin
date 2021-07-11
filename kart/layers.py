@@ -23,11 +23,14 @@ class LayerTracker:
 
         LayerTracker.__instance = self
 
+        self.connected = {}
+
     def layerAdded(self, layer):
         try:
-            layer.afterCommitChanges.connect(partial(self.commitLayerChanges, layer))
+            f = partial(self.commitLayerChanges, layer)
+            layer.afterCommitChanges.connect(f)
+            self.connected[layer] = f
         except AttributeError:
-            print(1)
             pass
 
     def layerRemoved(self, layer):
@@ -43,3 +46,7 @@ class LayerTracker:
                 iface.messageBar().pushMessage(
                     "Commit", "Changes correctly committed", level=Qgis.Info
                 )
+
+    def disconnectLayers(self):
+        for layer, f in self.connected.items():
+            layer.afterCommitChanges.disconnect(f)

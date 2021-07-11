@@ -238,9 +238,10 @@ class Repository:
 
     def restore(self, ref, layer=None):
         if layer is not None:
-            return self.executeKart(["restore", "-s", ref, layer])
+            self.executeKart(["restore", "-s", ref, layer])
         else:
-            return self.executeKart(["restore", "-s", ref])
+            self.executeKart(["restore", "-s", ref])
+        self._updateCanvas()
 
     def changes(self):
         return (

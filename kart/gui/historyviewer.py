@@ -324,7 +324,7 @@ class CommitTreeItem(QTreeWidgetItem):
         if commit["refs"]:
             labelslist = []
             for label in commit["refs"]:
-                if "HEAD" in label:
+                if "HEAD ->" in label:
                     labelslist.append(
                         '<span style="background-color:crimson; color:white"> '
                         f'&nbsp;&nbsp;{label.split("->")[-1].strip()}&nbsp;&nbsp;</span>'

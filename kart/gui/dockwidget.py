@@ -33,6 +33,7 @@ def icon(f):
 repoIcon = icon("repository.png")
 addRepoIcon = icon("addrepo.png")
 createRepoIcon = icon("createrepo.png")
+cloneRepoIcon = icon("clone.png")
 logIcon = icon("log.png")
 importIcon = icon("import.png")
 checkoutIcon = icon("checkout.png")
@@ -44,6 +45,8 @@ addtoQgisIcon = icon("openinqgis.png")
 diffIcon = icon("changes.png")
 abortIcon = icon("abort.png")
 resolveIcon = icon("resolve.png")
+pushIcon = icon("push.png")
+pullIcon = icon("pull.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -114,6 +117,7 @@ class ReposItem(RefreshableItem):
         actions = {
             "Add existing repository...": (self.addRepo, addRepoIcon),
             "Create new repository...": (self.createRepo, createRepoIcon),
+            "Clone repository...": (self.cloneRepo, cloneRepoIcon),
         }
 
         return actions
@@ -151,6 +155,9 @@ class ReposItem(RefreshableItem):
                     "Error", "Could not initialize repository", level=Qgis.Warning
                 )
 
+    @executeskart
+    def cloneRepo(self):
+        pass
 
 class RepoItem(RefreshableItem):
     def __init__(self, repo):
@@ -186,6 +193,8 @@ class RepoItem(RefreshableItem):
                     "Switch branch...": (self.switchBranch, checkoutIcon),
                     "Merge into current branch...": (self.mergeBranch, mergeIcon),
                     "Import layer into repo...": (self.importLayer, importIcon),
+                    "Pull...": (self.pull, pullIcon),
+                    "Push...": (self.push, pushIcon),
                 }
             )
 
@@ -354,6 +363,14 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 "Resolve", "There are no conflicts to resolve", level=Qgis.Warning
             )
+
+    @executeskart
+    def push(self):
+        pass
+
+    @executeskart
+    def pull(self):
+        pass
 
 
 class LayersItem(RefreshableItem):
