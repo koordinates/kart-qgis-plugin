@@ -23,6 +23,8 @@ from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.conflictsdialog import ConflictsDialog
 from kart.gui.clonedialog import CloneDialog
+from kart.gui.pushdialog import PushDialog
+from kart.gui.pulldialog import PullDialog
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -373,11 +375,28 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def push(self):
-        pass
+        dialog = PushDialog(self.repo)
+        if dialog.exec() == dialog.Accepted:
+            remote, branch, pushall = dialog.result
+            self.repo.push(dialog.remote, dialog.branch, dialog.pushall)
 
     @executeskart
     def pull(self):
-        pass
+        dialog = PullDialog(self.repo)
+        if dialog.exec() == dialog.Accepted:
+            ret = self.repo.pull(dialog.remote, dialog.branch)
+            if not ret:
+                QMessageBox.warning(
+                    iface.mainWindow(),
+                    "Pull",
+                    "There were conflicts during the pull operation.\n"
+                    "Resolve them and then commit your changes to \n"
+                    "complete it.",
+                )
+            else:
+                iface.messageBar().pushMessage(
+                    "Pull", "Pull correctly performed", level=Qgis.Info
+                )
 
 
 class LayersItem(RefreshableItem):

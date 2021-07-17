@@ -40,7 +40,6 @@ def executeskart(f):
                 <p><b>Kart failed with the following message:</b></p>
                 <p style="color:red">{errors}</p>
                 """
-
             dlg.setMessage(msg, QgsMessageOutput.MessageHtml)
             dlg.showMessage()
 
@@ -289,6 +288,32 @@ class Repository:
             else:
                 self.executeKart(["resolve", "--with", "delete", fid])
         self._updateCanvas()
+
+    def remotes(self):
+        remotes = {}
+        ret = self.executeKart(["remote", "-v"], False)
+        for line in ret.splitlines()[::2]:
+            print(line)
+            name, url = line.split("\t")
+            remotes[name] = url.split(" ")[0]
+        return remotes
+
+    def addRemote(self, name, url):
+        self.executeKart(["remote", "remove", name])
+
+    def removeRemote(self, name):
+        self.executeKart(["remote", "remove", name])
+
+    def push(self, remote, branch, push_all=False):
+        if push_all:
+            self.executeKart(["push", remote, "--all"])
+        else:
+            self.executeKart(["push", remote, branch])
+
+    def pull(self, remote, branch):
+        ret = self.executeKart(["pull", remote, branch])
+        self._updateCanvas()
+        return "kart conflicts" not in ret
 
     def layerBelongsToRepo(self, layer):
         return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(
