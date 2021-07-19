@@ -8,13 +8,13 @@ To start using the plugin, you first have to install Kart. Download it from [her
 
 To configure the plugin, use the `Kart/Kart settings` menu to open the setting dialog.
 
-![Settings](settings.png)
+![Settings](img/settings.png)
 
 In the `Kart executable folder` field, enter the path to your Kart executable. Now the Kart plugin knows where Kart is located.
 
 Open the Kart explorer using the `Kart/Kart explorer` menu.
 
-![Explorer](explorer.png)
+![Explorer](img/explorer.png)
 
 ## Creating a repository
 
@@ -22,7 +22,7 @@ The first thing you have to do to start working with Kart is to create a reposit
 
 Right-click on the `Repositories` element in the Kart explorer tree and select "Create new repository".
 
-![Create repository](createrepo.png)
+![Create repository](img/createrepo.png)
 
 In the folder selection dialog that will appear, select the folder where you want to create your repository. The new repository will be added to the explorer tree.
 
@@ -34,11 +34,11 @@ Note: Kart supports different backends for repositories. All repositories create
 
 To add a layer that you want to version to a repository, right-click on the repository element in the explorer tree and select `Import layer in to repo`.
 
-![Import](import.png)
+![Import](img/import.png)
 
 In the dialog that will show up, select the file with the layer (only vector layers) that you want to import. It will be imported into the repo and it will be shown under the `Layers` element of the repository in the explorer tree.
 
-![Layer](layer.png)
+![Layer](img/layer.png)
 
 If you want to make changes to this layer and start storing its history, you can now add it to the current QGIS project. Right-click on the layer element in the explorer tree and select `Add to QGIS project`. The layer will be added to the project and you can start working with it.
 
@@ -48,21 +48,21 @@ Work with the layer that you have just added like you would do with any other la
 
 To visualize the changes that you have made to a layer since the last time that you commited to the repository (or since the time when you imported the layer, in case you haven't made any changes yet), right-click on the repository and select `Show working tree changes`. You will see something like this:
 
-![Changes dialog](changes.png)
+![Changes dialog](img/changes.png)
 
 The dialog show all changes made to the repo, which might have several layers that have been modified. You can select the individual feature to see the changes that were made to both their attributes and geometry.
 
-![Changes dialog](geometry.png)
+![Changes dialog](img/geometry.png)
 
 To commit the changes and create a new version in the repository, right-click on the repository element in the explorer tree and select `Commit working tree changes`. You will see the following dialog:
 
-![Commit dialog](commit.png)
+![Commit dialog](img/commit.png)
 
 Enter the commit message to identify this set of changes, and click on `OK`
 
 If you want the plugin to automatically commit your changes whenever you finish editing a layer in QGIS, you can enable the `Auto commit` option in the Kart settings dialog.
 
-![Auto commit](autocommit.png)
+![Auto commit](img/autocommit.png)
 
 As soon as you close an editing session for a layer, a new commit with an automatic message will be created for those changes, and your working tree will never have pending changes.
 
@@ -70,7 +70,7 @@ As soon as you close an editing session for a layer, a new commit with an automa
 
 To see the list of changes in the repo (for all the layers that it might contain), right-click on the repository element and select `Show log`. Youo will see a dialog like the one shown next.
 
-![Log dialog](log.png)
+![Log dialog](img/log.png)
 
 Right-clicking on the different elements representing commits you an access additional functionality. For instance, you can explore the changes introduced in each of them by selecting `Show changes for this commit`. This will open the changes dialog that we already saw in the last section.
 
@@ -82,13 +82,13 @@ To create a branch at a given commit, right-click on it in the history dialog an
 
 You will see that a new label appears now in the `Refs` column for that commit, along with the `main`label that already existed before.
 
-![Branch label](branchlabel.png)
+![Branch label](img/branchlabel.png)
 
 To make that branch the active one, right-click on the commit, and you will see that the context menu now has a menu named `Switch to branch '[name of your branch]'`.
 
 The active branch is shown with a red color, while other ones are shown in salmon color.
 
-![Branch label](branchlabel2.png)
+![Branch label](img/branchlabel2.png)
 
 If you now make changes in the repository layers and commit them, the new commit will be added to the tip of the new active branch.
 
@@ -96,15 +96,15 @@ To merge any of the repository branches into the current branch, select the repo
 
 If the changes in both branches are not compatible (i.e. the same feature hs been modified differently in each of them), the merge cannot be performed and you will see the following message:
 
-![Conflicts warning](conflictswarning.png)
+![Conflicts warning](img/conflictswarning.png)
 
 To solve the conflicts, right-click on the repository element in the explorer tree. Since the repository is conflicted, you will see that the context menu has now a different content.
 
-![Conflicted menu](conflictedmenu.png)
+![Conflicted menu](img/conflictedmenu.png)
 
 Select the `Solve conflicts` menu and you will see a dialog like the one shown below:
 
-![Conflicts dialog](conflictsdialog.png)
+![Conflicts dialog](img/conflictsdialog.png)
 
 To solve the existing conflicts:
 
