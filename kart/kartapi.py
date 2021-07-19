@@ -109,6 +109,15 @@ def addRepo(repo):
     saveRepos(allrepos)
 
 
+def removeRepo(repo):
+    allrepos = repos()
+    for r in allrepos:
+        if r.path == repo.path:
+            allrepos.remove(r)
+            break
+    saveRepos(allrepos)
+
+
 def saveRepos(repos):
     s = "|".join([repo.path for repo in repos])
     QSettings().setValue("kart/repos", s)
@@ -299,7 +308,7 @@ class Repository:
         return remotes
 
     def addRemote(self, name, url):
-        self.executeKart(["remote", "remove", name])
+        self.executeKart(["remote", "add", name, "url"])
 
     def removeRemote(self, name):
         self.executeKart(["remote", "remove", name])
