@@ -33,7 +33,7 @@ class RemotesDialog(BASE, WIDGET):
         self.btnAdd.clicked.connect(self.addRemote)
         self.btnRemove.clicked.connect(self.removeRemote)
 
-        self.buttonBox.accepted.connect(self.accepted)
+        self.buttonBox.accepted.connect(self.accept)
 
         self.fillContent()
 
@@ -46,13 +46,15 @@ class RemotesDialog(BASE, WIDGET):
         self.txtName.setText(item.text())
         self.txtUrl.setText(self.remotes[item.text()])
 
-    @executeskart
     def addRemote(self):
         name = self.txtName.text()
         url = self.txtUrl.text()
         if not name or not url:
             self.bar.pushMessage("", "Values for both remote name and url must be provided", Qgis.Warning, duration=5)
             return
+
+    @executeskart
+    def _addRemote(self, name, url):
         if name in self.remotes:
             self.repo.removeRemote(name)
             self.repo.addRemote(name, url)
@@ -61,15 +63,18 @@ class RemotesDialog(BASE, WIDGET):
             self.listWidget.addItem(name)
         self.remotes[name] = url
 
-    @executeskart
     def removeRemote(self):
         name = self.txtName.text()
         item = self.itemFromName(name)
         if item is None:
             self.bar.pushMessage("", "A remote with that name does not exist", Qgis.Warning, duration=5)
         else:
-            self.repo.removeRemote(name)
+            self._removeRemote(name)
             self.listWidget.takeItem(item)
+
+    @executeskart
+    def _removeRemote(self, name):
+        self.repo.removeRemote(name)
 
     def itemFromName(self, name):
         for i in range(self.listWidget.count()):
