@@ -18,7 +18,7 @@ from qgis.PyQt.QtWidgets import (
 from qgis.utils import iface
 from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter
 
-from kart.kartapi import repos, addRepo, Repository, executeskart
+from kart.kartapi import repos, addRepo, removeRepo, Repository, executeskart
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.conflictsdialog import ConflictsDialog
@@ -50,6 +50,7 @@ abortIcon = icon("abort.png")
 resolveIcon = icon("resolve.png")
 pushIcon = icon("push.png")
 pullIcon = icon("pull.png")
+removeIcon = icon("remove.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -65,6 +66,12 @@ class KartDockWidget(BASE, WIDGET):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tree.customContextMenuRequested.connect(self.showPopupMenu)
+
+        def onItemExpanded(item):
+            print(item.text(0))
+            if hasattr(item, "onExpanded"):
+                item.onExpanded()
+        self.tree.itemExpanded.connect(onItemExpanded)
 
         self.fillTree()
 
@@ -88,10 +95,14 @@ class KartDockWidget(BASE, WIDGET):
 
         menu = QMenu()
         for text in item.actions():
-            func, icon = item.actions()[text]
-            action = QAction(icon, text, menu)
-            action.triggered.connect(_f(func))
-            menu.addAction(action)
+            action = item.actions()[text]
+            if action is None:
+                menu.addSeparator()
+            else:
+                func, icon = action
+                action = QAction(icon, text, menu)
+                action.triggered.connect(_f(func))
+                menu.addAction(action)
 
         return menu
 
@@ -153,6 +164,7 @@ class ReposItem(RefreshableItem):
             if repo.isInitialized():
                 item = RepoItem(repo)
                 self.addChild(item)
+                addRepo(repo)
             else:
                 iface.messageBar().pushMessage(
                     "Error", "Could not initialize repository", level=Qgis.Warning
@@ -175,15 +187,22 @@ class RepoItem(RefreshableItem):
 
         self.setText(0, repo.path)
         self.setIcon(0, repoIcon)
+        self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
-        self.populate()
+        self.populated = False
+
+    def onExpanded(self):
+        if not self.populated:
+            self.populate()
 
     def populate(self):
         self.layersItem = LayersItem(self.repo)
         self.addChild(self.layersItem)
+        self.populated = True
 
     def actions(self):
-        actions = {}
+        actions = {"Remove this repository": (self.removeRepository, removeIcon),
+                    "Divider1": None}
         if self.repo.isMerging():
             actions.update(
                 {
@@ -208,6 +227,10 @@ class RepoItem(RefreshableItem):
             )
 
         return actions
+
+    def removeRepository(self):
+        self.parent().takeChild(self.parent().indexOfChild(self))
+        removeRepo(self.repo)
 
     @executeskart
     def showLog(self):
@@ -244,7 +267,8 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 "Import", "Layer correctly imported", level=Qgis.Info
             )
-            self.layersItem.refreshContent()
+            if self.populate:
+                self.layersItem.refreshContent()
             if tmpfolder is not None:
                 tmpfolder.cleanup()
 
