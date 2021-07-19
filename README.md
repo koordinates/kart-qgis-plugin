@@ -16,6 +16,9 @@ To install the latest version from this repository, follow these steps:
 
 This plugin is compatible with QGIS 3.4 or later.
 
+## Usage
+
+Usage documentation can be found [here](./docs/index.md)
 
 ## Packaging
 
