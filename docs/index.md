@@ -133,6 +133,7 @@ To solve the existing conflicts:
 
 * When all features conflicts have been resolved, the dialog will close and the merge operation will be finished.
 
+![Conflicts solved](img/conflictssolved.png)
 
 Merged branches can be clearly seen in the log dialog
 
