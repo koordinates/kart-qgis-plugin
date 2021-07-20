@@ -137,4 +137,4 @@ To solve the existing conflicts:
 
 Merged branches can be clearly seen in the log dialog
 
-![Log with merged branches](logmerged.png)
+![Log with merged branches](img/logmerged.png)
