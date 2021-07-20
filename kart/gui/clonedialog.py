@@ -5,17 +5,11 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QSizePolicy,
-    QFileDialog
-)
+from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "clonedialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
 
 
 class CloneDialog(BASE, WIDGET):
@@ -47,4 +41,6 @@ class CloneDialog(BASE, WIDGET):
             self.result = src, dst
             self.accept()
         else:
-            self.bar.pushMessage("Text fields must not be empty", Qgis.Warning, duration=5)
+            self.bar.pushMessage(
+                "Text fields must not be empty", Qgis.Warning, duration=5
+            )

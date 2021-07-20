@@ -68,9 +68,9 @@ class KartDockWidget(BASE, WIDGET):
         self.tree.customContextMenuRequested.connect(self.showPopupMenu)
 
         def onItemExpanded(item):
-            print(item.text(0))
             if hasattr(item, "onExpanded"):
                 item.onExpanded()
+
         self.tree.itemExpanded.connect(onItemExpanded)
 
         self.fillTree()
@@ -201,8 +201,10 @@ class RepoItem(RefreshableItem):
         self.populated = True
 
     def actions(self):
-        actions = {"Remove this repository": (self.removeRepository, removeIcon),
-                    "Divider1": None}
+        actions = {
+            "Remove this repository": (self.removeRepository, removeIcon),
+            "Divider1": None,
+        }
         if self.repo.isMerging():
             actions.update(
                 {
@@ -247,18 +249,22 @@ class RepoItem(RefreshableItem):
                 layer = QgsVectorLayer(filename, "", "ogr")
                 if not layer.isValid():
                     iface.messageBar().pushMessage(
-                        "Import", "The selected file is not a valid vector layer",
-                        level=Qgis.Warning
+                        "Import",
+                        "The selected file is not a valid vector layer",
+                        level=Qgis.Warning,
                     )
                     return
                 tmpfolder = tempfile.TemporaryDirectory()
                 filename = os.path.splitext(os.path.basename(filename))[0]
                 gpkgfilename = os.path.join(tmpfolder.name, f"{filename}.gpkg")
-                ret = QgsVectorFileWriter.writeAsVectorFormat(layer, gpkgfilename, "utf-8", layer.crs())
+                ret = QgsVectorFileWriter.writeAsVectorFormat(
+                    layer, gpkgfilename, "utf-8", layer.crs()
+                )
                 if ret == QgsVectorFileWriter.NoError:
                     iface.messageBar().pushMessage(
-                        "Import", "Could not convert the selected layer to a gpkg file",
-                        level=Qgis.Warning
+                        "Import",
+                        "Could not convert the selected layer to a gpkg file",
+                        level=Qgis.Warning,
                     )
             else:
                 tmpfolder = None

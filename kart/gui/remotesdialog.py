@@ -5,10 +5,7 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import (
-    QDialog,
-    QSizePolicy
-)
+from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 from kart.kartapi import executeskart
 
@@ -50,7 +47,12 @@ class RemotesDialog(BASE, WIDGET):
         name = self.txtName.text()
         url = self.txtUrl.text()
         if not name or not url:
-            self.bar.pushMessage("", "Values for both remote name and url must be provided", Qgis.Warning, duration=5)
+            self.bar.pushMessage(
+                "",
+                "Values for both remote name and url must be provided",
+                Qgis.Warning,
+                duration=5,
+            )
             return
 
     @executeskart
@@ -67,7 +69,9 @@ class RemotesDialog(BASE, WIDGET):
         name = self.txtName.text()
         item = self.itemFromName(name)
         if item is None:
-            self.bar.pushMessage("", "A remote with that name does not exist", Qgis.Warning, duration=5)
+            self.bar.pushMessage(
+                "", "A remote with that name does not exist", Qgis.Warning, duration=5
+            )
         else:
             self._removeRemote(name)
             self.listWidget.takeItem(item)

@@ -31,12 +31,16 @@ class KartPlugin(object):
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-        self.explorerAction = QAction(kartIcon, "Kart explorer", self.iface.mainWindow())
+        self.explorerAction = QAction(
+            kartIcon, "Kart explorer", self.iface.mainWindow()
+        )
         self.iface.addPluginToMenu("Kart", self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
-        self.settingsAction = QAction(settingsIcon, "Kart settings", self.iface.mainWindow())
+        self.settingsAction = QAction(
+            settingsIcon, "Kart settings", self.iface.mainWindow()
+        )
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 

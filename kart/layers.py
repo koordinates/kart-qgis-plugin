@@ -11,6 +11,7 @@ from kart.kartapi import repoForLayer
 class LayerTracker:
 
     __instance = None
+
     @staticmethod
     def instance():
         if LayerTracker.__instance is None:
