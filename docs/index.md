@@ -26,9 +26,8 @@ Right-click on the `Repositories` element in the Kart explorer tree and select "
 
 In the folder selection dialog that will appear, select the folder where you want to create your repository. The new repository will be added to the explorer tree.
 
----
 Note: Kart supports different backends for repositories. All repositories created with the QGIS Kart plugin are based on GeoPackage files.
----
+
 
 ## Adding/recovering data to/from a repo
 
