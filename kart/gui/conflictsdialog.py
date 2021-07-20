@@ -309,7 +309,12 @@ class ValueItem(QTableWidgetItem):
         else:
             self.setBackground(Qt.white)
 
-        self.setText(str(value))
+        if isinstance(value, dict):
+            s = value["type"]
+        else:
+            s = str(value)
+
+        self.setText(s)
         self.setFlags(Qt.ItemIsEnabled)
 
 
@@ -326,7 +331,12 @@ class FinalValueItem(QTableWidgetItem):
     def setValue(self, value):
         self.value = value
         self.hasValue = True
-        self.setText(str(value))
+
+        if isinstance(value, dict):
+            s = value["type"]
+        else:
+            s = str(value)
+        self.setText(s)
         self.setBackground(Qt.white)
 
 
