@@ -48,7 +48,10 @@ def executeskart(f):
 
 def kartExecutable():
     folder = QSettings().value("kart/KartPath", "")
-    path = os.path.join(folder, "kart.exe")
+    for exe_name in ("kart.exe", "kart_cli", "kart"):
+        path = os.path.join(folder, exe_name)
+        if os.path.isfile(path):
+            return path
     return path
 
 
@@ -66,11 +69,20 @@ def executeKart(commands, path=None, jsonoutput=False):
     if path is not None:
         os.chdir(path)
     print(commands)
+
+    # The env PYTHONHOME from QGIS can interfere with Kart.
+    if not hasattr(executeKart, 'env'):
+        executeKart.env = os.environ.copy()
+        executeKart.env.pop('PYTHONHOME')
+
     try:
-        encoding = locale.getdefaultlocale()[1]
+        encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
         ret = subprocess.Popen(
-            commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True
+            commands,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=executeKart.env,
         )
         stdout, stderr = ret.communicate()
         if ret.returncode:
