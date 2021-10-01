@@ -1,6 +1,6 @@
 import os
 
-from qgis.core import Qgis, QgsProject
+from qgis.core import QgsProject
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QAction
@@ -8,7 +8,7 @@ from qgis.PyQt.QtGui import QIcon
 
 from kart.gui.dockwidget import KartDockWidget
 from kart.gui.settingsdialog import SettingsDialog
-from kart.kartapi import isKartInstalled
+from kart.kartapi import checkKartInstalled
 from kart.layers import LayerTracker
 
 pluginPath = os.path.dirname(__file__)
@@ -49,14 +49,8 @@ class KartPlugin(object):
         QgsProject.instance().layerWasAdded.connect(self.tracker.layerAdded)
 
     def showDock(self):
-        if isKartInstalled():
+        if checkKartInstalled():
             self.dock.show()
-        else:
-            self.iface.messageBar().pushMessage(
-                "Error",
-                "Kart folder is not configured or Kart is not installed in the specified folder",
-                level=Qgis.Warning,
-            )
 
     def openSettings(self):
         dlg = SettingsDialog()

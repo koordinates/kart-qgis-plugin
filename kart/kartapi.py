@@ -1,14 +1,24 @@
+import json
+import locale
 import os
 import re
 import subprocess
-import json
 import tempfile
-import locale
+import webbrowser
 
 from qgis.PyQt.QtCore import QSettings, Qt
-from qgis.PyQt.QtWidgets import QApplication
+from qgis.PyQt.QtWidgets import (
+    QApplication,
+    QVBoxLayout,
+    QDialog,
+    QTextBrowser,
+    QDialogButtonBox
+)
 
 from qgis.core import QgsMessageOutput, QgsProject
+from qgis.utils import iface
+
+from kart.gui.settingsdialog import SettingsDialog
 
 
 class KartException(Exception):
@@ -22,7 +32,8 @@ class KartNotSupportedOperationException(Exception):
 def executeskart(f):
     def inner(*args):
         try:
-            return f(*args)
+            if checkKartInstalled():
+                return f(*args)
         except KartException as ex:
             dlg = QgsMessageOutput.createMessageOutput()
             dlg.setTitle("Kart")
@@ -55,6 +66,46 @@ def kartExecutable():
     return path
 
 
+class InstallationWarningDialog(QDialog):
+
+    def __init__(self):
+        super(InstallationWarningDialog, self).__init__(iface.mainWindow())
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        layout = QVBoxLayout()
+        text = QTextBrowser()
+        msg = f"""
+            <p><b>Kart folder is not configured or Kart is not installed in the specified folder</b></p>
+            <p><a href="install"> Install Kart </a>  if needed and then <a href="configure"> configure <a> the Kart folder</p>.
+            """
+        text.setHtml(msg)
+        text.setOpenLinks(False)
+        text.anchorClicked.connect(self.anchorClicked)
+        layout.addWidget(text)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
+        self.setFixedWidth(500)
+        self.setTitle("Kart")
+
+    def anchorClicked(self, url):
+        if url.toString() == "install":
+            webbrowser.open_new_tab("https://github.com/koordinates/kart#installing")
+        else:
+            self.close()
+            dlg = SettingsDialog()
+            dlg.exec()
+
+
+def checkKartInstalled():
+    installed = isKartInstalled()
+    if not installed:
+        dlg = InstallationWarningDialog()
+        dlg.exec()
+
+    return installed
+
+
 def isKartInstalled():
     try:
         return executeKart(["--version"]).startswith("Kart v")
@@ -68,7 +119,6 @@ def executeKart(commands, path=None, jsonoutput=False):
         commands.append("-ojson")
     if path is not None:
         os.chdir(path)
-    print(commands)
 
     # The env PYTHONHOME from QGIS can interfere with Kart.
     if not hasattr(executeKart, 'env'):
@@ -83,14 +133,11 @@ def executeKart(commands, path=None, jsonoutput=False):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=executeKart.env,
+            shell=os.name == 'nt'
         )
         stdout, stderr = ret.communicate()
         if ret.returncode:
             raise Exception(stderr.decode(encoding))
-        """
-        print(stdout)
-        print(stderr)
-        """
         if jsonoutput:
             return json.loads(stdout.decode(encoding))
         else:
