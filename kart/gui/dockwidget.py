@@ -440,6 +440,7 @@ class LayersItem(RefreshableItem):
 
         self.populate()
 
+    @executeskart
     def populate(self):
         layers = self.repo.layers()
         for layer in layers:
