@@ -12,7 +12,7 @@ from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QDialog,
     QTextBrowser,
-    QDialogButtonBox
+    QDialogButtonBox,
 )
 
 from qgis.core import QgsMessageOutput, QgsProject
@@ -67,7 +67,6 @@ def kartExecutable():
 
 
 class InstallationWarningDialog(QDialog):
-
     def __init__(self):
         super(InstallationWarningDialog, self).__init__(iface.mainWindow())
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
@@ -75,10 +74,11 @@ class InstallationWarningDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
         layout = QVBoxLayout()
         text = QTextBrowser()
-        msg = f"""
-            <p><b>Kart folder is not configured or Kart is not installed in the specified folder</b></p>
-            <p><a href="install"> Install Kart </a>  if needed and then <a href="configure"> configure <a> the Kart folder</p>.
-            """
+        msg = (
+            "<p><b>Kart folder is not configured or Kart is not installed in the"
+            ' specified folder</b></p><p><a href="install"> Install Kart </a>  if'
+            ' needed and then <a href="configure"> configure <a> the Kart folder</p>.'
+        )
         text.setHtml(msg)
         text.setOpenLinks(False)
         text.anchorClicked.connect(self.anchorClicked)
@@ -121,9 +121,9 @@ def executeKart(commands, path=None, jsonoutput=False):
         os.chdir(path)
 
     # The env PYTHONHOME from QGIS can interfere with Kart.
-    if not hasattr(executeKart, 'env'):
+    if not hasattr(executeKart, "env"):
         executeKart.env = os.environ.copy()
-        executeKart.env.pop('PYTHONHOME')
+        executeKart.env.pop("PYTHONHOME")
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
@@ -133,7 +133,7 @@ def executeKart(commands, path=None, jsonoutput=False):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=executeKart.env,
-            shell=os.name == 'nt'
+            shell=os.name == "nt",
         )
         stdout, stderr = ret.communicate()
         if ret.returncode:

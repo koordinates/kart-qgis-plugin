@@ -22,7 +22,7 @@ def package():
             version = sys.argv[1]
         except IndexError:
             version = cfg.get("general", "version")
-        version = ''.join(c for c in version if c.isdigit() or c == '.')
+        version = "".join(c for c in version if c.isdigit() or c == ".")
         cfg.set("general", "version", version)
         buf = StringIO()
         cfg.write(buf)

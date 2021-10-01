@@ -183,7 +183,7 @@ class SettingsDialog(QDialog):
                 return widget.currentLayer()
             else:
                 return widget.text()
-        except:
+        except Exception:
             raise  # WrongValueException()
 
     def setValueInWidget(self, widget, paramtype, value):
@@ -200,7 +200,7 @@ class SettingsDialog(QDialog):
                 widget.currentLayer()  # TODO
             else:
                 widget.setText(str(value))
-        except:
+        except Exception:
             pass
 
     def accept(self):

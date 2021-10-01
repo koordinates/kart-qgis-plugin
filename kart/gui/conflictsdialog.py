@@ -177,7 +177,7 @@ class ConflictsDialog(BASE, WIDGET):
             idx = self.treeConflicts.indexOfTopLevelItem(parent)
             self.treeConflicts.takeTopLevelItem(idx)
             if not self.treeConflicts.topLevelItemCount():
-                ret = QMessageBox.warning(
+                QMessageBox.warning(
                     self,
                     "Solve conflicts",
                     "All conflicts are solved. The merge operation will now be closed",

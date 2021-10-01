@@ -477,8 +477,7 @@ class LayerItem(QTreeWidgetItem):
         if not layer.isValid():
             iface.messageBar().pushMessage(
                 "Add layer",
-                "Layer could not be added\n"
-                "Only Gpkg-based repositories are supported",
+                "Layer could not be added\nOnly Gpkg-based repositories are supported",
                 level=Qgis.Warning,
             )
 

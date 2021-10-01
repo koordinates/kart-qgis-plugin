@@ -150,7 +150,7 @@ class DiffViewerWidget(WIDGET, BASE):
                         changeType = MODIFIED
                     else:
                         changeType = UNCHANGED
-            except:
+            except Exception:
                 oldvalue = newvalue = ""
                 changeType = UNCHANGED
 
@@ -187,7 +187,7 @@ class DiffViewerWidget(WIDGET, BASE):
                 self.attributesTable.item(row, col).setBackground(
                     QBrush(changeTypeColor[changeType])
                 )
-            except:
+            except Exception:
                 pass
 
         self.attributesTable.horizontalHeader().setMinimumSectionSize(88)
