@@ -40,7 +40,7 @@ class LayerTracker:
     def commitLayerChanges(self, layer):
         repo = repoForLayer(layer)
         if repo is not None:
-            auto = QSettings().value("kart/AutoCommit", False)
+            auto = QSettings().value("kart/AutoCommit", False, type=bool)
             if auto:
                 name = layer.source().split("layername=")[-1]
                 repo.commit(f"Changed layer '{name}'", layer=name)
