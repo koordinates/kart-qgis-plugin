@@ -7,7 +7,8 @@ from qgis.core import Qgis
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
-from qgis.PyQt.QtCore import Qt, QPoint, QRectF
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, QPoint, QRectF, QDateTime
 from qgis.PyQt.QtGui import QIcon, QPixmap, QPainter, QColor, QPainterPath, QPen
 
 from qgis.PyQt.QtWidgets import (
@@ -18,7 +19,6 @@ from qgis.PyQt.QtWidgets import (
     QTreeWidgetItem,
     QWidget,
     QVBoxLayout,
-    QDialog,
     QSizePolicy,
     QLabel,
     QInputDialog,
@@ -229,6 +229,7 @@ class HistoryTree(QTreeWidget):
     def message(self, text, level):
         self.parent.bar.pushMessage(text, level, duration=5)
 
+    @executeskart
     def populate(self):
         commits = self.repo.log()
 
@@ -303,6 +304,19 @@ class HistoryTree(QTreeWidget):
 
         return image
 
+    def filterCommits(self, text, startDate, endDate):
+        text = text.strip(' ').lower()
+        root = self.invisibleRootItem()
+        for i in range(root.childCount()):
+            item = root.child(i)
+            values = [item.commit["message"], item.commit["authorName"],
+                      item.commit["commit"]]
+            hide = bool(text) and not any(text in t.lower() for t in values)
+            date = QDateTime.fromString(item.commit["authorTime"], Qt.ISODate).date()
+            withinDates = date > startDate and date < endDate
+            hide = hide or not withinDates
+            item.setHidden(hide)
+
 
 class GraphWidget(QWidget):
     def __init__(self, img):
@@ -348,13 +362,23 @@ class CommitTreeItem(QTreeWidgetItem):
         self.setText(2, commit["message"].splitlines()[0])
         self.setText(3, commit["authorName"])
         self.setText(4, commit["authorTime"])
-        self.setText(5, commit["commit"])
+        self.setText(5, commit["abbrevCommit"])
 
 
-class HistoryDialog(QDialog):
+WIDGET, BASE = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "historyviewer.ui")
+)
+
+
+class HistoryDialog(WIDGET, BASE):
     def __init__(self, repo):
         super(HistoryDialog, self).__init__(iface.mainWindow())
+        self.setupUi(self)
         self.setWindowFlags(Qt.Window)
+
+        self.dateEditStart.setDateTime(QDateTime.fromSecsSinceEpoch(0))
+        self.dateEditEnd.setDateTime(QDateTime.currentDateTime())
+
         layout = QVBoxLayout()
         layout.setMargin(0)
         self.bar = QgsMessageBar()
@@ -362,6 +386,24 @@ class HistoryDialog(QDialog):
         layout.addWidget(self.bar)
         self.history = HistoryTree(repo, self)
         layout.addWidget(self.history)
-        self.setLayout(layout)
-        self.setWindowTitle("History")
+        self.frameHistory.setLayout(layout)
+        self.history.currentItemChanged.connect(self.commitSelected)
+        self.txtFilter.textChanged.connect(self._filterCommmits)
+        self.dateEditStart.valueChanged.connect(self._filterCommmits)
+        self.dateEditEnd.valueChanged.connect(self._filterCommmits)
         self.resize(1024, 768)
+
+    def commitSelected(self, new, old):
+        commit = new.commit
+        html = (
+                f"<b>SHA-1:</b> {commit['commit']} <br>"
+                f"<b>Message:</b> {commit['message']} <br>"
+                f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
+               )
+
+        self.commitDetails.setHtml(html)
+
+    def _filterCommmits(self, value):
+        startDate = self.dateEditStart.date()
+        endDate = self.dateEditEnd.date()
+        self.history.filterCommits(self.txtFilter.text(), startDate, endDate)
