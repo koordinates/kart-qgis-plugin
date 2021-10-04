@@ -19,6 +19,7 @@ from qgis.core import QgsMessageOutput, QgsProject
 from qgis.utils import iface
 
 from kart.gui.settingsdialog import SettingsDialog
+from kart import logging
 
 SUPPORTED_VERSION = "0.10.2"
 
@@ -96,26 +97,31 @@ class InstallationWarningDialog(QDialog):
 
 def checkKartInstalled():
     version = installedVersion()
-    if version != SUPPORTED_VERSION:
-        if version is None:
-            url = "https://github.com/koordinates/kart#installing"
-            msg = (
-                "<p><b>Kart folder is not configured or Kart is not installed in the"
-                f' specified folder</b></p><p><a href="{url}"> Install Kart </a>  if'
-                ' needed and then <a href="settings"> configure <a> the Kart folder</p>.'
-            )
-        else:
-            url = "https://github.com/koordinates/kart/releases/tag/v0.10.2"
+    supported_major, supported_minor, supported_patch = SUPPORTED_VERSION.split(".")
+    msg = ""
+    if version is None:
+        url = "https://github.com/koordinates/kart#installing"
+        msg = (
+            "<p><b>Kart folder is not configured or Kart is not installed in the"
+            f' specified folder</b></p><p><a href="{url}"> Install Kart </a>  if'
+            ' needed and then <a href="settings"> configure <a> the Kart folder</p>.'
+        )
+    else:
+        major, minor, patch = version.split(".")
+        versionOk = major == supported_major and minor == supported_minor and patch >= supported_patch
+        if not versionOk:
+            url = f"https://github.com/koordinates/kart/releases/tag/v{SUPPORTED_VERSION}"
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
                 f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
                 f' <p>Please <a href="{url}">install the supported version</a>.'
             )
+    if msg:
         dlg = InstallationWarningDialog(msg)
         dlg.exec()
         return False
-
-    return True
+    else:
+        return True
 
 
 def installedVersion():
@@ -146,6 +152,7 @@ def executeKart(commands, path=None, jsonoutput=False):
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
+        logging.debug(f"Command: {' '.join(commands)}")
         ret = subprocess.Popen(
             commands,
             stdout=subprocess.PIPE,
@@ -154,13 +161,16 @@ def executeKart(commands, path=None, jsonoutput=False):
             shell=os.name == "nt",
         )
         stdout, stderr = ret.communicate()
+        output = stdout.decode(encoding)
+        logging.debug(f"Command output: {output}")
         if ret.returncode:
             raise Exception(stderr.decode(encoding))
         if jsonoutput:
-            return json.loads(stdout.decode(encoding))
+            return json.loads(output)
         else:
-            return stdout.decode(encoding)
+            return output
     except Exception as e:
+        logging.error(str(e))
         raise KartException(str(e))
     finally:
         QApplication.restoreOverrideCursor()
