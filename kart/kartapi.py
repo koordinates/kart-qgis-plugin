@@ -94,17 +94,34 @@ def checkKartInstalled():
         return True
 
 
+# Cached values, to avoid calling kart unless path is changed in settings
+
+kartVersion = None
+kartPath = None
+
+
 def installedVersion():
-    try:
-        version = executeKart(["--version"])
-        if not version.startswith("Kart v"):
+    global kartVersion
+    global kartPath
+    path = QSettings().value("kart/KartPath", "")
+    if path is not None and path == kartPath:
+        return kartVersion
+    else:
+        try:
+            version = executeKart(["--version"])
+            if not version.startswith("Kart v"):
+                raise Exception()
+            else:
+                versionnum = "".join(
+                    [c for c in version.split(" ")[1] if c.isdigit() or c == "."]
+                )
+                kartVersion = versionnum
+                kartPath = path
+                return versionnum
+        except Exception:
+            kartVersion = None
+            kartPath = None
             return None
-        else:
-            return "".join(
-                [c for c in version.split(" ")[1] if c.isdigit() or c == "."]
-            )
-    except Exception:
-        return None
 
 
 def executeKart(commands, path=None, jsonoutput=False):
