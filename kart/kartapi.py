@@ -19,6 +19,8 @@ from qgis.core import QgsMessageOutput, QgsProject
 from qgis.utils import iface
 
 from kart.gui.settingsdialog import SettingsDialog
+from kart.gui.userconfigdialog import UserConfigDialog
+
 from kart import logging
 
 SUPPORTED_VERSION = "0.10.2"
@@ -237,11 +239,27 @@ class Repository:
     def importGpkg(self, path):
         self.executeKart(["import", f"GPKG:{path}"])
 
+    def checkUserConfigured(self):
+        ret = self.executeKart(["config", "-l"])
+        if "user.namee" in ret and "user.email" in ret:
+            return True
+        dlg = UserConfigDialog()
+        if dlg.exec() == dlg.Accepted:
+            self.executeKart(["config", "--global", "user.name", f"\"{dlg.username}\""])
+            self.executeKart(["config", "--global", "user.email", f"\"{dlg.email}\""])
+            return True
+        else:
+            return False
+
     def commit(self, msg, layer=None):
-        commands = ["commit", "-m", msg]
-        if layer is not None:
-            commands.append(layer)
-        self.executeKart(commands)
+        if self.checkUserConfigured():
+            commands = ["commit", "-m", msg]
+            if layer is not None:
+                commands.append(layer)
+            self.executeKart(commands)
+            return True
+        else:
+            return False
 
     def reset(self, ref="HEAD"):
         self.executeKart(["reset", ref, "-f"])

@@ -295,10 +295,14 @@ class RepoItem(RefreshableItem):
                 iface.mainWindow(), "Commit", "Enter commit message:"
             )
             if ok and msg:
-                self.repo.commit(msg)
-                iface.messageBar().pushMessage(
-                    "Commit", "Changes correctly committed", level=Qgis.Info
-                )
+                if self.repo.commit(msg):
+                    iface.messageBar().pushMessage(
+                        "Commit", "Changes correctly committed", level=Qgis.Info
+                    )
+                else:
+                    iface.messageBar().pushMessage(
+                        "Commit", "Changes could not be commited", level=Qgis.Warning
+                    )
 
     @executeskart
     def showChanges(self):
@@ -496,10 +500,14 @@ class LayerItem(QTreeWidgetItem):
                     iface.mainWindow(), "Commit", "Enter commit message:"
                 )
                 if ok and msg:
-                    self.repo.commit(msg)
-                    iface.messageBar().pushMessage(
-                        "Commit", "Changes correctly committed", level=Qgis.Info
-                    )
+                    if self.repo.commit(msg):
+                        iface.messageBar().pushMessage(
+                            "Commit", "Changes correctly committed", level=Qgis.Info
+                        )
+                    else:
+                        iface.messageBar().pushMessage(
+                            "Commit", "Changes could not be commited", level=Qgis.Warning
+                        )
             else:
                 iface.messageBar().pushMessage(
                     "Commit", "Nothing to commit", level=Qgis.Warning

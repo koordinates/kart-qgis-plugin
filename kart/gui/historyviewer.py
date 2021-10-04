@@ -315,8 +315,8 @@ class HistoryTree(QTreeWidget):
         qp.drawPath(path)
 
         col = commit["commitColumn"]
-        y = COMMIT_GRAPH_HEIGHT / 2
-        x = RADIUS + COL_SPACING * col
+        y = int(COMMIT_GRAPH_HEIGHT / 2)
+        x = int(RADIUS + COL_SPACING * col)
         color = COLORS[col]
         qp.setPen(color)
         qp.setBrush(color)
