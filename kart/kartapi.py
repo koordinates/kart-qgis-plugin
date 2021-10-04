@@ -241,7 +241,7 @@ class Repository:
 
     def checkUserConfigured(self):
         ret = self.executeKart(["config", "-l"])
-        if "user.namee" in ret and "user.email" in ret:
+        if "user.name" in ret and "user.email" in ret:
             return True
         dlg = UserConfigDialog()
         if dlg.exec() == dlg.Accepted:
