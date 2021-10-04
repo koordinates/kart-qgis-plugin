@@ -8,14 +8,9 @@ import tempfile
 from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import (
     QApplication,
-    QVBoxLayout,
-    QDialog,
-    QTextBrowser,
-    QDialogButtonBox,
 )
 
 from qgis.core import QgsMessageOutput, QgsProject
-from qgis.utils import iface
 
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
