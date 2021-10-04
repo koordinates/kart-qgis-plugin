@@ -78,9 +78,15 @@ def checkKartInstalled():
         )
     else:
         major, minor, patch = version.split(".")
-        versionOk = major == supported_major and minor == supported_minor and patch >= supported_patch
+        versionOk = (
+            major == supported_major
+            and minor == supported_minor
+            and patch >= supported_patch
+        )
         if not versionOk:
-            url = f"https://github.com/koordinates/kart/releases/tag/v{SUPPORTED_VERSION}"
+            url = (
+                f"https://github.com/koordinates/kart/releases/tag/v{SUPPORTED_VERSION}"
+            )
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
                 f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"

@@ -506,7 +506,9 @@ class LayerItem(QTreeWidgetItem):
                         )
                     else:
                         iface.messageBar().pushMessage(
-                            "Commit", "Changes could not be commited", level=Qgis.Warning
+                            "Commit",
+                            "Changes could not be commited",
+                            level=Qgis.Warning,
                         )
             else:
                 iface.messageBar().pushMessage(

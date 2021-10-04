@@ -10,7 +10,9 @@ from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
-WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "userconfigdialog.ui"))
+WIDGET, BASE = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "userconfigdialog.ui")
+)
 
 
 class UserConfigDialog(BASE, WIDGET):
