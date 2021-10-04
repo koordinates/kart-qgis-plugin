@@ -245,8 +245,8 @@ class Repository:
             return True
         dlg = UserConfigDialog()
         if dlg.exec() == dlg.Accepted:
-            self.executeKart(["config", "--global", "user.name", f"\"{dlg.username}\""])
-            self.executeKart(["config", "--global", "user.email", f"\"{dlg.email}\""])
+            self.executeKart(["config", "--global", "user.name", f"{dlg.username}"])
+            self.executeKart(["config", "--global", "user.email", f"{dlg.email}"])
             return True
         else:
             return False
