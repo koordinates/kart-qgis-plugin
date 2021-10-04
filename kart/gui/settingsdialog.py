@@ -59,13 +59,10 @@ class TextBoxWithLink(QWidget):
 
     @property
     def value(self):
-        return self._value
+        return self.lineEdit.text()
 
     @value.setter
     def value(self, value):
-        self._value = value
-        print(1)
-        print(value)
         self.lineEdit.setText(value)
 
 
