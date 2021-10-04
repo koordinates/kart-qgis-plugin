@@ -86,28 +86,49 @@ class HistoryTree(QTreeWidget):
         selected = self.selectedItems()
         if selected and len(selected) == 1:
             item = self.currentItem()
-            actions = {
-                "Show changes for this commit...": (
-                    _f(self.showChangesInCommit, item),
+            actions = {}
+            parents = item.commit["parents"]
+            if len(parents) == 1:
+                actions["Show changes introduced by this commit..."] = (
+                    _f(
+                        self.showChangesBetweenCommits,
+                        item.commit["commit"],
+                        parents[0],
+                    ),
                     diffIcon,
-                ),
-                "Reset current branch to this commit": (
-                    _f(self.resetBranch, item),
-                    resetIcon,
-                ),
-                "Create branch at this commit...": (
-                    _f(self.createBranch, item),
-                    createBranchIcon,
-                ),
-                "Create tag at this commit...": (
-                    _f(self.createTag, item),
-                    createTagIcon,
-                ),
-                "Restore working tree layers to this version...": (
-                    _f(self.restoreLayers, item),
-                    restoreIcon,
-                ),
-            }
+                )
+            elif len(parents) > 1:
+                for parent in parents:
+                    actions[
+                        f"Show diff between this commit and parent {parent[:7]}..."
+                    ] = (
+                        _f(
+                            self.showChangesBetweenCommits,
+                            item.commit["commit"],
+                            parent,
+                        ),
+                        diffIcon,
+                    )
+            actions.update(
+                {
+                    "Reset current branch to this commit": (
+                        _f(self.resetBranch, item),
+                        resetIcon,
+                    ),
+                    "Create branch at this commit...": (
+                        _f(self.createBranch, item),
+                        createBranchIcon,
+                    ),
+                    "Create tag at this commit...": (
+                        _f(self.createTag, item),
+                        createTagIcon,
+                    ),
+                    "Restore working tree layers to this version...": (
+                        _f(self.restoreLayers, item),
+                        restoreIcon,
+                    ),
+                }
+            )
 
             for ref in item.commit["refs"]:
                 if "HEAD" in ref:
@@ -132,7 +153,11 @@ class HistoryTree(QTreeWidget):
             itemb = selected[1]
             actions = {
                 "Show changes between these commits...": (
-                    _f(self.showChangesBetweenCommits, itema, itemb),
+                    _f(
+                        self.showChangesBetweenCommits,
+                        itema.commit["commit"],
+                        itemb.commit["commit"],
+                    ),
                     diffIcon,
                 )
             }
@@ -186,18 +211,14 @@ class HistoryTree(QTreeWidget):
             self.populate()
 
     @executeskart
-    def showChangesInCommit(self, item):
+    def showDiff(self, item, parent):
         refa = item.commit["commit"]
-        parents = item.commit["parents"]
-        refb = parents[0] if parents else "000000000"
-        changes = self.repo.diff(refa, refb)
+        changes = self.repo.diff(refa, parent)
         dialog = DiffViewerDialog(self, changes)
         dialog.exec()
 
     @executeskart
-    def showChangesBetweenCommits(self, itema, itemb):
-        refa = itema.commit["commit"]
-        refb = itemb.commit["commit"]
+    def showChangesBetweenCommits(self, refa, refb):
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes)
         dialog.exec()
@@ -305,12 +326,15 @@ class HistoryTree(QTreeWidget):
         return image
 
     def filterCommits(self, text, startDate, endDate):
-        text = text.strip(' ').lower()
+        text = text.strip(" ").lower()
         root = self.invisibleRootItem()
         for i in range(root.childCount()):
             item = root.child(i)
-            values = [item.commit["message"], item.commit["authorName"],
-                      item.commit["commit"]]
+            values = [
+                item.commit["message"],
+                item.commit["authorName"],
+                item.commit["commit"],
+            ]
             hide = bool(text) and not any(text in t.lower() for t in values)
             date = QDateTime.fromString(item.commit["authorTime"], Qt.ISODate).date()
             withinDates = date > startDate and date < endDate
@@ -396,10 +420,10 @@ class HistoryDialog(WIDGET, BASE):
     def commitSelected(self, new, old):
         commit = new.commit
         html = (
-                f"<b>SHA-1:</b> {commit['commit']} <br>"
-                f"<b>Message:</b> {commit['message']} <br>"
-                f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
-               )
+            f"<b>SHA-1:</b> {commit['commit']} <br>"
+            f"<b>Message:</b> {commit['message']} <br>"
+            f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
+        )
 
         self.commitDetails.setHtml(html)
 

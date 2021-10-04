@@ -108,7 +108,7 @@ def checkKartInstalled():
             url = "https://github.com/koordinates/kart/releases/tag/v0.10.2"
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
-                f' supported by the plugin ({SUPPORTED_VERSION})<b><p>'
+                f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
                 f' <p>Please <a href="{url}">install the supported version</a>.'
             )
         dlg = InstallationWarningDialog(msg)
@@ -124,7 +124,9 @@ def installedVersion():
         if not version.startswith("Kart v"):
             return None
         else:
-            return "".join([c for c in version.split(" ")[1] if c.isdigit() or c=="."])
+            return "".join(
+                [c for c in version.split(" ")[1] if c.isdigit() or c == "."]
+            )
     except Exception:
         return None
 
