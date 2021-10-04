@@ -20,6 +20,8 @@ from qgis.utils import iface
 
 from kart.gui.settingsdialog import SettingsDialog
 
+SUPPORTED_VERSION = "0.10.2"
+
 
 class KartException(Exception):
     pass
@@ -67,18 +69,13 @@ def kartExecutable():
 
 
 class InstallationWarningDialog(QDialog):
-    def __init__(self):
+    def __init__(self, msg):
         super(InstallationWarningDialog, self).__init__(iface.mainWindow())
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
         layout = QVBoxLayout()
         text = QTextBrowser()
-        msg = (
-            "<p><b>Kart folder is not configured or Kart is not installed in the"
-            ' specified folder</b></p><p><a href="install"> Install Kart </a>  if'
-            ' needed and then <a href="configure"> configure <a> the Kart folder</p>.'
-        )
         text.setHtml(msg)
         text.setOpenLinks(False)
         text.anchorClicked.connect(self.anchorClicked)
@@ -86,31 +83,50 @@ class InstallationWarningDialog(QDialog):
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
         self.setFixedWidth(500)
-        self.setTitle("Kart")
+        self.setWindowTitle("Kart")
 
     def anchorClicked(self, url):
-        if url.toString() == "install":
-            webbrowser.open_new_tab("https://github.com/koordinates/kart#installing")
-        else:
+        if url.toString() == "settings":
             self.close()
             dlg = SettingsDialog()
             dlg.exec()
+        else:
+            webbrowser.open_new_tab(url.toString())
 
 
 def checkKartInstalled():
-    installed = isKartInstalled()
-    if not installed:
-        dlg = InstallationWarningDialog()
+    version = installedVersion()
+    if version != SUPPORTED_VERSION:
+        if version is None:
+            url = "https://github.com/koordinates/kart#installing"
+            msg = (
+                "<p><b>Kart folder is not configured or Kart is not installed in the"
+                f' specified folder</b></p><p><a href="{url}"> Install Kart </a>  if'
+                ' needed and then <a href="settings"> configure <a> the Kart folder</p>.'
+            )
+        else:
+            url = "https://github.com/koordinates/kart/releases/tag/v0.10.2"
+            msg = (
+                f"<p><b>The installed Kart version ({version}) is different from the version"
+                f' supported by the plugin ({SUPPORTED_VERSION})<b><p>'
+                f' <p>Please <a href="{url}">install the supported version</a>.'
+            )
+        dlg = InstallationWarningDialog(msg)
         dlg.exec()
-
-    return installed
-
-
-def isKartInstalled():
-    try:
-        return executeKart(["--version"]).startswith("Kart v")
-    except Exception:
         return False
+
+    return True
+
+
+def installedVersion():
+    try:
+        version = executeKart(["--version"])
+        if not version.startswith("Kart v"):
+            return None
+        else:
+            return "".join([c for c in version.split(" ")[1] if c.isdigit() or c=="."])
+    except Exception:
+        return None
 
 
 def executeKart(commands, path=None, jsonoutput=False):
