@@ -4,7 +4,6 @@ import os
 import re
 import subprocess
 import tempfile
-import webbrowser
 
 from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import (
@@ -18,8 +17,8 @@ from qgis.PyQt.QtWidgets import (
 from qgis.core import QgsMessageOutput, QgsProject
 from qgis.utils import iface
 
-from kart.gui.settingsdialog import SettingsDialog
 from kart.gui.userconfigdialog import UserConfigDialog
+from kart.gui.installationwarningdialog import InstallationWarningDialog
 
 from kart import logging
 
@@ -69,32 +68,6 @@ def kartExecutable():
         if os.path.isfile(path):
             return path
     return path
-
-
-class InstallationWarningDialog(QDialog):
-    def __init__(self, msg):
-        super(InstallationWarningDialog, self).__init__(iface.mainWindow())
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-        layout = QVBoxLayout()
-        text = QTextBrowser()
-        text.setHtml(msg)
-        text.setOpenLinks(False)
-        text.anchorClicked.connect(self.anchorClicked)
-        layout.addWidget(text)
-        layout.addWidget(self.buttonBox)
-        self.setLayout(layout)
-        self.setFixedWidth(500)
-        self.setWindowTitle("Kart")
-
-    def anchorClicked(self, url):
-        if url.toString() == "settings":
-            self.close()
-            dlg = SettingsDialog()
-            dlg.exec()
-        else:
-            webbrowser.open_new_tab(url.toString())
 
 
 def checkKartInstalled():
