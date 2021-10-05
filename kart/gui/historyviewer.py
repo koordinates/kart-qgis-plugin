@@ -76,6 +76,9 @@ class HistoryTree(QTreeWidget):
         super(HistoryTree, self).__init__()
         self.repo = repo
         self.parent = parent
+        self.filterText = ""
+        self.startDate = QDateTime.fromSecsSinceEpoch(0).date()
+        self.endDate = QDateTime.currentDateTime().date()
         self.initGui()
 
     def initGui(self):
@@ -286,6 +289,7 @@ class HistoryTree(QTreeWidget):
         self.setColumnWidth(0, width + MARGIN)
         self.header().setSectionResizeMode(0, QHeaderView.Fixed)
         self.header().setSectionResizeMode(1, QHeaderView.Fixed)
+        self.filterCommits()
 
     def graphImage(self, commit, width):
         image = QPixmap(width, COMMIT_GRAPH_HEIGHT).toImage()
@@ -341,8 +345,12 @@ class HistoryTree(QTreeWidget):
 
         return image
 
-    def filterCommits(self, text, startDate, endDate):
-        text = text.strip(" ").lower()
+    def filterCommits(self, text=None, startDate=None, endDate=None):
+        self.filterText = text or self.filterText
+        self.startDate = startDate or self.startDate
+        self.endDate = endDate or self.endDate
+        self.filterText = self.filterText.strip(" ").lower()
+        print(self.filterText)
         root = self.invisibleRootItem()
         for i in range(root.childCount()):
             item = root.child(i)
@@ -351,9 +359,9 @@ class HistoryTree(QTreeWidget):
                 item.commit["authorName"],
                 item.commit["commit"],
             ]
-            hide = bool(text) and not any(text in t.lower() for t in values)
+            hide = bool(self.filterText) and not any(self.filterText in t.lower() for t in values)
             date = QDateTime.fromString(item.commit["authorTime"], Qt.ISODate).date()
-            withinDates = date > startDate and date < endDate
+            withinDates = date > self.startDate and date < self.endDate
             hide = hide or not withinDates
             item.setHidden(hide)
 
@@ -434,13 +442,15 @@ class HistoryDialog(WIDGET, BASE):
         self.resize(1024, 768)
 
     def commitSelected(self, new, old):
-        commit = new.commit
-        html = (
-            f"<b>SHA-1:</b> {commit['commit']} <br>"
-            f"<b>Message:</b> {commit['message']} <br>"
-            f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
-        )
-
+        if new is not None:
+            commit = new.commit
+            html = (
+                f"<b>SHA-1:</b> {commit['commit']} <br>"
+                f"<b>Message:</b> {commit['message']} <br>"
+                f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
+            )
+        else:
+            html = ""
         self.commitDetails.setHtml(html)
 
     def _filterCommmits(self, value):
