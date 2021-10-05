@@ -28,6 +28,16 @@ In the folder selection dialog that will appear, select the folder where you wan
 
 Note: Kart supports different backends for repositories. All repositories created with the QGIS Kart plugin are based on GeoPackage files.
 
+## Cloning a repository
+
+If you want to clone a existing repository, Right-click on the `Repositories` element in the Kart explorer tree and select "Clone repository".
+
+![Clone repository](img/clonerepo.png)
+
+In the dialog that will appear, select the location of the repository to clone (it can be a local folder or a remote URL) and the folder where you want to store the clone.
+
+The cloned repository will be added to the list of available repositories in the main repositories panel.
+
 
 ## Adding/recovering data to/from a repo
 
