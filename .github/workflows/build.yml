@@ -1,0 +1,28 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Get source code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Build package
+      run: |
+        python helper.py package
+        mkdir tmp
+        unzip kart.zip -d tmp
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: kart_package
+        path: tmp
