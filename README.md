@@ -21,5 +21,3 @@ Usage documentation can be found [here](./docs/index.md)
 ### For developers
 
 For Kart development see the [Contributing Notes](CONTRIBUTING.md).
-
-
