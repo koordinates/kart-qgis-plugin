@@ -163,14 +163,14 @@ class HistoryTree(QTreeWidget):
             }
         else:
             actions = []
-        menu = QMenu()
+        self.menu = QMenu()
         for text in actions:
             func, icon = actions[text]
-            action = QAction(icon, text, menu)
+            action = QAction(icon, text, self.menu)
             action.triggered.connect(func)
-            menu.addAction(action)
+            self.menu.addAction(action)
         if actions:
-            menu.exec_(point)
+            self.menu.popup(point)
 
     @executeskart
     def createTag(self, item):
