@@ -46,9 +46,7 @@ class KartPlugin(object):
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
-        self.aboutAction = QAction(
-            aboutIcon, "About kart...", self.iface.mainWindow()
-        )
+        self.aboutAction = QAction(aboutIcon, "About kart...", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.aboutAction)
         self.aboutAction.triggered.connect(self.openAbout)
 
@@ -76,15 +74,15 @@ class KartPlugin(object):
         kartVersion = kartVersionDetails().replace("\n", "<br>")
         qgisVersion = Qgis.QGIS_VERSION
         html = (
-            '<style>body, table {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}</style>'
-            '<body>'
+            "<style>body, table {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}</style>"
+            "<body>"
             '<table cellspacing="4" width="100%"><tr><td>'
-            f'<h3>QGIS version</h3> <p>{qgisVersion}</p>'
-            f'<h3>Kart version details</h3> <p>{kartVersion}</p>'
-            f'<h3>Plugin version</h3> <p>{pluginVersion}</p>'
-            '</td></tr></table>'
-            '</body>'
-            )
+            f"<h3>QGIS version</h3> <p>{qgisVersion}</p>"
+            f"<h3>Kart version details</h3> <p>{kartVersion}</p>"
+            f"<h3>Plugin version</h3> <p>{pluginVersion}</p>"
+            "</td></tr></table>"
+            "</body>"
+        )
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle("About Kart")
         dlg.setMessage(html, QgsMessageOutput.MessageHtml)

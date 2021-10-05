@@ -3,6 +3,7 @@ import locale
 import os
 import re
 import subprocess
+import sys
 import tempfile
 
 from qgis.PyQt.QtCore import QSettings, Qt
@@ -57,7 +58,14 @@ def executeskart(f):
 
 
 def kartExecutable():
+    if os.name == "nt":
+        defaultFolder = os.path.join(os.environ["PROGRAMFILES"], "Kart")
+    elif sys.platform == "darwin":
+        defaultFolder = "Applications/Kart.app/Contents/MacOS/"
+    else:
+        defaultFolder = "/opt/kart/kart"
     folder = QSettings().value("kart/KartPath", "")
+    folder = folder or defaultFolder
     for exe_name in ("kart.exe", "kart_cli", "kart"):
         path = os.path.join(folder, exe_name)
         if os.path.isfile(path):
@@ -132,7 +140,9 @@ def installedVersion():
 
 def kartVersionDetails():
     path = QSettings().value("kart/KartPath", "")
-    errtxt = f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
+    errtxt = (
+        f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
+    )
     try:
         version = executeKart(["--version"])
         if not version.startswith("Kart v"):

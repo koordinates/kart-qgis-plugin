@@ -10,7 +10,13 @@ To configure the plugin, use the `Kart/Kart settings` menu to open the setting d
 
 ![Settings](img/settings.png)
 
-In the `Kart executable folder` field, enter the path to your Kart executable. Now the Kart plugin knows where Kart is located.
+In the `Kart executable folder` field, enter the path to your Kart executable.
+
+If the Kart folder is not configured, the Kart plugin will use the default install locations, as follows:
+
+- **Windows**: %PROGRAMFILES%\Kart
+- **OSX**: Applications/Kart.app/Contents/MacOS
+- **Linux**: /opt/kart/kart
 
 Open the Kart explorer using the `Kart/Kart explorer` menu.
 
