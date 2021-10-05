@@ -8,8 +8,21 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QPoint, QRectF, QDateTime
-from qgis.PyQt.QtGui import QIcon, QPixmap, QPainter, QColor, QPainterPath, QPen
+from qgis.PyQt.QtCore import (
+    Qt,
+    QPoint,
+    QRectF,
+    QDateTime,
+)
+from qgis.PyQt.QtGui import (
+    QIcon,
+    QPixmap,
+    QPainter,
+    QColor,
+    QPainterPath,
+    QPen,
+    QPalette,
+)
 
 from qgis.PyQt.QtWidgets import (
     QTreeWidget,
@@ -277,7 +290,10 @@ class HistoryTree(QTreeWidget):
     def graphImage(self, commit, width):
         image = QPixmap(width, COMMIT_GRAPH_HEIGHT).toImage()
         qp = QPainter(image)
-        qp.fillRect(QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), Qt.white)
+        palette = QWidget().palette()
+        qp.fillRect(
+            QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), palette.color(QPalette.Base)
+        )
 
         path = QPainterPath()
         for col in commit["graph"][0][r"\|"]:
@@ -310,7 +326,7 @@ class HistoryTree(QTreeWidget):
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
         pen = QPen()
         pen.setWidth(PEN_WIDTH)
-        pen.setBrush(QColor(Qt.black))
+        pen.setBrush(palette.color(QPalette.WindowText))
         qp.setPen(pen)
         qp.drawPath(path)
 
