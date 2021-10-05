@@ -130,6 +130,19 @@ def installedVersion():
             return None
 
 
+def kartVersionDetails():
+    path = QSettings().value("kart/KartPath", "")
+    errtxt = f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
+    try:
+        version = executeKart(["--version"])
+        if not version.startswith("Kart v"):
+            return errtxt
+        else:
+            return version
+    except Exception:
+        return errtxt
+
+
 def executeKart(commands, path=None, jsonoutput=False):
     commands.insert(0, kartExecutable())
     if jsonoutput:
