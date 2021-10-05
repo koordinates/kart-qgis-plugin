@@ -18,7 +18,7 @@ jobs:
 
     - name: Build package
       run: |
-        python helper.py package
+        python helper.py package dev-${GITHUB_SHA}
         mkdir tmp
         unzip kart.zip -d tmp
 

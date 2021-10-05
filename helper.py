@@ -2,6 +2,7 @@
 
 import os
 import sys
+import shutil
 import fnmatch
 import zipfile
 from configparser import ConfigParser
@@ -19,10 +20,11 @@ def package():
         cfg.optionxform = str
         cfg.read(os.path.join(src_dir, "metadata.txt"))
         try:
-            version = sys.argv[1]
+            version = sys.argv[2]
         except IndexError:
             version = cfg.get("general", "version")
-        version = "".join(c for c in version if c.isdigit() or c == ".")
+        if version.startswith("v"):
+            version = version[1:]
         cfg.set("general", "version", version)
         buf = StringIO()
         cfg.write(buf)
@@ -44,4 +46,43 @@ def package():
             filter_excludes(dirs)
 
 
-package()
+def install():
+    src = os.path.join(os.path.dirname(__file__), "kart")
+    if os.name == "nt":
+        default_profile_plugins = (
+            "~/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins"
+        )
+        default_profile_plugins = (
+            "~/test"
+        )
+    elif sys.platform == "darwin":
+        default_profile_plugins = (
+            "~/Library/Application Support/QGIS/QGIS3"
+            "/profiles/default/python/plugins"
+        )
+    else:
+        default_profile_plugins = (
+            "~/.local/share/QGIS/QGIS3/profiles/default/python/plugins"
+        )
+
+    dst_plugins = os.path.expanduser(default_profile_plugins)
+    os.makedirs(dst_plugins, exist_ok=True)
+    dst = os.path.abspath(os.path.join(dst_plugins, "kart"))
+    src = os.path.abspath(src)
+    if not hasattr(os, "symlink"):
+        shutil.rmtree(dst)
+        shutil.copytree(src, dst)
+    elif not os.path.exists(dst):
+        os.symlink(src, dst, True)
+
+
+def usage():
+    print("Usage: python helper.py install|package")
+
+
+if sys.argv[1] == "install" and len(sys.argv) == 2:
+    install()
+elif sys.argv[1] == "package" and len(sys.argv) in [2, 3]:
+    package()
+else:
+    usage()

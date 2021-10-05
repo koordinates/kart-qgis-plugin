@@ -6,13 +6,11 @@ A plugin to work with Kart repositories
 
 ## Installation
 
-To install the latest version from this repository, follow these steps:
+The Kart plugin is available in the QGIS Plugins server. To install the latest version, use the QGIS Plugin Manager and search for the Kart plugin.
 
-- Clone this repository using `git clone`.
+Alternatively, you can get the latest version from the [release page](https://github.com/koordinates/kart-qgis-plugin/releases/latest)
 
-- Copy the `kart` folder in your QGIS 3 plugins folder.
-
-- Start QGIS and you will find the plugin in the plugins menu. If it's not available yet, activate it in the QGIS Plugin Manager.
+Open the QGIS Plugin manager and install the downloaded zip file.
 
 This plugin is compatible with QGIS 3.4 or later.
 
@@ -20,10 +18,8 @@ This plugin is compatible with QGIS 3.4 or later.
 
 Usage documentation can be found [here](./docs/index.md)
 
-## Packaging
+### For developers
 
-To package the plugin, run the `build.py` script.
-
-A `kart.zip` file is generated in the repo root.
+For Kart development see the [Contributing Notes](CONTRIBUTING.md).
 
 
