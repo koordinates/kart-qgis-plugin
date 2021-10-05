@@ -52,9 +52,6 @@ def install():
         default_profile_plugins = (
             "~/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins"
         )
-        default_profile_plugins = (
-            "~/test"
-        )
     elif sys.platform == "darwin":
         default_profile_plugins = (
             "~/Library/Application Support/QGIS/QGIS3"
