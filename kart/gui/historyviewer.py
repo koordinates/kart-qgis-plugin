@@ -363,7 +363,7 @@ class HistoryTree(QTreeWidget):
                 self.filterText in t.lower() for t in values
             )
             date = QDateTime.fromString(item.commit["authorTime"], Qt.ISODate).date()
-            withinDates = date > self.startDate and date < self.endDate
+            withinDates = date >= self.startDate and date <= self.endDate
             hide = hide or not withinDates
             item.setHidden(hide)
 
