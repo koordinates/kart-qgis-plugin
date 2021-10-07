@@ -16,7 +16,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from qgis.utils import iface
-from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter
+from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter, QgsProject
 
 from kart.kartapi import repos, addRepo, removeRepo, Repository, executeskart
 from kart.gui.diffviewer import DiffViewerDialog
@@ -25,6 +25,7 @@ from kart.gui.conflictsdialog import ConflictsDialog
 from kart.gui.clonedialog import CloneDialog
 from kart.gui.pushdialog import PushDialog
 from kart.gui.pulldialog import PullDialog
+from kart.utils import layerFromSource
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -465,7 +466,10 @@ class LayerItem(QTreeWidgetItem):
         self.setIcon(0, layerIcon)
 
     def actions(self):
-        actions = {"Add to QGIS project": (self.addToProject, addtoQgisIcon)}
+        actions = {
+            "Add to QGIS project": (self.addToProject, addtoQgisIcon),
+            "Remove from repository": (self.removeFromRepo, removeIcon),
+        }
 
         if not self.repo.isMerging():
             actions.update(
@@ -484,6 +488,37 @@ class LayerItem(QTreeWidgetItem):
                 "Layer could not be added\nOnly Gpkg-based repositories are supported",
                 level=Qgis.Warning,
             )
+
+    @executeskart
+    def removeFromRepo(self):
+        name = os.path.basename(self.repo.path)
+        path = os.path.join(self.repo.path, f"{name}.gpkg|layername={self.layername}")
+        layer = layerFromSource(path)
+        if layer:
+            msg = (
+                "The layer is loaded in QGIS. \n"
+                "It will be removed from the repository and from your current project.\n"
+                "Do you want to continue?"
+            )
+        else:
+            msg = (
+                "The layer will be removed from the repository.\n"
+                "Do you want to continue?"
+            )
+
+        ret = QMessageBox.warning(
+            iface.mainWindow(), "Remove layer", msg, QMessageBox.Yes | QMessageBox.No
+        )
+        if ret == QMessageBox.Yes:
+            self.repo.deleteLayer(self.layername)
+            iface.messageBar().pushMessage(
+                "Remove layer",
+                "Layer correctly removed",
+                level=Qgis.Info,
+            )
+            if layer:
+                QgsProject.instance().removeMapLayers([layer.id()])
+                iface.mapCanvas().refresh()
 
     @executeskart
     def commitChanges(self):

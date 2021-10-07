@@ -3,8 +3,11 @@ import locale
 import os
 import re
 import subprocess
+import sqlite3
 import sys
 import tempfile
+
+from osgeo import gdal
 
 from qgis.PyQt.QtCore import QSettings, Qt
 from qgis.PyQt.QtWidgets import (
@@ -421,7 +424,6 @@ class Repository:
         remotes = {}
         ret = self.executeKart(["remote", "-v"], False)
         for line in ret.splitlines()[::2]:
-            print(line)
             name, url = line.split("\t")
             remotes[name] = url.split(" ")[0]
         return remotes
@@ -447,6 +449,19 @@ class Repository:
         return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(
             self.path
         )
+
+    def deleteLayer(self, layername):
+        name = os.path.basename(self.path)
+        path = os.path.join(self.path, f"{name}.gpkg")
+        ds = gdal.OpenEx(path, gdal.OF_UPDATE, allowed_drivers=["GPKG"])
+        for i in range(ds.GetLayerCount()):
+            print(ds.GetLayer(i).GetName())
+            if ds.GetLayer(i).GetName() == layername:
+                ret = ds.DeleteLayer(i)
+                if ret == 0:
+                    self.commit(f"Removed layer {layername}", layername)
+                else:
+                    raise KartException("Could not delete layer from repository")
 
     def _updateCanvas(self):
         for layer in QgsProject.instance().mapLayers().values():
