@@ -52,6 +52,7 @@ resolveIcon = icon("resolve.png")
 pushIcon = icon("push.png")
 pullIcon = icon("pull.png")
 removeIcon = icon("remove.png")
+refreshIcon = icon("update.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -95,12 +96,10 @@ class KartDockWidget(BASE, WIDGET):
             return wrapper
 
         menu = QMenu()
-        for text in item.actions():
-            action = item.actions()[text]
-            if action is None:
+        for text, func, icon in item.actions():
+            if func is None:
                 menu.addSeparator()
             else:
-                func, icon = action
                 action = QAction(icon, text, menu)
                 action.triggered.connect(_f(func))
                 menu.addAction(action)
@@ -109,6 +108,14 @@ class KartDockWidget(BASE, WIDGET):
 
 
 class RefreshableItem(QTreeWidgetItem):
+    def actions(self):
+        actions = [
+            ("Refresh", self.refreshContent, refreshIcon),
+            ("divider", None, None),
+        ]
+        actions.extend(self._actions())
+        return actions
+
     def refreshContent(self):
         self.takeChildren()
         self.populate()
@@ -128,12 +135,12 @@ class ReposItem(RefreshableItem):
             item = RepoItem(repo)
             self.addChild(item)
 
-    def actions(self):
-        actions = {
-            "Add existing repository...": (self.addRepo, addRepoIcon),
-            "Create new repository...": (self.createRepo, createRepoIcon),
-            "Clone repository...": (self.cloneRepo, cloneRepoIcon),
-        }
+    def _actions(self):
+        actions = [
+            ("Add existing repository...", self.addRepo, addRepoIcon),
+            ("Create new repository...", self.createRepo, createRepoIcon),
+            ("Clone repository...", self.cloneRepo, cloneRepoIcon),
+        ]
 
         return actions
 
@@ -201,32 +208,32 @@ class RepoItem(RefreshableItem):
         self.addChild(self.layersItem)
         self.populated = True
 
-    def actions(self):
-        actions = {
-            "Remove this repository": (self.removeRepository, removeIcon),
-            "Divider1": None,
-        }
+    def _actions(self):
+        actions = [
+            ("Remove this repository", self.removeRepository, removeIcon),
+            ("divider", None, None),
+        ]
         if self.repo.isMerging():
-            actions.update(
-                {
-                    "Resolve conflicts...": (self.resolveConflicts, resolveIcon),
-                    "Continue merge": (self.continueMerge, mergeIcon),
-                    "Abort merge": (self.abortMerge, abortIcon),
-                }
+            actions.extend(
+                [
+                    ("Resolve conflicts...", self.resolveConflicts, resolveIcon),
+                    ("Continue merge", self.continueMerge, mergeIcon),
+                    ("Abort merge", self.abortMerge, abortIcon),
+                ]
             )
         else:
-            actions.update(
-                {
-                    "Show log...": (self.showLog, logIcon),
-                    "Show working tree changes...": (self.showChanges, diffIcon),
-                    "Discard working tree changes": (self.discardChanges, discardIcon),
-                    "Commit working tree changes...": (self.commitChanges, commitIcon),
-                    "Switch branch...": (self.switchBranch, checkoutIcon),
-                    "Merge into current branch...": (self.mergeBranch, mergeIcon),
-                    "Import layer into repo...": (self.importLayer, importIcon),
-                    "Pull...": (self.pull, pullIcon),
-                    "Push...": (self.push, pushIcon),
-                }
+            actions.extend(
+                [
+                    ("Show log...", self.showLog, logIcon),
+                    ("Show working tree changes...", self.showChanges, diffIcon),
+                    ("Discard working tree changes", self.discardChanges, discardIcon),
+                    ("Commit working tree changes...", self.commitChanges, commitIcon),
+                    ("Switch branch...", self.switchBranch, checkoutIcon),
+                    ("Merge into current branch...", self.mergeBranch, mergeIcon),
+                    ("Import layer into repo...", self.importLayer, importIcon),
+                    ("Pull...", self.pull, pullIcon),
+                    ("Push...", self.push, pushIcon),
+                ]
             )
 
         return actions
@@ -452,8 +459,8 @@ class LayersItem(RefreshableItem):
             item = LayerItem(layer, self.repo)
             self.addChild(item)
 
-    def actions(self):
-        return {}
+    def _actions(self):
+        return []
 
 
 class LayerItem(QTreeWidgetItem):
@@ -466,14 +473,14 @@ class LayerItem(QTreeWidgetItem):
         self.setIcon(0, layerIcon)
 
     def actions(self):
-        actions = {
-            "Add to QGIS project": (self.addToProject, addtoQgisIcon),
-            "Remove from repository": (self.removeFromRepo, removeIcon),
-        }
+        actions = [
+            ("Add to QGIS project", self.addToProject, addtoQgisIcon),
+            ("Remove from repository", self.removeFromRepo, removeIcon),
+        ]
 
         if not self.repo.isMerging():
-            actions.update(
-                {"Commit working tree changes...": (self.commitChanges, commitIcon)}
+            actions.append(
+                ("Commit working tree changes...", self.commitChanges, commitIcon)
             )
 
         return actions
