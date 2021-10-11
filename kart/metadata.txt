@@ -5,6 +5,7 @@ about=Kart
 category=Plugins
 version=0.1.0
 qgisMinimumVersion=3.4
-
+tracker=https://github.com/koordinates/kart-qgis-plugin/issues
+repository=https://github.com/koordinates/kart-qgis-plugin
 author=Victor Olaya
 email=volayaf@gmail.com
