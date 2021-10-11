@@ -196,7 +196,7 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
-        self.setText(0, repo.path)
+        self.setText(0, repo.title())
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 

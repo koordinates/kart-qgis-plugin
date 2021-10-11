@@ -252,6 +252,14 @@ class Repository:
 
         return Repository(dst)
 
+    def title(self):
+        with open(os.path.join(self.path, ".kart", "description")) as f:
+            description = f.read()
+        if "unnamed" in description.lower():
+            return os.path.normpath(self.path)
+        else:
+            return description.splitlines()[0]
+
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
 
