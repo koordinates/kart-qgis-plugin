@@ -1,5 +1,3 @@
-# Adapted from the Processing extent selection panel
-
 import os
 import warnings
 
@@ -9,7 +7,6 @@ from qgis.PyQt.QtWidgets import (
     QAction,
 )
 from qgis.PyQt.QtGui import QCursor
-from qgis.PyQt.QtCore import pyqtSignal
 
 from qgis.utils import iface
 from qgis.core import (
@@ -21,43 +18,34 @@ from qgis.core import (
 
 from processing.gui.ExtentSelectionPanel import LayerSelectionDialog
 from processing.gui.RectangleMapTool import RectangleMapTool
-from processing import gui
 
 
-processingGuiPath = os.path.split(os.path.dirname(gui.__file__))[0]
-
+pluginPath = os.path.dirname(__file__)
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
-    WIDGET, BASE = uic.loadUiType(
-        os.path.join(processingGuiPath, 'ui', 'widgetBaseSelector.ui'))
+    WIDGET, BASE = uic.loadUiType(os.path.join(pluginPath, "extentselectionpanel.ui"))
 
 
 class ExtentSelectionPanel(BASE, WIDGET):
-    hasChanged = pyqtSignal()
-
     def __init__(self, dialog):
         super(ExtentSelectionPanel, self).__init__(dialog)
         self.setupUi(self)
 
-        self.leText.textChanged.connect(lambda: self.hasChanged.emit())
-
+        self.crsSelector.setCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
         self.dialog = dialog
-        self.crs = QgsProject.instance().crs()
 
-        self.btnSelect.clicked.connect(self.selectExtent)
+        self.btnSetFrom.clicked.connect(self.selectExtent)
 
         canvas = iface.mapCanvas()
         self.prevMapTool = canvas.mapTool()
         self.tool = RectangleMapTool(canvas)
         self.tool.rectangleCreated.connect(self.updateExtent)
 
-
-
     def selectExtent(self):
         popupmenu = QMenu()
-        useCanvasExtentAction = QAction('Use Canvas Extent', self.btnSelect)
-        useLayerExtentAction = QAction('Use Layer Extent…',  self.btnSelect)
-        selectOnCanvasAction = QAction('Select Extent on Canvas', self.btnSelect)
+        useCanvasExtentAction = QAction("Use Canvas Extent", self.btnSetFrom)
+        useLayerExtentAction = QAction("Use Layer Extent…", self.btnSetFrom)
+        selectOnCanvasAction = QAction("Select Extent on Canvas", self.btnSetFrom)
 
         popupmenu.addAction(useCanvasExtentAction)
         popupmenu.addAction(selectOnCanvasAction)
@@ -70,7 +58,6 @@ class ExtentSelectionPanel(BASE, WIDGET):
 
         popupmenu.exec_(QCursor.pos())
 
-
     def useLayerExtent(self):
         dlg = LayerSelectionDialog(self)
         if dlg.exec_():
@@ -78,8 +65,12 @@ class ExtentSelectionPanel(BASE, WIDGET):
             self.setValueFromRect(QgsReferencedRectangle(layer.extent(), layer.crs()))
 
     def useCanvasExtent(self):
-        self.setValueFromRect(QgsReferencedRectangle(iface.mapCanvas().extent(),
-                                                     iface.mapCanvas().mapSettings().destinationCrs()))
+        self.setValueFromRect(
+            QgsReferencedRectangle(
+                iface.mapCanvas().extent(),
+                iface.mapCanvas().mapSettings().destinationCrs(),
+            )
+        )
 
     def selectOnCanvas(self):
         canvas = iface.mapCanvas()
@@ -91,17 +82,15 @@ class ExtentSelectionPanel(BASE, WIDGET):
         self.setValueFromRect(r)
 
     def setValueFromRect(self, r):
-        s = '{},{},{},{}'.format(
-            r.xMinimum(), r.xMaximum(), r.yMinimum(), r.yMaximum())
-
+        self.txtNorth.setText(str(r.yMaximum()))
+        self.txtSouth.setText(str(r.yMinimum()))
+        self.txtEast.setText(str(r.xMaximum()))
+        self.txtWest.setText(str(r.xMinimum()))
         try:
-            self.crs = r.crs()
-        except:
-            self.crs = QgsProject.instance().crs()
-        if self.crs.isValid():
-            s += ' [' + self.crs.authid() + ']'
-
-        self.leText.setText(s)
+            crs = r.crs()
+        except Exception:
+            crs = QgsProject.instance().crs()
+        self.crsSelector.setCrs(crs)
         self.tool.reset()
         canvas = iface.mapCanvas()
         canvas.setMapTool(self.prevMapTool)
@@ -110,27 +99,17 @@ class ExtentSelectionPanel(BASE, WIDGET):
         self.dialog.activateWindow()
 
     def getExtent(self):
-        if self.leText.text().strip() != '':
-            extent = self.leText.text()
-            tokens = extent[:extent.find("[")].split(",")
-            if len(tokens) !=4:
-                return None
-            try:
-                coords = [float(v) for v in tokens]
-            except ValueError:
-                return None
-            rect = QgsRectangle(coords[0], coords[2], coords[1], coords[3])
-            if "[" in extent:
-                authid = extent[extent.find("[") + 1:extent.find("]")]
-                print(authid)
-                crs = QgsCoordinateReferenceSystem(authid)
-                if not crs.isValid():
-                    return None
-            else:
-                crs = QgsProject.instance().crs()
-            return QgsReferencedRectangle(rect, crs)
-        else:
+        try:
+            coords = [
+                float(self.txtWest.text()),
+                float(self.txtSouth.text()),
+                float(self.txtEast.text()),
+                float(self.txtNorth.text()),
+            ]
+        except ValueError:
             return None
+        rect = QgsRectangle(coords[0], coords[1], coords[2], coords[3])
+        return QgsReferencedRectangle(rect, self.crsSelector.crs())
 
     def setExtentFromString(self, s):
         self.leText.setText(s)
