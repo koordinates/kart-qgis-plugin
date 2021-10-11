@@ -181,9 +181,11 @@ class ReposItem(RefreshableItem):
     @executeskart
     def cloneRepo(self):
         dialog = CloneDialog()
-        if dialog.exec() == dialog.Accepted:
-            src, dst = dialog.result
-            repo = Repository.clone(src, dst)
+        dialog.show()
+        ret = dialog.exec_()
+        if ret == dialog.Accepted:
+            src, dst, extent = dialog.result
+            repo = Repository.clone(src, dst, extent)
             item = RepoItem(repo)
             self.addChild(item)
 

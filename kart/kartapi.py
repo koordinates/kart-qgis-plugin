@@ -243,8 +243,13 @@ class Repository:
         return executeKart(commands, self.path, jsonoutput)
 
     @staticmethod
-    def clone(src, dst):
-        executeKart(["clone", src, dst])
+    def clone(src, dst, extent=None):
+        if extent is not None:
+            kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
+            executeKart(["clone", src, dst, "--spatial-filter", kartExtent])
+        else:
+            executeKart(["clone", src, dst])
+
         return Repository(dst)
 
     def isInitialized(self):
