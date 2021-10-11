@@ -283,7 +283,7 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 "Import", "Layer correctly imported", level=Qgis.Info
             )
-            if self.populate:
+            if self.populated:
                 self.layersItem.refreshContent()
             if tmpfolder is not None:
                 tmpfolder.cleanup()
