@@ -188,6 +188,7 @@ class ReposItem(RefreshableItem):
             repo = Repository.clone(src, dst, extent)
             item = RepoItem(repo)
             self.addChild(item)
+            addRepo(repo)
 
 
 class RepoItem(RefreshableItem):
