@@ -91,7 +91,9 @@ class KartPlugin(object):
     def unload(self):
         self.iface.removeDockWidget(self.dock)
         self.dock = None
-        self.iface.removePluginMenu("Kart", self.action)
+        self.iface.removePluginMenu("Kart", self.explorerAction)
+        self.iface.removePluginMenu("Kart", self.settingsAction)
+        self.iface.removePluginMenu("Kart", self.aboutAction)
 
         QgsProject.instance().layerWillBeRemoved.disconnect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)
