@@ -295,7 +295,7 @@ class Repository:
             kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
             self.executeKart(["checkout", "--spatial-filter", kartExtent])
         else:
-            self.executeKart(["checkout"])
+            self.executeKart(["checkout", "--spatial-filter="])
         self._updateCanvas()
 
     def isInitialized(self):
