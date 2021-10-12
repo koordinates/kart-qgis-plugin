@@ -20,10 +20,9 @@ from processing.gui.ExtentSelectionPanel import LayerSelectionDialog
 from processing.gui.RectangleMapTool import RectangleMapTool
 
 
-pluginPath = os.path.dirname(__file__)
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    WIDGET, BASE = uic.loadUiType(os.path.join(pluginPath, "extentselectionpanel.ui"))
+WIDGET, BASE = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "extentselectionpanel.ui")
+)
 
 
 class ExtentSelectionPanel(BASE, WIDGET):
@@ -80,6 +79,12 @@ class ExtentSelectionPanel(BASE, WIDGET):
     def updateExtent(self):
         r = self.tool.rectangle()
         self.setValueFromRect(r)
+        self.tool.reset()
+        canvas = iface.mapCanvas()
+        canvas.setMapTool(self.prevMapTool)
+        self.dialog.showNormal()
+        self.dialog.raise_()
+        self.dialog.activateWindow()
 
     def setValueFromRect(self, r):
         self.txtNorth.setText(str(r.yMaximum()))
@@ -91,12 +96,6 @@ class ExtentSelectionPanel(BASE, WIDGET):
         except Exception:
             crs = QgsProject.instance().crs()
         self.crsSelector.setCrs(crs)
-        self.tool.reset()
-        canvas = iface.mapCanvas()
-        canvas.setMapTool(self.prevMapTool)
-        self.dialog.showNormal()
-        self.dialog.raise_()
-        self.dialog.activateWindow()
 
     def getExtent(self):
         try:
@@ -110,6 +109,3 @@ class ExtentSelectionPanel(BASE, WIDGET):
             return None
         rect = QgsRectangle(coords[0], coords[1], coords[2], coords[3])
         return QgsReferencedRectangle(rect, self.crsSelector.crs())
-
-    def setExtentFromString(self, s):
-        self.leText.setText(s)

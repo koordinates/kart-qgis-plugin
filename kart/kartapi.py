@@ -3,7 +3,6 @@ import locale
 import os
 import re
 import subprocess
-import sqlite3
 import sys
 import tempfile
 
@@ -14,7 +13,13 @@ from qgis.PyQt.QtWidgets import (
     QApplication,
 )
 
-from qgis.core import QgsMessageOutput, QgsProject
+from qgis.core import (
+    QgsMessageOutput,
+    QgsProject,
+    QgsCoordinateReferenceSystem,
+    QgsRectangle,
+    QgsReferencedRectangle,
+)
 
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
@@ -255,10 +260,43 @@ class Repository:
     def title(self):
         with open(os.path.join(self.path, ".kart", "description")) as f:
             description = f.read()
-        if "unnamed" in description.lower():
-            return os.path.normpath(self.path)
+        if description:
+            if "unnamed" in description.lower():
+                return ""
+            else:
+                return description.splitlines()[0]
         else:
-            return description.splitlines()[0]
+            return ""
+
+    def setTitle(self, title):
+        with open(os.path.join(self.path, ".kart", "description"), "w") as f:
+            f.write(title)
+
+    def _config(self):
+        ret = self.executeKart(["config", "-l"])
+        lines = ret.splitlines()
+        configDict = {}
+        for line in lines:
+            k, v = line.split("=")
+            configDict[k] = v
+        return configDict
+
+    def spatialFilter(self):
+        configDict = self._config()
+        if "kart.spatialfilter.geometry" in configDict:
+            crs = QgsCoordinateReferenceSystem(configDict["kart.spatialfilter.crs"])
+            rect = QgsRectangle.fromWkt(configDict["kart.spatialfilter.geometry"])
+            return QgsReferencedRectangle(rect, crs)
+        else:
+            return None
+
+    def setSpatialFilter(self, extent=None):
+        if extent:
+            kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
+            self.executeKart(["checkout", "--spatial-filter", kartExtent])
+        else:
+            self.executeKart(["checkout"])
+        self._updateCanvas()
 
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
@@ -270,8 +308,8 @@ class Repository:
         self.executeKart(["import", f"GPKG:{path}"])
 
     def checkUserConfigured(self):
-        ret = self.executeKart(["config", "-l"])
-        if "user.name" in ret and "user.email" in ret:
+        configDict = self._config()
+        if "user.name" in configDict and "user.email" in configDict:
             return True
         dlg = UserConfigDialog()
         if dlg.exec() == dlg.Accepted:

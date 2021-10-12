@@ -5,24 +5,28 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
+from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
+
+from kart.kartapi import executeskart
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
 
-WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
+
+WIDGET, BASE = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui")
+)
 
 
-class CloneDialog(BASE, WIDGET):
-    def __init__(self):
+class RepoPropertiesDialog(BASE, WIDGET):
+    def __init__(self, repo):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.repo = repo
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.layout().addWidget(self.bar)
-
-        self.btnBrowseSrc.clicked.connect(lambda: self.browse(self.txtSrc))
-        self.btnBrowseDst.clicked.connect(lambda: self.browse(self.txtDst))
 
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
@@ -30,16 +34,22 @@ class CloneDialog(BASE, WIDGET):
         self.extentPanel = ExtentSelectionPanel(self)
         self.grpFilter.layout().addWidget(self.extentPanel, 1, 0)
 
-    def browse(self, textbox):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), "Select Folder", ""
-        )
-        if folder:
-            textbox.setText(folder)
+        self.populate()
 
+    @executeskart
+    def populate(self):
+        self.txtTitle.setText(self.repo.title())
+        self.labelLocation.setText(os.path.normpath(self.repo.path))
+        spatialFilter = self.repo.spatialFilter()
+        if spatialFilter is not None:
+            self.grpFilter.setChecked(True)
+            self.extentPanel.setValueFromRect(spatialFilter)
+        else:
+            self.grpFilter.setChecked(False)
+
+    @executeskart
     def okClicked(self):
-        src = self.txtSrc.text()
-        dst = self.txtDst.text()
+        self.repo.setTitle(self.txtTitle.text())
         if self.grpFilter.isChecked():
             extent = self.extentPanel.getExtent()
             if extent is None:
@@ -47,10 +57,5 @@ class CloneDialog(BASE, WIDGET):
                 return
         else:
             extent = None
-        if src and dst:
-            self.result = src, dst, extent
-            self.accept()
-        else:
-            self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.Warning, duration=5
-            )
+        self.repo.setSpatialFilter(extent)
+        self.accept()

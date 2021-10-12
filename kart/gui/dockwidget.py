@@ -25,6 +25,7 @@ from kart.gui.conflictsdialog import ConflictsDialog
 from kart.gui.clonedialog import CloneDialog
 from kart.gui.pushdialog import PushDialog
 from kart.gui.pulldialog import PullDialog
+from kart.gui.repopropertiesdialog import RepoPropertiesDialog
 from kart.utils import layerFromSource
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -53,6 +54,7 @@ pushIcon = icon("push.png")
 pullIcon = icon("pull.png")
 removeIcon = icon("remove.png")
 refreshIcon = icon("update.png")
+propertiesIcon = icon("info.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -196,7 +198,7 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
-        self.setText(0, repo.title())
+        self.setText(0, repo.title() or os.path.normpath(repo.path))
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
@@ -214,6 +216,7 @@ class RepoItem(RefreshableItem):
     def _actions(self):
         actions = [
             ("Remove this repository", self.removeRepository, removeIcon),
+            ("Properties...", self.showProperties, propertiesIcon),
             ("divider", None, None),
         ]
         if self.repo.isMerging():
@@ -240,6 +243,12 @@ class RepoItem(RefreshableItem):
             )
 
         return actions
+
+    def showProperties(self):
+        dialog = RepoPropertiesDialog(self.repo)
+        dialog.show()
+        dialog.exec()
+        self.setText(0, self.repo.title() or os.path.normpath(self.repo.path))
 
     def removeRepository(self):
         self.parent().takeChild(self.parent().indexOfChild(self))
