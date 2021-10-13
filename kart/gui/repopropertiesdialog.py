@@ -39,7 +39,8 @@ class RepoPropertiesDialog(BASE, WIDGET):
     @executeskart
     def populate(self):
         self.txtTitle.setText(self.repo.title())
-        self.labelLocation.setText(os.path.normpath(self.repo.path))
+        self.labelRepoLocation.setText(os.path.normpath(self.repo.path))
+        self.labelWorkingCopyLocation.setText(self.repo.workingCopyLocation())
         spatialFilter = self.repo.spatialFilter()
         if spatialFilter is not None:
             self.grpFilter.setChecked(True)

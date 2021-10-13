@@ -25,6 +25,7 @@ from kart.gui.conflictsdialog import ConflictsDialog
 from kart.gui.clonedialog import CloneDialog
 from kart.gui.pushdialog import PushDialog
 from kart.gui.pulldialog import PullDialog
+from kart.gui.initdialog import InitDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
 from kart.utils import layerFromSource
 
@@ -165,12 +166,11 @@ class ReposItem(RefreshableItem):
 
     @executeskart
     def createRepo(self):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), "Repository Folder", ""
-        )
-        if folder:
-            repo = Repository(folder)
-            repo.init()
+        dialog = InitDialog()
+        ret = dialog.exec()
+        if ret == dialog.Accepted:
+            repo = Repository(dialog.folder)
+            repo.init(dialog.location)
             if repo.isInitialized():
                 item = RepoItem(repo)
                 self.addChild(item)
@@ -186,8 +186,9 @@ class ReposItem(RefreshableItem):
         dialog.show()
         ret = dialog.exec_()
         if ret == dialog.Accepted:
-            src, dst, extent = dialog.result
-            repo = Repository.clone(src, dst, extent)
+            repo = Repository.clone(
+                dialog.src, dialog.dst, dialog.location, dialog.extent
+            )
             item = RepoItem(repo)
             self.addChild(item)
             addRepo(repo)
@@ -498,15 +499,15 @@ class LayerItem(QTreeWidgetItem):
         return actions
 
     def addToProject(self):
-        name = os.path.basename(self.repo.path)
-        path = os.path.join(self.repo.path, f"{name}.gpkg|layername={self.layername}")
-        layer = iface.addVectorLayer(path, self.layername, "ogr")
-        if not layer.isValid():
+        layer = self.repo.workingCopyLayer(self.layername)
+        if layer is None:
             iface.messageBar().pushMessage(
                 "Add layer",
                 "Layer could not be added\nOnly Gpkg-based repositories are supported",
                 level=Qgis.Warning,
             )
+        else:
+            QgsProject.instance().addMapLayer(layer)
 
     @executeskart
     def removeFromRepo(self):

@@ -7,16 +7,15 @@ from qgis.gui import QgsMessageBar
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
-from kart.gui.extentselectionpanel import ExtentSelectionPanel
 from kart.gui.locationselectionpanel import (
     LocationSelectionPanel,
     InvalidLocationException,
 )
 
-WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "initdialog.ui"))
 
 
-class CloneDialog(BASE, WIDGET):
+class InitDialog(BASE, WIDGET):
     def __init__(self):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
@@ -25,24 +24,20 @@ class CloneDialog(BASE, WIDGET):
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.layout().addWidget(self.bar)
 
-        self.btnBrowseSrc.clicked.connect(lambda: self.browse(self.txtSrc))
-        self.btnBrowseDst.clicked.connect(lambda: self.browse(self.txtDst))
+        self.btnBrowse.clicked.connect(self.browse)
 
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.extentPanel = ExtentSelectionPanel(self)
-        self.grpFilter.layout().addWidget(self.extentPanel, 1, 0)
-
         self.locationPanel = LocationSelectionPanel()
         self.grpLocation.layout().addWidget(self.locationPanel, 1, 0)
 
-    def browse(self, textbox):
+    def browse(self):
         folder = QFileDialog.getExistingDirectory(
             iface.mainWindow(), "Select Folder", ""
         )
         if folder:
-            textbox.setText(folder)
+            self.txtFolder.setText(folder)
 
     def okClicked(self):
         try:
@@ -52,16 +47,8 @@ class CloneDialog(BASE, WIDGET):
                 "Invalid location definition", Qgis.Warning, duration=5
             )
             return
-        self.src = self.txtSrc.text()
-        self.dst = self.txtDst.text()
-        if self.grpFilter.isChecked():
-            self.extent = self.extentPanel.getExtent()
-            if self.extent is None:
-                self.bar.pushMessage("Invalid extent value", Qgis.Warning, duration=5)
-                return
-        else:
-            self.extent = None
-        if self.src and self.dst:
+        self.folder = self.txtFolder.text()
+        if self.folder:
             self.accept()
         else:
             self.bar.pushMessage(

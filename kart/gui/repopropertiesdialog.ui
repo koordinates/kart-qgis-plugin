@@ -20,6 +20,13 @@
       <string>Basic properties</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="2">
+       <widget class="QLabel" name="labelRepoLocation">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="2">
        <widget class="QLineEdit" name="txtTitle"/>
       </item>
@@ -33,12 +40,19 @@
       <item row="1" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Location:</string>
+         <string>Repository location :</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="labelLocation">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Working copy location:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2">
+       <widget class="QLabel" name="labelWorkingCopyLocation">
         <property name="text">
          <string/>
         </property>

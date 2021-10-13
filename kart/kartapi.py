@@ -6,6 +6,8 @@ import subprocess
 import sys
 import tempfile
 
+from urllib.parse import urlparse
+
 from osgeo import gdal
 
 from qgis.PyQt.QtCore import QSettings, Qt
@@ -14,11 +16,13 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from qgis.core import (
+    QgsDataSourceUri,
     QgsMessageOutput,
     QgsProject,
     QgsCoordinateReferenceSystem,
     QgsRectangle,
     QgsReferencedRectangle,
+    QgsVectorLayer,
 )
 
 from kart.gui.userconfigdialog import UserConfigDialog
@@ -248,12 +252,15 @@ class Repository:
         return executeKart(commands, self.path, jsonoutput)
 
     @staticmethod
-    def clone(src, dst, extent=None):
+    def clone(src, dst, location, extent=None):
+        commands = ["clone", src, dst]
+        if location is not None:
+            commands.extend(["--workingcopy", location])
         if extent is not None:
             kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
-            executeKart(["clone", src, dst, "--spatial-filter", kartExtent])
-        else:
-            executeKart(["clone", src, dst])
+            commands.extent(["--spatial-filter", kartExtent])
+
+        executeKart(commands)
 
         return Repository(dst)
 
@@ -301,8 +308,11 @@ class Repository:
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
 
-    def init(self):
-        self.executeKart(["init"])
+    def init(self, location):
+        if location is not None:
+            self.executeKart(["init", "--workingcopy", location])
+        else:
+            self.executeKart(["init"])
 
     def importGpkg(self, path):
         self.executeKart(["import", f"GPKG:{path}"])
@@ -497,16 +507,40 @@ class Repository:
         return "kart conflicts" not in ret
 
     def layerBelongsToRepo(self, layer):
-        return os.path.normpath(os.path.dirname(layer.source())) == os.path.normpath(
-            self.path
-        )
+        location = self.workingCopyLocation()
+        if location.lower().startswith("postgres"):
+            uri = QgsDataSourceUri(layer.source())
+            parse = urlparse(location)
+            database, schema = parse.path.strip("/").split("/", 1)
+            return uri.database() == database and uri.schema() == schema
+        else:
+            return os.path.normpath(self.path) in os.path.normpath(layer.source())
+
+    def workingCopyLocation(self):
+        return self._config()["kart.workingcopy.location"]
+
+    def workingCopyLayer(self, layername):
+        location = self.workingCopyLocation()
+        path = os.path.join(self.path, location)
+        if os.path.exists(path):
+            layer = QgsVectorLayer(f"{path}|layername={layername}", layername)
+            return layer
+        elif location.lower().startswith("postgres"):
+            parse = urlparse(location)
+            host = parse.hostname or "localhost"
+            port = parse.port or "5432"
+            database, schema = parse.path.strip("/").split("/", 1)
+            uri = QgsDataSourceUri()
+            uri.setConnection(host, port, database)
+            uri.setDataSource(schema, layername, "geom")
+            layer = QgsVectorLayer(uri.uri(), layername, "postgres")
+            return layer
 
     def deleteLayer(self, layername):
         name = os.path.basename(self.path)
         path = os.path.join(self.path, f"{name}.gpkg")
         ds = gdal.OpenEx(path, gdal.OF_UPDATE, allowed_drivers=["GPKG"])
         for i in range(ds.GetLayerCount()):
-            print(ds.GetLayer(i).GetName())
             if ds.GetLayer(i).GetName() == layername:
                 ret = ds.DeleteLayer(i)
                 if ret == 0:
