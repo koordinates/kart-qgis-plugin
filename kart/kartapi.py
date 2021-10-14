@@ -548,6 +548,12 @@ class Repository:
                 else:
                     raise KartException("Could not delete layer from repository")
 
+    def createPatch(self, ref, filename):
+        self.executeKart(["show", "-ojson", "--output", filename, ref])
+
+    def applyPatch(self, filename):
+        self.executeKart(["apply", "--no-commit", filename])
+
     def _updateCanvas(self):
         for layer in QgsProject.instance().mapLayers().values():
             if self.layerBelongsToRepo(layer):

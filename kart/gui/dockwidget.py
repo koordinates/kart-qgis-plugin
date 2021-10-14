@@ -54,8 +54,9 @@ resolveIcon = icon("resolve.png")
 pushIcon = icon("push.png")
 pullIcon = icon("pull.png")
 removeIcon = icon("remove.png")
-refreshIcon = icon("update.png")
+refreshIcon = icon("refresh.png")
 propertiesIcon = icon("info.png")
+patchIcon = icon("patch.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -240,6 +241,7 @@ class RepoItem(RefreshableItem):
                     ("Import layer into repo...", self.importLayer, importIcon),
                     ("Pull...", self.pull, pullIcon),
                     ("Push...", self.push, pushIcon),
+                    ("Apply patch...", self.applyPatch, patchIcon),
                 ]
             )
 
@@ -452,6 +454,22 @@ class RepoItem(RefreshableItem):
                 iface.messageBar().pushMessage(
                     "Pull", "Pull correctly performed", level=Qgis.Info
                 )
+
+    @executeskart
+    def applyPatch(self):
+        filename, _ = QFileDialog.getOpenFileName(
+            iface.mainWindow(),
+            "Patch file",
+            "",
+            "Patch files (*.patch);;All files (*.*)",
+        )
+        if filename:
+            self.repo.applyPatch(filename)
+            iface.messageBar().pushMessage(
+                "Apply patch",
+                "Patch was correctly applied to working copy",
+                level=Qgis.Info,
+            )
 
 
 class LayersItem(RefreshableItem):

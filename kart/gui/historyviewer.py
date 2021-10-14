@@ -36,6 +36,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel,
     QInputDialog,
     QHeaderView,
+    QFileDialog,
 )
 
 COMMIT_GRAPH_HEIGHT = 20
@@ -69,6 +70,7 @@ createBranchIcon = icon("createbranch.png")
 deleteIcon = icon("delete.png")
 createTagIcon = icon("label.png")
 restoreIcon = icon("checkout.png")
+patchIcon = icon("patch.png")
 
 
 class HistoryTree(QTreeWidget):
@@ -112,6 +114,13 @@ class HistoryTree(QTreeWidget):
                         parents[0],
                     ),
                     diffIcon,
+                )
+                actions["Save changes as patch..."] = (
+                    _f(
+                        self.savePatch,
+                        item.commit["commit"],
+                    ),
+                    patchIcon,
                 )
             elif len(parents) > 1:
                 for parent in parents:
@@ -238,6 +247,16 @@ class HistoryTree(QTreeWidget):
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes)
         dialog.exec()
+
+    @executeskart
+    def savePatch(self, ref):
+        filename, _ = QFileDialog.getSaveFileName(
+            iface.mainWindow(),
+            "Patch file",
+            "",
+            "Patch files (*.patch);;All files (*.*)",
+        )
+        self.repo.createPatch(ref, filename)
 
     @executeskart
     def resetBranch(self, item):
