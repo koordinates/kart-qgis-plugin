@@ -26,6 +26,7 @@ from kart.gui.clonedialog import CloneDialog
 from kart.gui.pushdialog import PushDialog
 from kart.gui.pulldialog import PullDialog
 from kart.gui.initdialog import InitDialog
+from kart.gui.mergedialog import MergeDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
 from kart.utils import layerFromSource
 
@@ -66,8 +67,10 @@ class KartDockWidget(BASE, WIDGET):
         super(QDockWidget, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
-        pixmap = QPixmap(os.path.join(pluginPath, "img", "kart-logo.png"))
-        self.labelHeader.setPixmap(pixmap)
+        pixmap = QPixmap(
+            os.path.join(pluginPath, "img", "karticon.png")
+        ).scaledToHeight(self.labelHeaderText.height() * 2)
+        self.labelHeaderIcon.setPixmap(pixmap)
         self.tree.setFocusPolicy(Qt.NoFocus)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -238,9 +241,12 @@ class RepoItem(RefreshableItem):
                     ("Commit working tree changes...", self.commitChanges, commitIcon),
                     ("Switch branch...", self.switchBranch, checkoutIcon),
                     ("Merge into current branch...", self.mergeBranch, mergeIcon),
+                    ("divider", None, None),
                     ("Import layer into repo...", self.importLayer, importIcon),
+                    ("divider", None, None),
                     ("Pull...", self.pull, pullIcon),
                     ("Push...", self.push, pushIcon),
+                    ("divider", None, None),
                     ("Apply patch...", self.applyPatch, patchIcon),
                 ]
             )
@@ -356,16 +362,11 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def mergeBranch(self):
-        branches = self.repo.branches()
-        branch, ok = QInputDialog.getItem(
-            iface.mainWindow(),
-            "Branch",
-            "Select branch to merge into current branch:",
-            branches,
-            editable=False,
-        )
-        if ok:
-            conflicts = self.repo.mergeBranch(branch)
+        dialog = MergeDialog(self.repo)
+        if dialog.exec() == dialog.Accepted:
+            conflicts = self.repo.mergeBranch(
+                dialog.ref, msg=dialog.message, ff=dialog.ff, ffonly=dialog.ffonly
+            )
             if conflicts:
                 QMessageBox.warning(
                     iface.mainWindow(),

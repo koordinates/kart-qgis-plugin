@@ -1,10 +1,13 @@
 import json
 import locale
+import math
 import os
 import re
 import subprocess
 import sys
 import tempfile
+
+from functools import partial
 
 from urllib.parse import urlparse
 
@@ -28,6 +31,7 @@ from qgis.core import (
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 
+from kart.utils import progressBar
 from kart import logging
 
 SUPPORTED_VERSION = "0.10.2"
@@ -165,7 +169,7 @@ def kartVersionDetails():
         return errtxt
 
 
-def executeKart(commands, path=None, jsonoutput=False):
+def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     commands.insert(0, kartExecutable())
     if jsonoutput:
         commands.append("-ojson")
@@ -181,22 +185,36 @@ def executeKart(commands, path=None, jsonoutput=False):
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
-        ret = subprocess.Popen(
+
+        with subprocess.Popen(
             commands,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=executeKart.env,
             shell=os.name == "nt",
-        )
-        stdout, stderr = ret.communicate()
-        output = stdout.decode(encoding)
-        logging.debug(f"Command output: {output}")
-        if ret.returncode:
-            raise Exception(stderr.decode(encoding))
-        if jsonoutput:
-            return json.loads(output)
-        else:
-            return output
+            env=executeKart.env,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+            encoding=encoding,
+        ) as proc:
+            if feedback is not None:
+                output = []
+                err = []
+                for line in proc.stderr:
+                    feedback(line)
+                    err.append(line)
+                for line in proc.stdout:
+                    output.append(line)
+                stdout = "".join(output)
+                stderr = "".join(err)
+            else:
+                stdout, stderr = proc.communicate()
+            logging.debug(f"Command output: {stdout}")
+            if proc.returncode:
+                raise Exception(stderr)
+            if jsonoutput:
+                return json.loads(stdout)
+            else:
+                return stdout
     except Exception as e:
         logging.error(str(e))
         raise KartException(str(e))
@@ -244,6 +262,21 @@ def repoForLayer(layer):
             return repo
 
 
+def _processProgressLine(bar, line):
+    if "Writing dataset" in line:
+        layername = line.split(":")[-1].strip()
+        bar.setText(f"Checking out layer '{layername}'")
+    elif "Receiving objects: " in line or "Writing objects: " in line:
+        tokens = line.split(": ")
+        bar.setText(tokens[0])
+        bar.setValue(math.floor(float(tokens[1][1 : tokens[1].find("%")].strip())))
+    else:
+        msg = line.split(" - ")[-1]
+        if "%" in msg:
+            value = math.floor(float(msg.split("%")[0]))
+            bar.setValue(value)
+
+
 class Repository:
     def __init__(self, path):
         self.path = path
@@ -253,14 +286,16 @@ class Repository:
 
     @staticmethod
     def clone(src, dst, location, extent=None):
-        commands = ["clone", src, dst]
+        commands = ["-vv", "clone", src, dst, "--progress"]
         if location is not None:
             commands.extend(["--workingcopy", location])
         if extent is not None:
             kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
             commands.extent(["--spatial-filter", kartExtent])
 
-        executeKart(commands)
+        with progressBar("Clone") as bar:
+            bar.setText("Cloning repository")
+            executeKart(commands, feedback=partial(_processProgressLine, bar))
 
         return Repository(dst)
 
@@ -383,8 +418,15 @@ class Repository:
     def deleteBranch(self, branch):
         return self.executeKart(["branch", "-d", branch])
 
-    def mergeBranch(self, branch):
-        ret = self.executeKart(["merge", branch], True)
+    def mergeBranch(self, branch, msg, noff=False, ffonly=False):
+        commands = ["merge", branch]
+        if msg:
+            commands.extend(["--message", msg])
+        if ff:
+            commands.append("--no-ff")
+        if ffonly:
+            commands.append("--ff-only")
+        ret = self.executeKart(commands, True)
         self._updateCanvas()
         return list(ret.values())[0].get("conflicts", [])
 
@@ -393,6 +435,9 @@ class Repository:
 
     def continueMerge(self):
         return self.executeKart(["merge", "--continue", "-m", self.mergeMessage()])
+
+    def tags(self):
+        return self.executeKart(["tag"]).splitlines()
 
     def createTag(self, tag, ref):
         return self.executeKart(["tag", tag, ref])
