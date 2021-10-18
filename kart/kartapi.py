@@ -422,7 +422,7 @@ class Repository:
         commands = ["merge", branch]
         if msg:
             commands.extend(["--message", msg])
-        if ff:
+        if noff:
             commands.append("--no-ff")
         if ffonly:
             commands.append("--ff-only")

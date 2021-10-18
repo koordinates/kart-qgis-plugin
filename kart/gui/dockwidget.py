@@ -365,7 +365,7 @@ class RepoItem(RefreshableItem):
         dialog = MergeDialog(self.repo)
         if dialog.exec() == dialog.Accepted:
             conflicts = self.repo.mergeBranch(
-                dialog.ref, msg=dialog.message, ff=dialog.ff, ffonly=dialog.ffonly
+                dialog.ref, msg=dialog.message, noff=dialog.noff, ffonly=dialog.ffonly
             )
             if conflicts:
                 QMessageBox.warning(
