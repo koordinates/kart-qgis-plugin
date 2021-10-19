@@ -266,15 +266,17 @@ def _processProgressLine(bar, line):
     if "Writing dataset" in line:
         layername = line.split(":")[-1].strip()
         bar.setText(f"Checking out layer '{layername}'")
-    elif "Receiving objects: " in line or "Writing objects: " in line:
+    elif line.startswith("Receiving objects: ") or line.startswith("Writing objects: "):
         tokens = line.split(": ")
         bar.setText(tokens[0])
         bar.setValue(math.floor(float(tokens[1][1 : tokens[1].find("%")].strip())))
     else:
         msg = line.split(" - ")[-1]
         if "%" in msg:
-            value = math.floor(float(msg.split("%")[0]))
-            bar.setValue(value)
+            matches = re.findall(r"(\d+(\.\d+)?)", msg)
+            if matches:
+                value = math.floor(float(matches[0][0]))
+                bar.setValue(value)
 
 
 class Repository:
@@ -286,6 +288,8 @@ class Repository:
 
     @staticmethod
     def clone(src, dst, location, extent=None):
+        if "://" not in src:
+            src = f"file://{src}"
         commands = ["-vv", "clone", src, dst, "--progress"]
         if location is not None:
             commands.extend(["--workingcopy", location])
