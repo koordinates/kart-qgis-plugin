@@ -408,8 +408,12 @@ class Repository:
         branches = list(self.executeKart(["branch"], True).values())[0]["branches"]
         return list(b.split("->")[-1].strip() for b in branches.keys())
 
-    def checkoutBranch(self, branch):
-        self.executeKart(["checkout", branch])
+    def checkoutBranch(self, branch, force=False):
+        if force:
+            commands = ["checkout", "--force", branch]
+        else:
+            commands = ["checkout", branch]
+        self.executeKart(commands)
         self._updateCanvas()
 
     def createBranch(self, branch, commit="HEAD"):

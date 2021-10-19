@@ -27,6 +27,7 @@ from kart.gui.pushdialog import PushDialog
 from kart.gui.pulldialog import PullDialog
 from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
+from kart.gui.switchdialog import SwitchDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
 from kart.utils import layerFromSource
 
@@ -349,16 +350,9 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def switchBranch(self):
-        branches = self.repo.branches()
-        branch, ok = QInputDialog.getItem(
-            iface.mainWindow(),
-            "Branch",
-            "Select branch to switch to:",
-            branches,
-            editable=False,
-        )
-        if ok:
-            self.repo.checkoutBranch(branch)
+        dialog = SwitchDialog(self.repo)
+        if dialog.exec() == dialog.Accepted:
+            self.repo.checkoutBranch(dialog.branch, dialog.force)
 
     @executeskart
     def mergeBranch(self):
