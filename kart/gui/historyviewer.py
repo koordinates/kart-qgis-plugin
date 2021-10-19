@@ -1,9 +1,10 @@
+import json
 import os
 
 from kart.kartapi import executeskart
 from kart.gui.diffviewer import DiffViewerDialog
 
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsProject, QgsVectorLayer, QgsWkbTypes
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
@@ -71,6 +72,7 @@ deleteIcon = icon("delete.png")
 createTagIcon = icon("label.png")
 restoreIcon = icon("checkout.png")
 patchIcon = icon("patch.png")
+addtoQgisIcon = icon("openinqgis.png")
 
 
 class HistoryTree(QTreeWidget):
@@ -121,6 +123,10 @@ class HistoryTree(QTreeWidget):
                         item.commit["commit"],
                     ),
                     patchIcon,
+                )
+                actions["Add changes to current QGIS project as vector layer"] = (
+                    _f(self.saveAsLayer, item.commit["commit"], parents[0]),
+                    addtoQgisIcon,
                 )
             elif len(parents) > 1:
                 for parent in parents:
@@ -257,6 +263,21 @@ class HistoryTree(QTreeWidget):
             "Patch files (*.patch);;All files (*.*)",
         )
         self.repo.createPatch(ref, filename)
+
+    @executeskart
+    def saveAsLayer(self, refa, refb):
+        changes = self.repo.diff(refb, refa)
+        for layer in changes:
+            geojson = {"type": "FeatureCollection", "features": changes[layer]}
+            layer = QgsVectorLayer(
+                json.dumps(geojson), f"{layer}_diff_{refa[:7]}", "ogr"
+            )
+            styleFilename = f"diff_{QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()}.qml"
+            stylePath = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)), "resources", styleFilename
+            )
+            layer.loadNamedStyle(stylePath)
+            QgsProject.instance().addMapLayer(layer)
 
     @executeskart
     def resetBranch(self, item):

@@ -71,7 +71,6 @@ class DiffViewerWidget(WIDGET, BASE):
     def __init__(self, changes):
         super(DiffViewerWidget, self).__init__()
         self.changes = changes
-        print(json.dumps(changes))
         self.oldLayer = None
         self.newLayer = None
 
