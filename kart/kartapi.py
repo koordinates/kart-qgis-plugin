@@ -593,6 +593,14 @@ class Repository:
             layer = QgsVectorLayer(uri.uri(), layername, "postgres")
             return layer
 
+    def workingCopyLayerIdField(self, layername):
+        schema = self.executeKart(["meta", "get", layername, "schema.json"], True)[
+            layername
+        ]["schema.json"]
+        for attr in schema:
+            if attr.get("primaryKeyIndex") == 0:
+                return attr["name"]
+
     def deleteLayer(self, layername):
         # TODO handle case of layer not in gpkg-based repo
         name = os.path.basename(self.path)

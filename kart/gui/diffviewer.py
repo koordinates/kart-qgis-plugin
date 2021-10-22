@@ -91,6 +91,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.newLayer = None
         self.currentFeature = None
         self.workingCopyLayers = {}
+        self.workingCopyLayersIdFields = {}
 
         self.setupUi(self)
 
@@ -294,6 +295,11 @@ class DiffViewerWidget(WIDGET, BASE):
         if layername not in self.workingCopyLayers:
             self.workingCopyLayers[layername] = self.repo.workingCopyLayer(layername)
         layer = self.workingCopyLayers[layername]
+        if layername not in self.workingCopyLayersIdFields:
+            self.workingCopyLayersIdFields[
+                layername
+            ] = self.repo.workingCopyLayerIdField(layername)
+        idField = self.workingCopyLayersIdFields[layername]
         ref = new or old
         geomtype = ref["geometry"]["type"]
         self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
@@ -321,7 +327,7 @@ class DiffViewerWidget(WIDGET, BASE):
             for prop in feature.fields().names():
                 if prop in old:
                     feature[prop] = old[prop]
-                feature["fid"] = self.currentFeature.fid
+                feature[idField] = self.currentFeature.fid
             feature.setGeometry(geom)
             self.oldLayer.dataProvider().addFeatures([feature])
         if bool(new):
@@ -330,7 +336,7 @@ class DiffViewerWidget(WIDGET, BASE):
             for prop in feature.fields().names():
                 if prop in new:
                     feature[prop] = new[prop]
-                feature["fid"] = self.currentFeature.fid
+                feature[idField] = self.currentFeature.fid
             feature.setGeometry(geom)
             self.newLayer.dataProvider().addFeatures([feature])
         self.btnRecoverOldVersion.setEnabled(bool(old))
@@ -353,8 +359,9 @@ class DiffViewerWidget(WIDGET, BASE):
     def _recoverVersion(self, layer):
         new = list(layer.getFeatures())[0]
         layer = self.workingCopyLayers[self.currentFeature.layer]
+        idField = self.workingCopyLayersIdFields[self.currentFeature.layer]
         with edit(layer):
-            old = list(layer.getFeatures(f'"fid" = {self.currentFeature.fid}'))
+            old = list(layer.getFeatures(f'"{idField}" = {self.currentFeature.fid}'))
             if old:
                 layer.deleteFeature(old[0].id())
             layer.addFeature(new)
