@@ -342,7 +342,7 @@ class Repository:
             self.executeKart(["checkout", "--spatial-filter", kartExtent])
         else:
             self.executeKart(["checkout", "--spatial-filter="])
-        self._updateCanvas()
+        self.updateCanvas()
 
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
@@ -380,7 +380,7 @@ class Repository:
 
     def reset(self, ref="HEAD"):
         self.executeKart(["reset", ref, "-f"])
-        self._updateCanvas()
+        self.updateCanvas()
 
     def log(self, ref="HEAD"):
         log = {c["commit"]: c for c in self.executeKart(["log", ref], True)}
@@ -412,13 +412,17 @@ class Repository:
         branches = list(self.executeKart(["branch"], True).values())[0]["branches"]
         return list(b.split("->")[-1].strip() for b in branches.keys())
 
+    def currentBranch(self):
+        branch = list(self.executeKart(["branch"], True).values())[0]["current"]
+        return branch
+
     def checkoutBranch(self, branch, force=False):
         if force:
             commands = ["checkout", "--force", branch]
         else:
             commands = ["checkout", branch]
         self.executeKart(commands)
-        self._updateCanvas()
+        self.updateCanvas()
 
     def createBranch(self, branch, commit="HEAD"):
         return self.executeKart(["branch", branch, commit])
@@ -435,7 +439,7 @@ class Repository:
         if ffonly:
             commands.append("--ff-only")
         ret = self.executeKart(commands, True)
-        self._updateCanvas()
+        self.updateCanvas()
         return list(ret.values())[0].get("conflicts", [])
 
     def abortMerge(self):
@@ -482,7 +486,7 @@ class Repository:
             self.executeKart(["restore", "-s", ref, layer])
         else:
             self.executeKart(["restore", "-s", ref])
-        self._updateCanvas()
+        self.updateCanvas()
 
     def changes(self):
         return (
@@ -532,7 +536,7 @@ class Repository:
                 os.unlink(tmpfile.name)
             else:
                 self.executeKart(["resolve", "--with", "delete", fid])
-        self._updateCanvas()
+        self.updateCanvas()
 
     def remotes(self):
         remotes = {}
@@ -556,7 +560,7 @@ class Repository:
 
     def pull(self, remote, branch):
         ret = self.executeKart(["pull", remote, branch])
-        self._updateCanvas()
+        self.updateCanvas()
         return "kart conflicts" not in ret
 
     def layerBelongsToRepo(self, layer):
@@ -590,6 +594,7 @@ class Repository:
             return layer
 
     def deleteLayer(self, layername):
+        # TODO handle case of layer not in gpkg-based repo
         name = os.path.basename(self.path)
         path = os.path.join(self.path, f"{name}.gpkg")
         ds = gdal.OpenEx(path, gdal.OF_UPDATE, allowed_drivers=["GPKG"])
@@ -607,7 +612,7 @@ class Repository:
     def applyPatch(self, filename):
         self.executeKart(["apply", "--no-commit", filename])
 
-    def _updateCanvas(self):
+    def updateCanvas(self):
         for layer in QgsProject.instance().mapLayers().values():
             if self.layerBelongsToRepo(layer):
                 layer.triggerRepaint()

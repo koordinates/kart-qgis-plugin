@@ -135,13 +135,20 @@ class ReposItem(RefreshableItem):
 
         self.setText(0, "Repositories")
         self.setIcon(0, repoIcon)
+        self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
-        self.populate()
+        self.populated = False
+        # self.populate()
+
+    def onExpanded(self):
+        if not self.populated:
+            self.populate()
 
     def populate(self):
         for repo in repos():
             item = RepoItem(repo)
             self.addChild(item)
+        self.populated = True
 
     def _actions(self):
         actions = [
@@ -204,7 +211,10 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
-        self.setText(0, repo.title() or os.path.normpath(repo.path))
+        title = (
+            f"{repo.title() or os.path.normpath(repo.path)} [{repo.currentBranch()}]"
+        )
+        self.setText(0, title)
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
@@ -339,7 +349,7 @@ class RepoItem(RefreshableItem):
         changes = self.repo.diff()
         hasChanges = any([bool(layerchanges) for layerchanges in changes.values()])
         if hasChanges:
-            dialog = DiffViewerDialog(iface.mainWindow(), changes)
+            dialog = DiffViewerDialog(iface.mainWindow(), changes, self.repo)
             dialog.exec()
         else:
             iface.messageBar().pushMessage(

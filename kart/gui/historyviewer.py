@@ -245,13 +245,13 @@ class HistoryTree(QTreeWidget):
     def showDiff(self, item, parent):
         refa = item.commit["commit"]
         changes = self.repo.diff(refa, parent)
-        dialog = DiffViewerDialog(self, changes)
+        dialog = DiffViewerDialog(self, changes, self.repo)
         dialog.exec()
 
     @executeskart
     def showChangesBetweenCommits(self, refa, refb):
         changes = self.repo.diff(refa, refb)
-        dialog = DiffViewerDialog(self, changes)
+        dialog = DiffViewerDialog(self, changes, self.repo)
         dialog.exec()
 
     @executeskart

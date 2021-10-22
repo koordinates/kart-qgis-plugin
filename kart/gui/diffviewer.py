@@ -5,7 +5,7 @@ import sys
 import json
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.PyQt.QtGui import QIcon, QColor, QBrush
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
@@ -14,9 +14,11 @@ from qgis.PyQt.QtWidgets import (
     QTreeWidgetItem,
     QDialog,
     QTreeWidgetItemIterator,
+    QSizePolicy,
 )
 
 from qgis.core import (
+    edit,
     QgsProject,
     QgsFeature,
     QgsVectorLayer,
@@ -26,7 +28,8 @@ from qgis.core import (
     QgsFillSymbol,
 )
 
-from qgis.gui import QgsMapCanvas
+from qgis.core import Qgis
+from qgis.gui import QgsMapCanvas, QgsMessageBar
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
@@ -51,16 +54,25 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class DiffViewerDialog(QDialog):
-    def __init__(self, parent, changes):
+    def __init__(self, parent, changes, repo):
         super(QDialog, self).__init__(parent)
         self.setWindowFlags(Qt.Window)
-        self.history = DiffViewerWidget(changes)
         layout = QVBoxLayout()
         layout.setMargin(0)
+        self.bar = QgsMessageBar()
+        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        layout.addWidget(self.bar)
+        self.history = DiffViewerWidget(changes, repo)
+        self.history.workingLayerChanged.connect(self.workingLayerChanged)
         layout.addWidget(self.history)
         self.setLayout(layout)
         self.resize(1024, 768)
         self.setWindowTitle("Diff viewer")
+
+    def workingLayerChanged(self):
+        self.bar.pushMessage(
+            "Diff", "Working copy has been correctly modified", Qgis.Success, 5
+        )
 
     def closeEvent(self, evt):
         self.history.removeMapLayers()
@@ -68,11 +80,17 @@ class DiffViewerDialog(QDialog):
 
 
 class DiffViewerWidget(WIDGET, BASE):
-    def __init__(self, changes):
+
+    workingLayerChanged = pyqtSignal()
+
+    def __init__(self, changes, repo):
         super(DiffViewerWidget, self).__init__()
         self.changes = changes
+        self.repo = repo
         self.oldLayer = None
         self.newLayer = None
+        self.currentFeature = None
+        self.workingCopyLayers = {}
 
         self.setupUi(self)
 
@@ -84,6 +102,8 @@ class DiffViewerWidget(WIDGET, BASE):
         tabLayout.addWidget(self.canvas)
         self.canvasWidget.setLayout(tabLayout)
 
+        self.btnRecoverOldVersion.clicked.connect(self.recoverOldVersion)
+        self.btnRecoverNewVersion.clicked.connect(self.recoverNewVersion)
         self.featuresTree.currentItemChanged.connect(self.treeItemChanged)
         self.featuresTree.header().hide()
 
@@ -111,10 +131,13 @@ class DiffViewerWidget(WIDGET, BASE):
         else:
             self.attributesTable.setVisible(True)
             self.canvasWidget.setVisible(True)
-            self.fillAttributesDiff(current.old, current.new)
-            self.fillCanvas(current.old, current.new)
+            self.currentFeature = current
+            self.fillAttributesDiff()
+            self.fillCanvas()
 
-    def fillAttributesDiff(self, old, new):
+    def fillAttributesDiff(self):
+        old = self.currentFeature.old
+        new = self.currentFeature.new
         self.attributesTable.clear()
         fields = []
         fields.extend(new.get("properties", {}).keys())
@@ -231,7 +254,7 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = changes[f"U-::{featid}"]
                         new = changes[f"U+::{featid}"]
                     usedids.append(featid)
-                    item = FeatureItem(featid, old, new)
+                    item = FeatureItem(featid, old, new, layer)
                     subItems[changetype].addChild(item)
 
             for subItem in subItems.values():
@@ -246,10 +269,10 @@ class DiffViewerWidget(WIDGET, BASE):
 
         self.featuresTree.expandAll()
 
-    def fillCanvas(self, old, new):
+    def fillCanvas(self):
         self.canvas.setLayers([])
         self.removeMapLayers()
-        self._createLayers(old, new)
+        self._createLayers()
         QgsProject.instance().addMapLayer(self.newLayer, False)
         QgsProject.instance().addMapLayer(self.oldLayer, False)
         self.canvas.setLayers([self.oldLayer, self.newLayer])
@@ -264,10 +287,18 @@ class DiffViewerWidget(WIDGET, BASE):
         geom = feats[0].geometry()
         return geom
 
-    def _createLayers(self, old, new):
+    def _createLayers(self):
+        old = self.currentFeature.old
+        new = self.currentFeature.new
+        layername = self.currentFeature.layer
+        if layername not in self.workingCopyLayers:
+            self.workingCopyLayers[layername] = self.repo.workingCopyLayer(layername)
+        layer = self.workingCopyLayers[layername]
         ref = new or old
         geomtype = ref["geometry"]["type"]
         self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
+        self.oldLayer.dataProvider().addAttributes(layer.fields().toList())
+        self.oldLayer.updateFields()
         geomclass = {
             "Point": QgsMarkerSymbol,
             "Line": QgsLineSymbol,
@@ -278,36 +309,68 @@ class DiffViewerWidget(WIDGET, BASE):
         )
         self.oldLayer.renderer().setSymbol(symbol)
         self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new", "memory")
+        self.newLayer.dataProvider().addAttributes(layer.fields().toList())
+        self.newLayer.updateFields()
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
             {"color": "0,255,0,100"}
         )
         self.newLayer.renderer().setSymbol(symbol)
         if bool(old):
             geom = self._geom_from_geojson(old)
-            feature = QgsFeature()
+            feature = QgsFeature(self.oldLayer.fields())
+            for prop in feature.fields().names():
+                if prop in old:
+                    feature[prop] = old[prop]
+                feature["fid"] = self.currentFeature.fid
             feature.setGeometry(geom)
             self.oldLayer.dataProvider().addFeatures([feature])
         if bool(new):
             geom = self._geom_from_geojson(new)
-            feature = QgsFeature()
+            feature = QgsFeature(self.newLayer.fields())
+            for prop in feature.fields().names():
+                if prop in new:
+                    feature[prop] = new[prop]
+                feature["fid"] = self.currentFeature.fid
             feature.setGeometry(geom)
             self.newLayer.dataProvider().addFeatures([feature])
+        self.btnRecoverOldVersion.setEnabled(bool(old))
+        self.btnRecoverNewVersion.setEnabled(bool(new))
 
     def removeMapLayers(self):
-        for layer in [self.oldLayer, self.newLayer]:
+        layers = list(self.workingCopyLayers.values()) + [self.oldLayer, self.newLayer]
+        for layer in layers:
             if layer is not None:
                 QgsProject.instance().removeMapLayer(layer.id())
         self.oldLayer = None
         self.newLayer = None
 
+    def recoverOldVersion(self):
+        self._recoverVersion(self.oldLayer)
+
+    def recoverNewVersion(self):
+        self._recoverVersion(self.newLayer)
+
+    def _recoverVersion(self, layer):
+        new = list(layer.getFeatures())[0]
+        layer = self.workingCopyLayers[self.currentFeature.layer]
+        with edit(layer):
+            old = list(layer.getFeatures(f'"fid" = {self.currentFeature.fid}'))
+            if old:
+                layer.deleteFeature(old[0].id())
+            layer.addFeature(new)
+        self.repo.updateCanvas()
+        self.workingLayerChanged.emit()
+
 
 class FeatureItem(QTreeWidgetItem):
-    def __init__(self, fid, old, new):
+    def __init__(self, fid, old, new, layer):
         QTreeWidgetItem.__init__(self)
         self.setIcon(0, featureIcon)
         self.setText(0, fid)
         self.old = old
         self.new = new
+        self.layer = layer
+        self.fid = fid
 
 
 class DiffItem(QTableWidgetItem):
