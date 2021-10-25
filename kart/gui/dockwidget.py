@@ -510,6 +510,7 @@ class LayerItem(QTreeWidgetItem):
 
     def actions(self):
         actions = [
+            ("Show log...", self.showLog, logIcon),
             ("Add to QGIS project", self.addToProject, addtoQgisIcon),
             ("Remove from repository", self.removeFromRepo, removeIcon),
         ]
@@ -520,6 +521,11 @@ class LayerItem(QTreeWidgetItem):
             )
 
         return actions
+
+    @executeskart
+    def showLog(self):
+        dialog = HistoryDialog(self.repo, self.layername)
+        dialog.exec()
 
     def addToProject(self):
         layer = self.repo.workingCopyLayer(self.layername)

@@ -76,9 +76,10 @@ addtoQgisIcon = icon("openinqgis.png")
 
 
 class HistoryTree(QTreeWidget):
-    def __init__(self, repo, parent):
+    def __init__(self, repo, layername, parent):
         super(HistoryTree, self).__init__()
         self.repo = repo
+        self.layername = layername
         self.parent = parent
         self.filterText = ""
         self.startDate = QDateTime.fromSecsSinceEpoch(0).date()
@@ -308,7 +309,7 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def populate(self):
-        commits = self.repo.log()
+        commits = self.repo.log(layername=self.layername)
 
         self.log = {c["commit"]: c for c in commits}
         self.clear()
@@ -461,7 +462,7 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class HistoryDialog(WIDGET, BASE):
-    def __init__(self, repo):
+    def __init__(self, repo, layername=None):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
         self.setWindowFlags(Qt.Window)
@@ -474,7 +475,7 @@ class HistoryDialog(WIDGET, BASE):
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addWidget(self.bar)
-        self.history = HistoryTree(repo, self)
+        self.history = HistoryTree(repo, layername, self)
         layout.addWidget(self.history)
         self.frameHistory.setLayout(layout)
         self.history.currentItemChanged.connect(self.commitSelected)

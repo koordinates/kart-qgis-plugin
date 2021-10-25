@@ -382,9 +382,27 @@ class Repository:
         self.executeKart(["reset", ref, "-f"])
         self.updateCanvas()
 
-    def log(self, ref="HEAD"):
-        log = {c["commit"]: c for c in self.executeKart(["log", ref], True)}
-        logb = self.executeKart(["log", ref, "--graph", "--format=format:%H%n "])
+    def log(self, ref="HEAD", layername=None):
+        if layername is not None:
+            commands = ["log", "-ojson", ref, "--", "--", layername]
+        else:
+            commands = ["log", "-ojson", ref]
+        ret = self.executeKart(commands)
+        jsonRet = json.loads(ret)
+        log = {c["commit"]: c for c in jsonRet}
+        if layername is not None:
+            commands = [
+                "log",
+                ref,
+                "--graph",
+                "--format=format:%H%n ",
+                "--",
+                "--",
+                layername,
+            ]
+        else:
+            commands = ["log", ref, "--graph", "--format=format:%H%n "]
+        logb = self.executeKart(commands)
         lines = logb.splitlines()
         lines.insert(0, "")
         lines.append("")
