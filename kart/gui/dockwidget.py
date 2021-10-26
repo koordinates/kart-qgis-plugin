@@ -18,7 +18,14 @@ from qgis.PyQt.QtWidgets import (
 from qgis.utils import iface
 from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter, QgsProject
 
-from kart.kartapi import repos, addRepo, removeRepo, Repository, executeskart
+from kart.kartapi import (
+    repos,
+    addRepo,
+    removeRepo,
+    Repository,
+    executeskart,
+    KartException,
+)
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.conflictsdialog import ConflictsDialog
@@ -181,6 +188,13 @@ class ReposItem(RefreshableItem):
         dialog = InitDialog()
         ret = dialog.exec()
         if ret == dialog.Accepted:
+            try:
+                os.makedirs(dialog.folder)
+            except FileExistsError:
+                iface.messageBar().pushMessage(
+                    "Error", "The specified folder already exists", level=Qgis.Warning
+                )
+                return
             repo = Repository(dialog.folder)
             repo.init(dialog.location)
             if repo.isInitialized():
@@ -211,9 +225,10 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
-        title = (
-            f"{repo.title() or os.path.normpath(repo.path)} [{repo.currentBranch()}]"
-        )
+        try:
+            title = f"{repo.title() or os.path.normpath(repo.path)} [{repo.currentBranch()}]"
+        except KartException:
+            title = f"{repo.title() or os.path.normpath(repo.path)}"
         self.setText(0, title)
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
