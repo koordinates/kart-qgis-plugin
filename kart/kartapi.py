@@ -475,7 +475,7 @@ class Repository:
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
-    def diff(self, refa=None, refb=None):
+    def diff(self, refa=None, refb=None, layername=None):
         changes = {}
         try:
             commands = ["diff"]
@@ -483,8 +483,10 @@ class Repository:
                 commands.append(f"{refb}...{refa}")
             elif refa:
                 commands.append(refa)
-            elif refb:
-                commands.append(refb)
+            else:
+                commands.append("HEAD")
+            if layername is not None:
+                commands.append(layername)
             commands.extend(["-ogeojson", "--json-style", "extracompact"])
             tmpdirname = tempfile.TemporaryDirectory()
             commands.extend(["--output", tmpdirname.name])
@@ -618,6 +620,14 @@ class Repository:
         for attr in schema:
             if attr.get("primaryKeyIndex") == 0:
                 return attr["name"]
+
+    def layerNameFromLayer(self, layer):
+        location = self.workingCopyLocation()
+        if location.lower().startswith("postgres"):
+            uri = QgsDataSourceUri(layer.source())
+            return uri.table()
+        else:
+            return layer.source().split("|")[-1].split("=")[-1]
 
     def deleteLayer(self, layername):
         # TODO handle case of layer not in gpkg-based repo
