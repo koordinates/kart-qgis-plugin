@@ -225,15 +225,18 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
-        try:
-            title = f"{repo.title() or os.path.normpath(repo.path)} [{repo.currentBranch()}]"
-        except KartException:
-            title = f"{repo.title() or os.path.normpath(repo.path)}"
-        self.setText(0, title)
+        self.setTitle()
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
         self.populated = False
+
+    def setTitle(self):
+        try:
+            title = f"{self.repo.title() or os.path.normpath(self.repo.path)} [{self.repo.currentBranch()}]"
+        except KartException:
+            title = f"{self.repo.title() or os.path.normpath(self.repo.path)}"
+        self.setText(0, title)
 
     def onExpanded(self):
         if not self.populated:
@@ -332,6 +335,7 @@ class RepoItem(RefreshableItem):
                 self.layersItem.refreshContent()
             if tmpfolder is not None:
                 tmpfolder.cleanup()
+            self.setTitle()  # In case it's the first commit, update title to add branch name
 
     @executeskart
     def commitChanges(self):
