@@ -81,12 +81,11 @@ class LayerTracker:
 
     def layerAdded(self, layer):
         if isinstance(layer, QgsVectorLayer):
-            func = _f(partial(self.commitLayerChanges, layer))
-            layer.afterCommitChanges.connect(func)
-            self.connected[layer] = func
-
             repo = repoForLayer(layer)
             if repo is not None:
+                func = _f(partial(self.commitLayerChanges, layer))
+                layer.afterCommitChanges.connect(func)
+                self.connected[layer] = func
                 iface.addCustomActionForLayer(self.showLogAction, layer)
                 iface.addCustomActionForLayer(self.showWorkingTreeChangesAction, layer)
                 iface.addCustomActionForLayer(
@@ -107,7 +106,6 @@ class LayerTracker:
         if layer is not None:
             layername = repo.layerNameFromLayer(layer)
             changes = repo.diff(layername=layername)
-            print(changes)
             if changes.get(layername):
                 dialog = DiffViewerDialog(iface.mainWindow(), changes, repo)
                 dialog.exec()
