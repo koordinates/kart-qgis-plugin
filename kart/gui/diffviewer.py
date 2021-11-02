@@ -394,10 +394,10 @@ class DiffViewerWidget(WIDGET, BASE):
         idField = self.workingCopyLayersIdFields[layername]
         ref = new or old
         geomtype = ref["geometry"]["type"]
-        self.oldLayer = QgsVectorLayer(geomtype + f"?crs={crs}", "old", "memory")
+        self.oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
         self.oldLayer.dataProvider().addAttributes(layer.fields().toList())
         self.oldLayer.updateFields()
-        self.newLayer = QgsVectorLayer(geomtype + f"?crs={crs}", "new", "memory")
+        self.newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
         self.newLayer.dataProvider().addAttributes(layer.fields().toList())
         self.newLayer.updateFields()
         geoms = []
