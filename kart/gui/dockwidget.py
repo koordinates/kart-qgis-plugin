@@ -99,9 +99,10 @@ class KartDockWidget(BASE, WIDGET):
 
     def showPopupMenu(self, point):
         item = self.tree.currentItem()
-        self.menu = self.createMenu(item)
-        point = self.tree.mapToGlobal(point)
-        self.menu.popup(point)
+        if item is not None:
+            self.menu = self.createMenu(item)
+            point = self.tree.mapToGlobal(point)
+            self.menu.popup(point)
 
     def createMenu(self, item):
         def _f(f, *args):
