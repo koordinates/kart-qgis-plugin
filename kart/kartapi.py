@@ -222,37 +222,40 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         QApplication.restoreOverrideCursor()
 
 
+_repos = None
+
+
 def repos():
-    s = QSettings().value("kart/repos", None)
-    if s is None:
-        return []
-    else:
-        repos = []
-        paths = s.split("|")
-        for path in paths:
-            repo = Repository(path)
-            if repo.isInitialized():
-                repos.append(repo)
-        return repos
+    global _repos
+    if _repos is None:
+        s = QSettings().value("kart/repos", None)
+        if s is None:
+            _repos = []
+        else:
+            _repos = []
+            paths = s.split("|")
+            for path in paths:
+                repo = Repository(path)
+                if repo.isInitialized():
+                    _repos.append(repo)
+    return _repos
 
 
 def addRepo(repo):
-    allrepos = repos()
-    allrepos.append(repo)
-    saveRepos(allrepos)
+    _repos.append(repo)
+    saveRepos()
 
 
 def removeRepo(repo):
-    allrepos = repos()
-    for r in allrepos:
+    for r in _repos:
         if r.path == repo.path:
-            allrepos.remove(r)
+            _repos.remove(r)
             break
-    saveRepos(allrepos)
+    saveRepos()
 
 
-def saveRepos(repos):
-    s = "|".join([repo.path for repo in repos])
+def saveRepos():
+    s = "|".join([repo.path for repo in repos()])
     QSettings().setValue("kart/repos", s)
 
 
@@ -318,14 +321,17 @@ class Repository:
         with open(os.path.join(self.path, ".kart", "description"), "w") as f:
             f.write(title)
 
+    _configDict = None
+
     def _config(self):
-        ret = self.executeKart(["config", "-l"])
-        lines = ret.splitlines()
-        configDict = {}
-        for line in lines:
-            k, v = line.split("=")
-            configDict[k] = v
-        return configDict
+        if self._configDict is None:
+            ret = self.executeKart(["config", "-l"])
+            lines = ret.splitlines()
+            self._configDict = {}
+            for line in lines:
+                k, v = line.split("=")
+                self._configDict[k] = v
+        return self._configDict
 
     def spatialFilter(self):
         configDict = self._config()
@@ -620,6 +626,13 @@ class Repository:
         for attr in schema:
             if attr.get("primaryKeyIndex") == 0:
                 return attr["name"]
+
+    def workingCopyLayerCrs(self, layername):
+        meta = self.executeKart(["meta", "get", layername], True)[layername]
+        for k in meta.keys():
+            if k.startswith("crs/"):
+                return k[4:-4]
+        return "EPSG:4326"
 
     def layerNameFromLayer(self, layer):
         location = self.workingCopyLocation()

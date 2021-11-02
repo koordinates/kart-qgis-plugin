@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import json
+import difflib
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
@@ -21,23 +21,38 @@ from qgis.core import (
     edit,
     QgsProject,
     QgsFeature,
+    QgsRasterLayer,
     QgsVectorLayer,
     QgsJsonUtils,
     QgsMarkerSymbol,
     QgsLineSymbol,
     QgsFillSymbol,
+    QgsCoordinateReferenceSystem,
+    Qgis,
+    QgsGeometry,
+    QgsPointXY,
 )
 
-from qgis.core import Qgis
-from qgis.gui import QgsMapCanvas, QgsMessageBar
+from qgis.utils import iface
+from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
+
+from .mapswipetool import MapSwipeTool
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
+
+NO_LAYERS = 0
+PROJECT_LAYERS = 1
+OSM_BASEMAP = 2
+
+TRANSPARENCY = 0
+SWIPE = 1
+VERTEX_DIFF = 2
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 
 def icon(f):
-    return QIcon(os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
+    return QIcon(os.path.join(pluginPath, "img", f))
 
 
 layerIcon = icon("layer_group.svg")
@@ -46,8 +61,8 @@ addedIcon = icon("add.png")
 removedIcon = icon("remove.png")
 modifiedIcon = icon("edit.png")
 
-sys.path.append(os.path.dirname(__file__))
-pluginPath = os.path.split(os.path.dirname(__file__))[0]
+pointsStyle = os.path.join(pluginPath, "resources", "geomdiff_points.qml")
+
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui")
 )
@@ -89,9 +104,12 @@ class DiffViewerWidget(WIDGET, BASE):
         self.repo = repo
         self.oldLayer = None
         self.newLayer = None
+        self.osmLayer = None
+        self.vertexDiffLayer = None
         self.currentFeature = None
         self.workingCopyLayers = {}
         self.workingCopyLayersIdFields = {}
+        self.workingCopyLayerCrs = {}
 
         self.setupUi(self)
 
@@ -103,6 +121,13 @@ class DiffViewerWidget(WIDGET, BASE):
         tabLayout.addWidget(self.canvas)
         self.canvasWidget.setLayout(tabLayout)
 
+        self.sliderTransparencyOld.setValue(100)
+        self.sliderTransparencyNew.setValue(100)
+
+        self.sliderTransparencyNew.valueChanged.connect(self.setTransparencyNew)
+        self.sliderTransparencyOld.valueChanged.connect(self.setTransparencyOld)
+        self.comboDiffType.currentIndexChanged.connect(self.fillCanvas)
+        self.comboAdditionalLayers.currentIndexChanged.connect(self.fillCanvas)
         self.btnRecoverOldVersion.clicked.connect(self.recoverOldVersion)
         self.btnRecoverNewVersion.clicked.connect(self.recoverNewVersion)
         self.featuresTree.currentItemChanged.connect(self.treeItemChanged)
@@ -125,15 +150,19 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def treeItemChanged(self, current, previous):
         if not isinstance(current, FeatureItem):
-            # self.attributesTable.setRowCount(0)
             self.attributesTable.setVisible(False)
             self.canvasWidget.setVisible(False)
-            return
+            self.grpTransparency.setVisible(False)
+            self.widgetDiffConfig.setVisible(False)
         else:
             self.attributesTable.setVisible(True)
             self.canvasWidget.setVisible(True)
+            self.grpTransparency.setVisible(True)
+            self.widgetDiffConfig.setVisible(True)
             self.currentFeature = current
             self.fillAttributesDiff()
+            self.removeMapLayers()
+            self._createLayers()
             self.fillCanvas()
 
     def fillAttributesDiff(self):
@@ -272,18 +301,76 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def fillCanvas(self):
         self.canvas.setLayers([])
-        self.removeMapLayers()
-        self._createLayers()
+        layername = self.currentFeature.layer
+        crs = QgsCoordinateReferenceSystem(self.workingCopyLayerCrs[layername])
+        self.canvas.setDestinationCrs(crs)
         QgsProject.instance().addMapLayer(self.newLayer, False)
         QgsProject.instance().addMapLayer(self.oldLayer, False)
-        self.canvas.setLayers([self.oldLayer, self.newLayer])
+        layers = []
+
+        ref = self.currentFeature.new or self.currentFeature.old
+        geomtype = ref["geometry"]["type"]
+        geomclass = {
+            "Point": QgsMarkerSymbol,
+            "Line": QgsLineSymbol,
+            "Polygon": QgsFillSymbol,
+        }
+        self.mapTool = QgsMapToolPan(self.canvas)
+        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+            {"color": "0,255,0,255"}
+        )
+        self.newLayer.renderer().setSymbol(symbol)
+        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+            {"color": "255,0,0,255"}
+        )
+        self.oldLayer.renderer().setSymbol(symbol)
+        layers.extend([self.newLayer, self.oldLayer])
+        if self.comboDiffType.currentIndex() == SWIPE:
+            self.mapTool = MapSwipeTool(self.canvas, [self.newLayer])
+            layers.remove(self.newLayer)
+        elif self.comboDiffType.currentIndex() == VERTEX_DIFF:
+            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+                {"color": "255,255,255,255"}
+            )
+            self.newLayer.renderer().setSymbol(symbol)
+            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+                {"color": "255,255,255,255"}
+            )
+            self.oldLayer.renderer().setSymbol(symbol)
+            layers.insert(0, self.vertexDiffLayer)
+        if self.comboAdditionalLayers.currentIndex() == PROJECT_LAYERS:
+            layers.extend(iface.mapCanvas().layers())
+        elif self.comboAdditionalLayers.currentIndex() == OSM_BASEMAP:
+            uri = "crs=EPSG:3857&type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0"
+            self.osmLayer = QgsRasterLayer(uri, "OSM", "wms")
+            QgsProject.instance().addMapLayer(self.osmLayer, False)
+            layers.append(self.osmLayer)
+
+        self.grpTransparency.setVisible(
+            self.comboDiffType.currentIndex() == TRANSPARENCY
+        )
+
+        self.sliderTransparencyNew.setValue(100)
+        self.sliderTransparencyOld.setValue(100)
+
+        self.canvas.setMapTool(self.mapTool)
+        self.canvas.setLayers(layers)
+
         extent = self.oldLayer.extent()
         extent.combineExtentWith(self.newLayer.extent())
         extent.grow(max(extent.width(), 0.01))
         self.canvas.setExtent(extent)
         self.canvas.refresh()
 
-    def _geom_from_geojson(self, geojson):
+    def setTransparencyNew(self):
+        self.newLayer.setOpacity(self.sliderTransparencyNew.value() / 100)
+        self.canvas.refresh()
+
+    def setTransparencyOld(self):
+        self.oldLayer.setOpacity(self.sliderTransparencyOld.value() / 100)
+        self.canvas.refresh()
+
+    def _geomFromGeojson(self, geojson):
         feats = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))
         geom = feats[0].geometry()
         return geom
@@ -299,51 +386,86 @@ class DiffViewerWidget(WIDGET, BASE):
             self.workingCopyLayersIdFields[
                 layername
             ] = self.repo.workingCopyLayerIdField(layername)
+        if layername not in self.workingCopyLayerCrs:
+            self.workingCopyLayerCrs[layername] = self.repo.workingCopyLayerCrs(
+                layername
+            )
+        crs = self.workingCopyLayerCrs[layername]
         idField = self.workingCopyLayersIdFields[layername]
         ref = new or old
         geomtype = ref["geometry"]["type"]
-        self.oldLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "old", "memory")
+        self.oldLayer = QgsVectorLayer(geomtype + f"?crs={crs}", "old", "memory")
         self.oldLayer.dataProvider().addAttributes(layer.fields().toList())
         self.oldLayer.updateFields()
-        geomclass = {
-            "Point": QgsMarkerSymbol,
-            "Line": QgsLineSymbol,
-            "Polygon": QgsFillSymbol,
-        }
-        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {"color": "255,0,0,100"}
-        )
-        self.oldLayer.renderer().setSymbol(symbol)
-        self.newLayer = QgsVectorLayer(geomtype + "?crs=epsg:4326", "new", "memory")
+        self.newLayer = QgsVectorLayer(geomtype + f"?crs={crs}", "new", "memory")
         self.newLayer.dataProvider().addAttributes(layer.fields().toList())
         self.newLayer.updateFields()
-        symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {"color": "0,255,0,100"}
-        )
-        self.newLayer.renderer().setSymbol(symbol)
-        if bool(old):
-            geom = self._geom_from_geojson(old)
-            feature = QgsFeature(self.oldLayer.fields())
-            for prop in feature.fields().names():
-                if prop in old:
-                    feature[prop] = old[prop]
-                feature[idField] = self.currentFeature.fid
-            feature.setGeometry(geom)
-            self.oldLayer.dataProvider().addFeatures([feature])
-        if bool(new):
-            geom = self._geom_from_geojson(new)
-            feature = QgsFeature(self.newLayer.fields())
-            for prop in feature.fields().names():
-                if prop in new:
-                    feature[prop] = new[prop]
-                feature[idField] = self.currentFeature.fid
-            feature.setGeometry(geom)
-            self.newLayer.dataProvider().addFeatures([feature])
+        geoms = []
+        for layer, feat in [(self.newLayer, new), (self.oldLayer, old)]:
+            if bool(feat):
+                geom = self._geomFromGeojson(feat)
+                feature = QgsFeature(layer.fields())
+                for prop in feature.fields().names():
+                    if prop in new:
+                        feature[prop] = feat[prop]
+                    feature[idField] = self.currentFeature.fid
+                feature.setGeometry(geom)
+                layer.dataProvider().addFeatures([feature])
+                geoms.append(geom)
+            else:
+                geoms.append(None)
+        self._createVertexDiffLayer(geoms)
         self.btnRecoverOldVersion.setEnabled(bool(old))
         self.btnRecoverNewVersion.setEnabled(bool(new))
+        self.sliderTransparencyOld.setEnabled(bool(old))
+        self.sliderTransparencyNew.setEnabled(bool(new))
+
+    def _createVertexDiffLayer(self, geoms):
+        textGeometries = []
+        for geom in geoms:
+            if geom is not None:
+                text = geom.asWkt(precision=5)
+                valid = " -1234567890.,"
+                text = "".join([c for c in text if c in valid])
+                textGeometries.append(text.split(","))
+            else:
+                textGeometries.append("")
+        lines = difflib.Differ().compare(textGeometries[0], textGeometries[1])
+        data = []
+        for line in lines:
+            if line.startswith("+"):
+                data.append([None, line[2:]])
+            if line.startswith("-"):
+                data.append([line[2:], None])
+            if line.startswith(" "):
+                data.append([line[2:], line[2:]])
+        layername = self.currentFeature.layer
+        crs = self.workingCopyLayerCrs[layername]
+        self.vertexDiffLayer = QgsVectorLayer(
+            f"Point?crs={crs}s&field=changetype:string", "vertexdiff", "memory"
+        )
+        feats = []
+        for coords in data:
+            coord = coords[0] or coords[1]
+            feat = QgsFeature()
+            x, y = coord.strip().split(" ")
+            pt = QgsGeometry.fromPointXY(QgsPointXY(float(x), float(y)))
+            feat.setGeometry(pt)
+            if coords[0] is None:
+                changetype = "A"
+            elif coords[1] is None:
+                changetype = "R"
+            else:
+                changetype = "U"
+            feat.setAttributes([changetype])
+            feats.append(feat)
+
+        self.vertexDiffLayer.dataProvider().addFeatures(feats)
+        self.vertexDiffLayer.loadNamedStyle(pointsStyle)
+        QgsProject.instance().addMapLayer(self.vertexDiffLayer, False)
 
     def removeMapLayers(self):
-        layers = list(self.workingCopyLayers.values()) + [self.oldLayer, self.newLayer]
+        layers = [self.oldLayer, self.newLayer, self.osmLayer, self.vertexDiffLayer]
         for layer in layers:
             if layer is not None:
                 QgsProject.instance().removeMapLayer(layer.id())
