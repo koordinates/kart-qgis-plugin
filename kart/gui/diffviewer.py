@@ -40,9 +40,9 @@ from .mapswipetool import MapSwipeTool
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
-NO_LAYERS = 0
+OSM_BASEMAP = 0
 PROJECT_LAYERS = 1
-OSM_BASEMAP = 2
+NO_LAYERS = 2
 
 TRANSPARENCY = 0
 SWIPE = 1
@@ -121,11 +121,9 @@ class DiffViewerWidget(WIDGET, BASE):
         tabLayout.addWidget(self.canvas)
         self.canvasWidget.setLayout(tabLayout)
 
-        self.sliderTransparencyOld.setValue(100)
-        self.sliderTransparencyNew.setValue(100)
+        self.sliderTransparency.setValue(50)
 
-        self.sliderTransparencyNew.valueChanged.connect(self.setTransparencyNew)
-        self.sliderTransparencyOld.valueChanged.connect(self.setTransparencyOld)
+        self.sliderTransparency.valueChanged.connect(self.setTransparency)
         self.comboDiffType.currentIndexChanged.connect(self.fillCanvas)
         self.comboAdditionalLayers.currentIndexChanged.connect(self.fillCanvas)
         self.btnRecoverOldVersion.clicked.connect(self.recoverOldVersion)
@@ -321,27 +319,15 @@ class DiffViewerWidget(WIDGET, BASE):
         }
         self.mapTool = QgsMapToolPan(self.canvas)
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {"color": "0,255,0,255"}
+            {"color": "0,255,0"}
         )
         self.newLayer.renderer().setSymbol(symbol)
         symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-            {"color": "255,0,0,255"}
+            {"color": "255,0,0"}
         )
         self.oldLayer.renderer().setSymbol(symbol)
         layers.extend([self.newLayer, self.oldLayer])
-        if self.comboDiffType.currentIndex() == SWIPE:
-            self.mapTool = MapSwipeTool(self.canvas, [self.newLayer])
-            layers.remove(self.newLayer)
-        elif self.comboDiffType.currentIndex() == VERTEX_DIFF:
-            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-                {"color": "255,255,255,255"}
-            )
-            self.newLayer.renderer().setSymbol(symbol)
-            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
-                {"color": "255,255,255,255"}
-            )
-            self.oldLayer.renderer().setSymbol(symbol)
-            layers.insert(0, self.vertexDiffLayer)
+
         if self.comboAdditionalLayers.currentIndex() == PROJECT_LAYERS:
             layers.extend(iface.mapCanvas().layers())
         elif self.comboAdditionalLayers.currentIndex() == OSM_BASEMAP:
@@ -350,12 +336,30 @@ class DiffViewerWidget(WIDGET, BASE):
             QgsProject.instance().addMapLayer(self.osmLayer, False)
             layers.append(self.osmLayer)
 
+        if self.comboDiffType.currentIndex() == SWIPE:
+            self.mapTool = MapSwipeTool(self.canvas, [self.newLayer])
+            layers.remove(self.newLayer)
+            self.newLayer.setOpacity(100)
+            self.oldLayer.setOpacity(100)
+        elif self.comboDiffType.currentIndex() == VERTEX_DIFF:
+            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+                {"color": "255,255,255,0"}
+            )
+            self.newLayer.renderer().setSymbol(symbol)
+            symbol = geomclass.get(geomtype, QgsFillSymbol).createSimple(
+                {"color": "255,255,255,0"}
+            )
+            self.oldLayer.renderer().setSymbol(symbol)
+            layers.insert(0, self.vertexDiffLayer)
+            self.newLayer.setOpacity(100)
+            self.oldLayer.setOpacity(100)
+        elif self.comboDiffType.currentIndex() == TRANSPARENCY:
+            self.sliderTransparency.setValue(50)
+            self.setTransparency()
+
         self.grpTransparency.setVisible(
             self.comboDiffType.currentIndex() == TRANSPARENCY
         )
-
-        self.sliderTransparencyNew.setValue(100)
-        self.sliderTransparencyOld.setValue(100)
 
         self.canvas.setMapTool(self.mapTool)
         self.canvas.setLayers(layers)
@@ -366,12 +370,9 @@ class DiffViewerWidget(WIDGET, BASE):
         self.canvas.setExtent(extent)
         self.canvas.refresh()
 
-    def setTransparencyNew(self):
-        self.newLayer.setOpacity(self.sliderTransparencyNew.value() / 100)
-        self.canvas.refresh()
-
-    def setTransparencyOld(self):
-        self.oldLayer.setOpacity(self.sliderTransparencyOld.value() / 100)
+    def setTransparency(self):
+        self.newLayer.setOpacity(self.sliderTransparency.value() / 100)
+        self.oldLayer.setOpacity((100 - self.sliderTransparency.value()) / 100)
         self.canvas.refresh()
 
     def _geomFromGeojson(self, geojson):
@@ -421,8 +422,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self._createVertexDiffLayer(geoms)
         self.btnRecoverOldVersion.setEnabled(bool(old))
         self.btnRecoverNewVersion.setEnabled(bool(new))
-        self.sliderTransparencyOld.setEnabled(bool(old))
-        self.sliderTransparencyNew.setEnabled(bool(new))
+        self.sliderTransparency.setEnabled(bool(old))
 
     def _createVertexDiffLayer(self, geoms):
         textGeometries = []

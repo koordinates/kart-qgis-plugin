@@ -53,12 +53,12 @@
           </property>
          </column>
         </widget>
-        <widget class="QWidget" name="">
+        <widget class="QWidget" name="layoutWidget">
          <layout class="QVBoxLayout" name="verticalLayout_3">
           <item>
            <widget class="QTabWidget" name="tabWidget">
             <property name="currentIndex">
-             <number>0</number>
+             <number>1</number>
             </property>
             <widget class="QWidget" name="tabAttributes">
              <attribute name="title">
@@ -147,7 +147,7 @@
                   <widget class="QComboBox" name="comboAdditionalLayers">
                    <item>
                     <property name="text">
-                     <string>No additional layers</string>
+                     <string>OSM basemap</string>
                     </property>
                    </item>
                    <item>
@@ -157,7 +157,7 @@
                    </item>
                    <item>
                     <property name="text">
-                     <string>OSM basemap</string>
+                     <string>No additional layers</string>
                     </property>
                    </item>
                   </widget>
@@ -228,6 +228,13 @@
                  <string>Transparency</string>
                 </property>
                 <layout class="QGridLayout" name="gridLayout">
+                 <item row="0" column="1">
+                  <widget class="QSlider" name="sliderTransparency">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="0">
                   <widget class="QLabel" name="label_3">
                    <property name="text">
@@ -235,24 +242,10 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1">
-                  <widget class="QSlider" name="sliderTransparencyOld">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="0">
+                 <item row="0" column="2">
                   <widget class="QLabel" name="label_4">
                    <property name="text">
                     <string>New version</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="1" column="1">
-                  <widget class="QSlider" name="sliderTransparencyNew">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
                    </property>
                   </widget>
                  </item>

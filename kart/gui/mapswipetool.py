@@ -34,6 +34,11 @@ class MapSwipeTool(QgsMapTool):
         self.hasSwipe = False
         self.disabledSwipe = False
         self.setLayersSwipe()
+        self.swipe.setIsVertical(True)
+        self.swipe.setLength(
+            self.swipe.boundingRect().width() / 2,
+            self.swipe.boundingRect().height() / 2,
+        )
 
     def deactivate(self):
         super().deactivate()

@@ -25,7 +25,6 @@ class SwipeMap(QgsMapCanvasItem):
         self.length = -1
 
     def setLayers(self, layers):
-        # Call clear() before
         for item in layers:
             self.layers.append(item)
 
@@ -37,7 +36,7 @@ class SwipeMap(QgsMapCanvasItem):
         self.length = x if self.isVertical else y
         self.update()
 
-    def paint(self, painter, *args):  # NEED *args for   WINDOWS!
+    def paint(self, painter, *args):  # NEED *args for WINDOWS!
         if len(self.layers) == 0 or self.length == -1:
             return
 
