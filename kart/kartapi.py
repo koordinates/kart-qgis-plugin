@@ -388,7 +388,7 @@ class Repository:
         self.executeKart(["reset", ref, "-f"])
         self.updateCanvas()
 
-    def log(self, ref="HEAD", layername=None):
+    def log(self, ref="HEAD", layername=None, featureid=None):
         if layername is not None:
             commands = ["log", "-ojson", ref, "--", "--", layername]
         else:
@@ -481,10 +481,10 @@ class Repository:
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
-    def diff(self, refa=None, refb=None, layername=None):
+    def diff(self, refa=None, refb=None, layername=None, featureid=None):
         changes = {}
         try:
-            commands = ["diff"]
+            commands = ["diff", "-ogeojson", "--json-style", "extracompact"]
             if refa and refb:
                 commands.append(f"{refb}...{refa}")
             elif refa:
@@ -492,17 +492,23 @@ class Repository:
             else:
                 commands.append("HEAD")
             if layername is not None:
-                commands.append(layername)
-            commands.extend(["-ogeojson", "--json-style", "extracompact"])
-            tmpdirname = tempfile.TemporaryDirectory()
-            commands.extend(["--output", tmpdirname.name])
-            self.executeKart(commands)
-            for filename in os.listdir(tmpdirname.name):
-                path = os.path.join(tmpdirname.name, filename)
-                layername = os.path.splitext(filename)[0]
-                with open(path) as f:
-                    changes[layername] = json.load(f)["features"]
-            tmpdirname.cleanup()
+                if featureid is not None:
+                    commands.append(f"{layername}:{featureid}")
+                else:
+                    commands.append(layername)
+            if layername is not None and featureid is not None:
+                ret = self.executeKart(commands)
+                changes[layername] = json.loads(ret)["features"]
+            else:
+                tmpdirname = tempfile.TemporaryDirectory()
+                commands.extend(["--output", tmpdirname.name])
+                self.executeKart(commands)
+                for filename in os.listdir(tmpdirname.name):
+                    path = os.path.join(tmpdirname.name, filename)
+                    layername = os.path.splitext(filename)[0]
+                    with open(path) as f:
+                        changes[layername] = json.load(f)["features"]
+                tmpdirname.cleanup()
         except Exception:
             pass
         return changes
