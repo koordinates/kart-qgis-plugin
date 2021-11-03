@@ -139,7 +139,7 @@
                     </sizepolicy>
                    </property>
                    <property name="text">
-                    <string>Addtiional layers:</string>
+                    <string>Additional layers:</string>
                    </property>
                   </widget>
                  </item>

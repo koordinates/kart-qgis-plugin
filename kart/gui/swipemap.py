@@ -49,8 +49,8 @@ class SwipeMap(QgsMapCanvasItem):
             w = self.boundingRect().width() - 2
             line = QLine(0, h - 1, w - 1, h - 1)
 
-        image = self.image.copy(0, 0, w, h)
-        painter.drawImage(QRect(0, 0, w, h), image)
+        image = self.image.copy(0, 0, int(w), int(h))
+        painter.drawImage(QRect(0, 0, int(w), int(h)), image)
         painter.drawLine(line)
 
     def setMap(self):

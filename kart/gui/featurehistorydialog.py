@@ -20,8 +20,6 @@ from qgis.core import (
     QgsProject,
     QgsJsonUtils,
     QgsVectorLayer,
-    QgsField,
-    QgsFields,
 )
 from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
 from qgis.utils import iface
@@ -71,9 +69,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
     def currentCommitChanged(self):
         feature = self.listCommits.currentItem().feature()
         geom = feature.geometry()
-        print(geom)
         attributes = feature.attributes()
-        print(attributes)
         self.attributesTable.setRowCount(len(attributes))
         props = [f.name() for f in feature.fields()]
         for idx in range(len(props)):
