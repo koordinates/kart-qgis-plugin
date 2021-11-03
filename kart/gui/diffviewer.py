@@ -154,11 +154,15 @@ class DiffViewerWidget(WIDGET, BASE):
             self.canvasWidget.setVisible(False)
             self.grpTransparency.setVisible(False)
             self.widgetDiffConfig.setVisible(False)
+            self.btnRecoverNewVersion.setVisible(False)
+            self.btnRecoverOldVersion.setVisible(False)
         else:
             self.attributesTable.setVisible(True)
             self.canvasWidget.setVisible(True)
             self.grpTransparency.setVisible(True)
             self.widgetDiffConfig.setVisible(True)
+            self.btnRecoverNewVersion.setVisible(True)
+            self.btnRecoverOldVersion.setVisible(True)
             self.currentFeature = current
             self.fillAttributesDiff()
             self.removeMapLayers()
