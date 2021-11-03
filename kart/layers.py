@@ -1,23 +1,31 @@
+import os
 from functools import partial
 
 from qgis.utils import iface
-from qgis.core import (
-    Qgis,
-    QgsMapLayer,
-    QgsVectorLayer,
-    QgsFeatureRequest,
-    QgsRectangle,
-    edit,
-)
+from qgis.core import Qgis, QgsMapLayer, QgsVectorLayer, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMapToolEmitPoint
 
 from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
 from kart.kartapi import repoForLayer, executeskart
+
+pluginPath = os.path.dirname(__file__)
+
+
+def icon(f):
+    return QIcon(os.path.join(pluginPath, "img", f))
+
+
+logIcon = icon("log.png")
+commitIcon = icon("commit.png")
+discardIcon = icon("reset.png")
+crossIcon = icon("cross.png")
+diffIcon = icon("changes.png")
 
 
 def _f(f, *args):
@@ -49,14 +57,14 @@ class LayerTracker:
         self.mapTool.canvasClicked.connect(self.canvasClicked)
         self.mapToolLayer = None
 
-        self.showLogAction = QAction("Show Log...", iface)
+        self.showLogAction = QAction(logIcon, "Show Log...", iface)
         self.showLogAction.triggered.connect(_f(self.showLog))
         iface.addCustomActionForLayerType(
             self.showLogAction, "Kart", QgsMapLayer.VectorLayer, False
         )
 
         self.showWorkingTreeChangesAction = QAction(
-            "Show working tree changes...", iface
+            diffIcon, "Show working tree changes...", iface
         )
         self.showWorkingTreeChangesAction.triggered.connect(
             _f(self.showWorkingTreeChanges)
@@ -65,8 +73,18 @@ class LayerTracker:
             self.showWorkingTreeChangesAction, "Kart", QgsMapLayer.VectorLayer, False
         )
 
+        self.discardWorkingTreeChangesAction = QAction(
+            discardIcon, "Discard working tree changes...", iface
+        )
+        self.discardWorkingTreeChangesAction.triggered.connect(
+            _f(self.discardWorkingTreeChanges)
+        )
+        iface.addCustomActionForLayerType(
+            self.discardWorkingTreeChangesAction, "Kart", QgsMapLayer.VectorLayer, False
+        )
+
         self.commitWorkingTreeChangesAction = QAction(
-            "Commit working tree changes...", iface
+            commitIcon, "Commit working tree changes...", iface
         )
         self.commitWorkingTreeChangesAction.triggered.connect(
             _f(self.commitWorkingTreeChanges)
@@ -76,7 +94,7 @@ class LayerTracker:
         )
 
         self.setMapToolAction = QAction(
-            "Activate 'show feature history' map tool", iface
+            crossIcon, "Activate 'show feature history' map tool", iface
         )
         self.setMapToolAction.triggered.connect(_f(self.setMapTool))
         iface.addCustomActionForLayerType(
@@ -111,6 +129,9 @@ class LayerTracker:
                 iface.addCustomActionForLayer(self.showWorkingTreeChangesAction, layer)
                 iface.addCustomActionForLayer(
                     self.commitWorkingTreeChangesAction, layer
+                )
+                iface.addCustomActionForLayer(
+                    self.discardWorkingTreeChangesAction, layer
                 )
                 iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
@@ -172,6 +193,18 @@ class LayerTracker:
                     "There are no changes in the working tree",
                     level=Qgis.Warning,
                 )
+
+    @executeskart
+    def discardWorkingTreeChanges(self):
+        layer, repo = self._kartActiveLayerAndRepo()
+        if layer is not None:
+            layername = repo.layerNameFromLayer(layer)
+            repo.restore("HEAD", layername)
+            iface.messageBar().pushMessage(
+                "Discard changes",
+                f"Working tree changes for layer '{layer.name()}' have been discarded",
+                level=Qgis.Info,
+            )
 
     @executeskart
     def commitWorkingTreeChanges(self):
