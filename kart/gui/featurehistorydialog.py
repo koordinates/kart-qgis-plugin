@@ -2,7 +2,7 @@ import os
 import json
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QVariant
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QTableWidgetItem,
@@ -87,7 +87,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.attributesTable.horizontalHeader().setStretchLastSection(True)
 
         self.removeLayer()
-        geomtype = QgsWkbTypes.geometryDisplayString(geom.type())
+        geomtype = QgsWkbTypes.displayString(geom.wkbType())
         if self.workingCopyLayerCrs is None:
             self.workingCopyLayerCrs = self.repo.workingCopyLayerCrs(self.layername)
         self.layer = QgsVectorLayer(
@@ -95,7 +95,8 @@ class FeatureHistoryDialog(BASE, WIDGET):
         )
         self.layer.dataProvider().addAttributes(self.workingCopyLayer.fields().toList())
         self.layer.updateFields()
-        self.layer.dataProvider().addFeatures([feature])
+        with edit(self.layer):
+            self.layer.addFeature(feature)
         self.layer.updateExtents()
         self.layer.selectAll()
         self.layer.setExtent(self.layer.boundingBoxOfSelected())
@@ -163,7 +164,9 @@ class CommitListItem(QListWidgetItem):
                 self.fid,
             )
             geojson = diff[self.layername][0]
-            self._feature = QgsJsonUtils.stringToFeatureList(
-                json.dumps(geojson), self.layer.fields()
-            )[0]
+            self._feature = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))[0]
+            props = geojson["properties"]
+            self._feature.setFields(self.layer.fields())
+            for prop in props:
+                self._feature[prop] = props[prop]
         return self._feature
