@@ -603,7 +603,9 @@ class Repository:
             database, schema = parse.path.strip("/").split("/", 1)
             return uri.database() == database and uri.schema() == schema
         else:
-            return os.path.normpath(self.path) in os.path.normpath(layer.source())
+            return f"{os.path.normpath(self.path)}{os.path.sep}" in os.path.normpath(
+                layer.source()
+            )
 
     def workingCopyLocation(self):
         return self._config()["kart.workingcopy.location"]
