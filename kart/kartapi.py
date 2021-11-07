@@ -13,7 +13,7 @@ from urllib.parse import urlparse
 
 from osgeo import gdal
 
-from qgis.PyQt.QtCore import QSettings, Qt
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QApplication,
 )
@@ -31,7 +31,7 @@ from qgis.core import (
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 
-from kart.utils import progressBar
+from kart.utils import progressBar, setting, setSetting, KARTPATH
 from kart import logging
 
 SUPPORTED_VERSION = "0.10.4"
@@ -80,8 +80,7 @@ def kartExecutable():
         defaultFolder = "Applications/Kart.app/Contents/MacOS/"
     else:
         defaultFolder = "/opt/kart/kart"
-    folder = QSettings().value("kart/KartPath", "")
-    folder = folder or defaultFolder
+    folder = setting(KARTPATH) or defaultFolder
     for exe_name in ("kart.exe", "kart_cli", "kart"):
         path = os.path.join(folder, exe_name)
         if os.path.isfile(path):
@@ -133,7 +132,7 @@ kartPath = None
 def installedVersion():
     global kartVersion
     global kartPath
-    path = QSettings().value("kart/KartPath", "")
+    path = setting(KARTPATH)
     if path is not None and path == kartPath:
         return kartVersion
     else:
@@ -155,7 +154,7 @@ def installedVersion():
 
 
 def kartVersionDetails():
-    path = QSettings().value("kart/KartPath", "")
+    path = setting(KARTPATH)
     errtxt = (
         f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
     )
@@ -228,7 +227,7 @@ _repos = None
 def repos():
     global _repos
     if _repos is None:
-        s = QSettings().value("kart/repos", None)
+        s = setting("repos")
         if s is None:
             _repos = []
         else:
@@ -256,7 +255,7 @@ def removeRepo(repo):
 
 def saveRepos():
     s = "|".join([repo.path for repo in repos()])
-    QSettings().setValue("kart/repos", s)
+    setSetting("repos", s)
 
 
 def repoForLayer(layer):

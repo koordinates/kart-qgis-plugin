@@ -5,7 +5,6 @@ from qgis.utils import iface
 from qgis.core import Qgis, QgsMapLayer, QgsVectorLayer, QgsFeatureRequest, QgsRectangle
 from qgis.gui import QgsMapToolEmitPoint
 
-from qgis.PyQt.QtCore import QSettings
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 
@@ -13,6 +12,7 @@ from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
 from kart.kartapi import repoForLayer, executeskart
+from kart.utils import setting, AUTOCOMMIT
 
 pluginPath = os.path.dirname(__file__)
 
@@ -239,7 +239,7 @@ class LayerTracker:
     def commitLayerChanges(self, layer):
         repo = repoForLayer(layer)
         if repo is not None:
-            auto = QSettings().value("kart/AutoCommit", False, type=bool)
+            auto = setting(AUTOCOMMIT)
             if auto:
                 layername = repo.layerNameFromLayer(layer)
                 repo.commit(f"Changed layer '{layername}'", layer=layername)

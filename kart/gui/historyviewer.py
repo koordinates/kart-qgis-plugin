@@ -3,6 +3,7 @@ import os
 
 from kart.kartapi import executeskart
 from kart.gui.diffviewer import DiffViewerDialog
+from kart.utils import setting, DIFFSTYLES
 
 from qgis.core import Qgis, QgsProject, QgsVectorLayer, QgsWkbTypes
 from qgis.utils import iface
@@ -268,15 +269,20 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def saveAsLayer(self, refa, refb):
         changes = self.repo.diff(refb, refa)
-        for layer in changes:
-            geojson = {"type": "FeatureCollection", "features": changes[layer]}
+        for layername in changes:
+            geojson = {"type": "FeatureCollection", "features": changes[layername]}
             layer = QgsVectorLayer(
-                json.dumps(geojson), f"{layer}_diff_{refa[:7]}", "ogr"
+                json.dumps(geojson), f"{layername}_diff_{refa[:7]}", "ogr"
             )
-            styleFilename = f"diff_{QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()}.qml"
-            stylePath = os.path.join(
-                os.path.dirname(os.path.dirname(__file__)), "resources", styleFilename
+            styleName = setting(DIFFSTYLES)
+            typeString = QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()
+            styleFolder = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "resources",
+                "diff_styles",
+                styleName,
             )
+            stylePath = os.path.join(styleFolder, f"{typeString}.qml")
             layer.loadNamedStyle(stylePath)
             QgsProject.instance().addMapLayer(layer)
 

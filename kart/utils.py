@@ -1,6 +1,6 @@
 import os
 
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QProgressBar, QLabel
 from qgis.core import QgsProject, Qgis
 from qgis.utils import iface
@@ -49,3 +49,23 @@ def layerFromSource(path):
     for layer in QgsProject.instance().mapLayers().values():
         if os.path.abspath(layer.source()) == path:
             return layer
+
+
+NAMESPACE = "kart"
+KARTPATH = "KartPath"
+AUTOCOMMIT = "AutoCommit"
+DIFFSTYLES = "DiffStyles"
+
+setting_types = {AUTOCOMMIT: bool}
+
+
+def setSetting(name, value):
+    QSettings().setValue(f"{NAMESPACE}/{name}", value)
+
+
+def setting(name):
+    v = QSettings().value(f"{NAMESPACE}/{name}", None)
+    if setting_types.get(name, str) == bool:
+        return str(v).lower() == str(True).lower()
+    else:
+        return v

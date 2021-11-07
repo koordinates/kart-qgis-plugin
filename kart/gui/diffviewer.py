@@ -28,12 +28,14 @@ from qgis.core import (
     Qgis,
     QgsGeometry,
     QgsPointXY,
+    QgsWkbTypes,
 )
 
 from qgis.utils import iface
 from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
 
 from .mapswipetool import MapSwipeTool
+from kart.utils import setting, DIFFSTYLES
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
@@ -338,12 +340,20 @@ class DiffViewerWidget(WIDGET, BASE):
         QgsProject.instance().addMapLayer(self.oldLayer, False)
         self.mapTool = QgsMapToolPan(self.canvas)
 
-        symbol = QgsSymbol.defaultSymbol(self.oldLayer.geometryType())
-        symbol.setColor(Qt.green)
-        self.newLayer.renderer().setSymbol(symbol)
-        symbol = QgsSymbol.defaultSymbol(self.oldLayer.geometryType())
-        symbol.setColor(Qt.red)
-        self.oldLayer.renderer().setSymbol(symbol)
+        styleName = setting(DIFFSTYLES)
+        typeString = QgsWkbTypes.geometryDisplayString(
+            self.oldLayer.geometryType()
+        ).lower()
+        styleFolder = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "resources",
+            "diff_styles",
+            styleName,
+        )
+        stylePathNew = os.path.join(styleFolder, f"{typeString}_new.qml")
+        self.newLayer.loadNamedStyle(stylePathNew)
+        stylePathOld = os.path.join(styleFolder, f"{typeString}_old.qml")
+        self.newLayer.loadNamedStyle(stylePathOld)
         layers.extend([self.newLayer, self.oldLayer])
 
         if self.comboAdditionalLayers.currentIndex() == PROJECT_LAYERS:
