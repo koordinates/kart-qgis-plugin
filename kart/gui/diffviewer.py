@@ -47,6 +47,9 @@ TRANSPARENCY = 0
 SWIPE = 1
 VERTEX_DIFF = 2
 
+TAB_ATTRIBUTES = 0
+TAB_GEOMETRY = 1
+
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 
@@ -149,41 +152,63 @@ class DiffViewerWidget(WIDGET, BASE):
                 return
             iterator += 1
 
+    def _hasGeometry(self, item):
+        if isinstance(item, FeatureItem):
+            old = self.currentFeatureItem.old
+            new = self.currentFeatureItem.new
+            ref = old or new
+            return ref["geometry"] is not None
+        else:
+            oldLayer, newLayer = self.layerDiffLayers[item.layer]
+            return oldLayer.wkbType() != QgsWkbTypes.NoGeometry
+
     def treeItemChanged(self, current, previous):
+        self.grpTransparency.setVisible(True)
+        self.canvasWidget.setVisible(True)
+        self.widgetDiffConfig.setVisible(True)
+        self.tabWidget.setTabEnabled(TAB_GEOMETRY, True)
+        self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, True)
+        self.tabWidget.setCurrentIndex(TAB_ATTRIBUTES)
         if isinstance(current, FeatureItem):
-            self.attributesTable.setVisible(True)
-            self.canvasWidget.setVisible(True)
-            self.grpTransparency.setVisible(True)
-            self.widgetDiffConfig.setVisible(True)
-            self.btnRecoverNewVersion.setVisible(True)
-            self.btnRecoverOldVersion.setVisible(True)
-            self.comboDiffType.view().setRowHidden(VERTEX_DIFF, False)
             self.currentFeatureItem = current
             self.currentLayerItem = None
             self.fillAttributesDiff()
             self.removeMapLayers()
-            self._createLayers()
-            self.fillCanvas()
-        elif isinstance(current, LayerItem):
             self.attributesTable.setVisible(True)
-            self.canvasWidget.setVisible(True)
-            self.grpTransparency.setVisible(True)
-            self.widgetDiffConfig.setVisible(True)
-            self.btnRecoverNewVersion.setVisible(False)
-            self.btnRecoverOldVersion.setVisible(False)
-            self.comboDiffType.view().setRowHidden(VERTEX_DIFF, True)
+            self.btnRecoverNewVersion.setVisible(True)
+            self.btnRecoverOldVersion.setVisible(True)
+            self._createLayers()
+            if self._hasGeometry(current):
+                self.comboDiffType.view().setRowHidden(VERTEX_DIFF, False)
+                self.fillCanvas()
+            else:
+                self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
+        elif isinstance(current, LayerItem):
             self.currentFeatureItem = None
             self.currentLayerItem = current
             self.removeMapLayers()
-            self._createLayers()
-            self.fillCanvas()
-        else:
+            self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, False)
             self.attributesTable.setVisible(False)
-            self.canvasWidget.setVisible(False)
+            self.btnRecoverNewVersion.setVisible(False)
+            self.btnRecoverOldVersion.setVisible(False)
+            if self._hasGeometry(current):
+                self.comboDiffType.view().setRowHidden(VERTEX_DIFF, True)
+                self._createLayers()
+                self.fillCanvas()
+            else:
+                self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
+        else:
+            self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
+            self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, False)
+            self.attributesTable.setVisible(False)
             self.grpTransparency.setVisible(False)
+            self.canvasWidget.setVisible(False)
             self.widgetDiffConfig.setVisible(False)
             self.btnRecoverNewVersion.setVisible(False)
             self.btnRecoverOldVersion.setVisible(False)
+        self.tabWidget.setStyleSheet(
+            "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} "
+        )
 
     def fillAttributesDiff(self):
         old = self.currentFeatureItem.old
@@ -309,15 +334,25 @@ class DiffViewerWidget(WIDGET, BASE):
                     subItems[changetype].addChild(item)
                 if layer not in self.layerDiffLayers:
                     ref = new or old
-                    geomtype = ref["geometry"]["type"]
-                    oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
-                    newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
+                    geom = ref["geometry"]
+                    if geom is not None:
+                        geomtype = geom["type"]
+                        oldLayer = QgsVectorLayer(
+                            f"{geomtype}?crs={crs}", "old", "memory"
+                        )
+                        newLayer = QgsVectorLayer(
+                            f"{geomtype}?crs={crs}", "new", "memory"
+                        )
+                    else:
+                        oldLayer = QgsVectorLayer("None", "old", "memory")
+                        newLayer = QgsVectorLayer("None", "new", "memory")
                     self.layerDiffLayers[layer] = (oldLayer, newLayer)
-                if old:
+
+                if old and old["geometry"] is not None:
                     oldFeature = QgsFeature()
                     oldFeature.setGeometry(self._geomFromGeojson(old))
                     oldLayer.dataProvider().addFeatures([oldFeature])
-                if new:
+                if new and new["geometry"] is not None:
                     newFeature = QgsFeature()
                     newFeature.setGeometry(self._geomFromGeojson(new))
                     newLayer.dataProvider().addFeatures([newFeature])
@@ -429,28 +464,35 @@ class DiffViewerWidget(WIDGET, BASE):
         crs = self.workingCopyLayerCrs[layername]
         idField = self.workingCopyLayersIdFields[layername]
         ref = new or old
-        geomtype = ref["geometry"]["type"]
-        self.oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
+        refGeom = ref["geometry"]
+        if refGeom is not None:
+            geomtype = refGeom["type"]
+            self.oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
+            self.newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
+        else:
+            self.oldLayer = QgsVectorLayer("None", "old", "memory")
+            self.newLayer = QgsVectorLayer("None", "new", "memory")
         self.oldLayer.dataProvider().addAttributes(layer.fields().toList())
         self.oldLayer.updateFields()
-        self.newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
         self.newLayer.dataProvider().addAttributes(layer.fields().toList())
         self.newLayer.updateFields()
         geoms = []
         for layer, feat in [(self.newLayer, new), (self.oldLayer, old)]:
             if bool(feat):
                 geom = self._geomFromGeojson(feat)
+                props = feat["properties"]
                 feature = QgsFeature(layer.fields())
                 for prop in feature.fields().names():
-                    if prop in feat:
-                        feature[prop] = feat[prop]
-                    feature[idField] = self.currentFeatureItem.fid
-                feature.setGeometry(geom)
+                    feature[prop] = props[prop]
+                feature[idField] = self.currentFeatureItem.fid
+                if geom is not None:
+                    feature.setGeometry(geom)
+                    geoms.append(geom)
                 layer.dataProvider().addFeatures([feature])
-                geoms.append(geom)
             else:
                 geoms.append(None)
-        self._createVertexDiffLayer(geoms)
+        if refGeom is not None:
+            self._createVertexDiffLayer(geoms)
         self.btnRecoverOldVersion.setEnabled(bool(old))
         self.btnRecoverNewVersion.setEnabled(bool(new))
         self.sliderTransparency.setEnabled(bool(old))
