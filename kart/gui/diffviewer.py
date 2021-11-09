@@ -60,7 +60,9 @@ addedIcon = icon("add.png")
 removedIcon = icon("remove.png")
 modifiedIcon = icon("edit.png")
 
-pointsStyle = os.path.join(pluginPath, "resources", "geomdiff_points.qml")
+pointsStyle = os.path.join(
+    pluginPath, "resources", "diff_styles", "geomdiff_points.qml"
+)
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui")
@@ -340,7 +342,7 @@ class DiffViewerWidget(WIDGET, BASE):
         QgsProject.instance().addMapLayer(self.oldLayer, False)
         self.mapTool = QgsMapToolPan(self.canvas)
 
-        styleName = setting(DIFFSTYLES)
+        styleName = setting(DIFFSTYLES) or "standard"
         typeString = QgsWkbTypes.geometryDisplayString(
             self.oldLayer.geometryType()
         ).lower()
@@ -353,7 +355,7 @@ class DiffViewerWidget(WIDGET, BASE):
         stylePathNew = os.path.join(styleFolder, f"{typeString}_new.qml")
         self.newLayer.loadNamedStyle(stylePathNew)
         stylePathOld = os.path.join(styleFolder, f"{typeString}_old.qml")
-        self.newLayer.loadNamedStyle(stylePathOld)
+        self.oldLayer.loadNamedStyle(stylePathOld)
         layers.extend([self.newLayer, self.oldLayer])
 
         if self.comboAdditionalLayers.currentIndex() == PROJECT_LAYERS:

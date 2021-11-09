@@ -274,7 +274,7 @@ class HistoryTree(QTreeWidget):
             layer = QgsVectorLayer(
                 json.dumps(geojson), f"{layername}_diff_{refa[:7]}", "ogr"
             )
-            styleName = setting(DIFFSTYLES)
+            styleName = setting(DIFFSTYLES) or "standard"
             typeString = QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()
             styleFolder = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
