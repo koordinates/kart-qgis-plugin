@@ -42,6 +42,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.workingCopyLayerIdField = None
         self.workingCopyLayerCrs = None
         self.setupUi(self)
+        self.setWindowFlags(Qt.Window)
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -66,8 +67,31 @@ class FeatureHistoryDialog(BASE, WIDGET):
 
         self.listCommits.setCurrentRow(0)
 
+    def _currentCommitFeature(self):
+        row = self.listCommits.currentRow()
+        if row == self.listCommits.count() - 1:
+            if self.listCommits.count() == 1:
+                return
+            else:
+                return self.listCommits.item(row - 1).oldFeature()
+        else:
+            return self.listCommits.currentItem().feature()
+
     def currentCommitChanged(self):
-        feature = self.listCommits.currentItem().feature()
+        commit = self.listCommits.currentItem().commit
+        html = (
+            f"<b>SHA-1:</b> {commit['commit']} <br>"
+            f"<b>Date:</b> {commit['authorTime']} <br>"
+            f"<b>Author:</b> {commit['authorName']} <br>"
+            f"<b>Message:</b> {commit['message']} <br>"
+            f"<b>Parents:</b> {', '.join(commit['parents'])} <br>"
+        )
+        self.commitDetails.setHtml(html)
+
+        self.removeLayer()
+        feature = self._currentCommitFeature()
+        if feature is None:
+            return
         geom = feature.geometry()
         attributes = feature.attributes()
         self.attributesTable.setRowCount(len(attributes))
@@ -86,7 +110,6 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.attributesTable.horizontalHeader().setMinimumSectionSize(150)
         self.attributesTable.horizontalHeader().setStretchLastSection(True)
 
-        self.removeLayer()
         geomtype = QgsWkbTypes.displayString(geom.wkbType())
         if self.workingCopyLayerCrs is None:
             self.workingCopyLayerCrs = self.repo.workingCopyLayerCrs(self.layername)
@@ -118,15 +141,15 @@ class FeatureHistoryDialog(BASE, WIDGET):
             self.workingCopyLayerIdField = self.repo.workingCopyLayerIdField(
                 self.layername
             )
-        with edit(self.workingCopyLayer):
-            old = list(
-                self.workingCopyLayer.getFeatures(
-                    f'"{self.workingCopyLayerIdField}" = {self.fid}'
-                )
+        provider = self.workingCopyLayer.dataProvider()
+        old = list(
+            self.workingCopyLayer.getFeatures(
+                f'"{self.workingCopyLayerIdField}" = {self.fid}'
             )
-            if old:
-                self.workingCopyLayer.deleteFeature(old[0].id())
-            self.workingCopyLayer.addFeatures([new])
+        )
+        if old:
+            provider.deleteFeatures([old[0].id()])
+        provider.addFeatures([new])
         self.repo.updateCanvas()
         self.bar.pushMessage(
             "Feature history",
@@ -153,9 +176,18 @@ class CommitListItem(QListWidgetItem):
         self.repo = repo
         self.fid = fid
         self._feature = None
-        self.setText(f'{commit["message"].splitlines()[0]} (by {commit["authorName"]})')
+        self._oldFeature = None
+        self.setText(f'{commit["message"].splitlines()[0]}')
 
     def feature(self):
+        self._createFeatures()
+        return self._feature
+
+    def oldFeature(self):
+        self._createFeatures()
+        return self._oldFeature
+
+    def _createFeatures(self):
         if self._feature is None:
             diff = self.repo.diff(
                 self.commit["parents"][0],
@@ -169,4 +201,10 @@ class CommitListItem(QListWidgetItem):
             self._feature.setFields(self.layer.fields())
             for prop in props:
                 self._feature[prop] = props[prop]
+            geojson = diff[self.layername][-1]
+            self._oldFeature = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))[0]
+            props = geojson["properties"]
+            self._oldFeature.setFields(self.layer.fields())
+            for prop in props:
+                self._oldFeature[prop] = props[prop]
         return self._feature
