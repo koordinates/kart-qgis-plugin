@@ -2,7 +2,14 @@ import os
 from functools import partial
 
 from qgis.utils import iface
-from qgis.core import Qgis, QgsMapLayer, QgsVectorLayer, QgsFeatureRequest, QgsRectangle
+from qgis.core import (
+    Qgis,
+    QgsMapLayer,
+    QgsVectorLayer,
+    QgsFeatureRequest,
+    QgsRectangle,
+    QgsWkbTypes,
+)
 from qgis.gui import QgsMapToolEmitPoint
 
 from qgis.PyQt.QtGui import QIcon
@@ -133,7 +140,8 @@ class LayerTracker:
                 iface.addCustomActionForLayer(
                     self.discardWorkingTreeChangesAction, layer
                 )
-                iface.addCustomActionForLayer(self.setMapToolAction, layer)
+                if layer.wkbType() != QgsWkbTypes.NoGeometry:
+                    iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
     def setMapTool(self):
         layer, repo = self._kartActiveLayerAndRepo()
