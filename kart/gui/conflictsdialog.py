@@ -145,8 +145,14 @@ class ConflictsDialog(BASE, WIDGET):
             pass
 
     def solveFeature(self):
-        feature = {"properties": {}, "type": "Feature"}
-        for row in range(self.tableAttributes.rowCount() - 1):
+        conflict = self.lastSelectedItem.conflict
+        attrsCount = self.tableAttributes.rowCount()
+        hasGeom = conflict["ancestor"]["geometry"] is not None
+        if hasGeom:
+            attrsCount -= 1
+        feature = {"properties": {}, "type": "Feature", "geometry": None}
+
+        for row in range(attrsCount):
             attrib = self.tableAttributes.item(row, 3).text()
             finalItem = self.tableAttributes.item(row, 4)
             if finalItem.hasValue:
@@ -156,14 +162,15 @@ class ConflictsDialog(BASE, WIDGET):
                     "", "There are still conflicts in the current feature", Qgis.Warning
                 )
                 return
-        geomItem = self.tableAttributes.item(self.tableAttributes.rowCount() - 1, 4)
-        if geomItem.hasValue:
-            feature["geometry"] = geomItem.value
-        else:
-            self.bar.pushMessage(
-                "", "There are still conflicts in the current feature", Qgis.Warning
-            )
-            return
+        if hasGeom:
+            geomItem = self.tableAttributes.item(self.tableAttributes.rowCount() - 1, 4)
+            if geomItem.hasValue:
+                feature["geometry"] = geomItem.value
+            else:
+                self.bar.pushMessage(
+                    "", "There are still conflicts in the current feature", Qgis.Warning
+                )
+                return
         feature[
             "id"
         ] = f"{self.lastSelectedItem.path}:feature:{self.lastSelectedItem.fid}"
@@ -240,7 +247,9 @@ class ConflictsDialog(BASE, WIDGET):
         conflict = self.lastSelectedItem.conflict
         self.stackedWidget.setCurrentWidget(self.pageSolveNormal)
         attribs = list(conflict["ancestor"]["properties"].keys())
-        attribs.append("geometry")
+        hasGeom = conflict["ancestor"]["geometry"] is not None
+        if hasGeom:
+            attribs.append("geometry")
         self.tableAttributes.setRowCount(len(attribs))
 
         for idx, name in enumerate(attribs):
@@ -326,7 +335,6 @@ class FinalValueItem(QTableWidgetItem):
 
         self.setText("")
         self.setBackground(Qt.yellow)
-        # self.setFlags(Qt.ItemIsEnabled)
 
     def setValue(self, value):
         self.value = value
