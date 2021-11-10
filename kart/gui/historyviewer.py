@@ -77,10 +77,10 @@ addtoQgisIcon = icon("openinqgis.png")
 
 
 class HistoryTree(QTreeWidget):
-    def __init__(self, repo, layername, parent):
+    def __init__(self, repo, dataset, parent):
         super(HistoryTree, self).__init__()
         self.repo = repo
-        self.layername = layername
+        self.dataset = dataset
         self.parent = parent
         self.filterText = ""
         self.startDate = QDateTime.fromSecsSinceEpoch(0).date()
@@ -156,8 +156,8 @@ class HistoryTree(QTreeWidget):
                         _f(self.createTag, item),
                         createTagIcon,
                     ),
-                    "Restore working tree layers to this version...": (
-                        _f(self.restoreLayers, item),
+                    "Restore working tree datasets to this version...": (
+                        _f(self.restoreDatasets, item),
                         restoreIcon,
                     ),
                 }
@@ -269,10 +269,10 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def saveAsLayer(self, refa, refb):
         changes = self.repo.diff(refb, refa)
-        for layername in changes:
-            geojson = {"type": "FeatureCollection", "features": changes[layername]}
+        for dataset in changes:
+            geojson = {"type": "FeatureCollection", "features": changes[dataset]}
             layer = QgsVectorLayer(
-                json.dumps(geojson), f"{layername}_diff_{refa[:7]}", "ogr"
+                json.dumps(geojson), f"{dataset}_diff_{refa[:7]}", "ogr"
             )
             styleName = setting(DIFFSTYLES) or "standard"
             typeString = QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()
@@ -293,29 +293,33 @@ class HistoryTree(QTreeWidget):
         self.populate()
 
     @executeskart
-    def restoreLayers(self, item):
-        ALL_LAYERS = "Restore all layers"
-        layers = self.repo.layers()
-        layers.insert(0, ALL_LAYERS)
-        layer, ok = QInputDialog.getItem(
+    def restoreDatasets(self, item):
+        ALL_DATASETS = "Restore all datasets"
+        vectorLayers, tables = self.repo.datasets()
+        datasets = [ALL_DATASETS]
+        datasets.extend(vectorLayers)
+        datasets.extend(tables)
+        dataset, ok = QInputDialog.getItem(
             iface.mainWindow(),
             "Restore",
-            "Select layer to restore:",
-            layers,
+            "Select dataset to restore:",
+            datasets,
             editable=False,
         )
         if ok:
-            if layer == ALL_LAYERS:
-                layer = None
-            self.repo.restore(item.commit["commit"], layer)
-            self.message("Selected layer correctly restored in working tree", Qgis.Info)
+            if dataset == ALL_DATASETS:
+                dataset = None
+            self.repo.restore(item.commit["commit"], dataset)
+            self.message(
+                "Selected dataset(s) correctly restored in working tree", Qgis.Info
+            )
 
     def message(self, text, level):
         self.parent.bar.pushMessage(text, level, duration=5)
 
     @executeskart
     def populate(self):
-        commits = self.repo.log(layername=self.layername)
+        commits = self.repo.log(dataset=self.dataset)
 
         self.log = {c["commit"]: c for c in commits}
         self.clear()
@@ -468,7 +472,7 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class HistoryDialog(WIDGET, BASE):
-    def __init__(self, repo, layername=None):
+    def __init__(self, repo, dataset=None):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
         self.setWindowFlags(Qt.Window)
@@ -481,7 +485,7 @@ class HistoryDialog(WIDGET, BASE):
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addWidget(self.bar)
-        self.history = HistoryTree(repo, layername, self)
+        self.history = HistoryTree(repo, dataset, self)
         layout.addWidget(self.history)
         self.frameHistory.setLayout(layout)
         self.history.currentItemChanged.connect(self.commitSelected)

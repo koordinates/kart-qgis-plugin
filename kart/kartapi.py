@@ -266,8 +266,8 @@ def repoForLayer(layer):
 
 def _processProgressLine(bar, line):
     if "Writing dataset" in line:
-        layername = line.split(":")[-1].strip()
-        bar.setText(f"Checking out layer '{layername}'")
+        datasetname = line.split(":")[-1].strip()
+        bar.setText(f"Checking out layer '{datasetname}'")
     elif line.startswith("Receiving objects: ") or line.startswith("Writing objects: "):
         tokens = line.split(": ")
         bar.setText(tokens[0])
@@ -373,11 +373,11 @@ class Repository:
         else:
             return False
 
-    def commit(self, msg, layer=None):
+    def commit(self, msg, dataset=None):
         if self.checkUserConfigured():
             commands = ["commit", "-m", msg]
-            if layer is not None:
-                commands.append(layer)
+            if dataset is not None:
+                commands.append(dataset)
             self.executeKart(commands)
             return True
         else:
@@ -387,15 +387,15 @@ class Repository:
         self.executeKart(["reset", ref, "-f"])
         self.updateCanvas()
 
-    def log(self, ref="HEAD", layername=None, featureid=None):
-        if layername is not None:
-            commands = ["log", "-ojson", ref, "--", "--", layername]
+    def log(self, ref="HEAD", dataset=None, featureid=None):
+        if dataset is not None:
+            commands = ["log", "-ojson", ref, "--", "--", dataset]
         else:
             commands = ["log", "-ojson", ref]
         ret = self.executeKart(commands)
         jsonRet = json.loads(ret)
         log = {c["commit"]: c for c in jsonRet}
-        if layername is not None:
+        if dataset is not None:
             commands = [
                 "log",
                 ref,
@@ -403,7 +403,7 @@ class Repository:
                 "--format=format:%H%n ",
                 "--",
                 "--",
-                layername,
+                dataset,
             ]
         else:
             commands = ["log", ref, "--graph", "--format=format:%H%n "]
@@ -428,8 +428,17 @@ class Repository:
             commits.append(log[commitid])
         return commits
 
-    def layers(self):
-        return list(self.executeKart(["data", "ls"], True).values())[0]
+    def datasets(self):
+        vectorLayers = []
+        tables = []
+        meta = self.executeKart(["meta", "get"], True)
+        for name, dataset in meta.items():
+            crsProps = [k for k in dataset.keys() if k.startswith("crs/")]
+            if crsProps:
+                vectorLayers.append(name)
+            else:
+                tables.append(name)
+        return vectorLayers, tables
 
     def branches(self):
         branches = list(self.executeKart(["branch"], True).values())[0]["branches"]
@@ -480,7 +489,7 @@ class Repository:
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
-    def diff(self, refa=None, refb=None, layername=None, featureid=None):
+    def diff(self, refa=None, refb=None, dataset=None, featureid=None):
         changes = {}
         try:
             commands = ["diff", "-ogeojson", "--json-style", "extracompact"]
@@ -490,31 +499,31 @@ class Repository:
                 commands.append(refa)
             else:
                 commands.append("HEAD")
-            if layername is not None:
+            if dataset is not None:
                 if featureid is not None:
-                    commands.append(f"{layername}:{featureid}")
+                    commands.append(f"{dataset}:{featureid}")
                 else:
-                    commands.append(layername)
-            if layername is not None and featureid is not None:
+                    commands.append(dataset)
+            if dataset is not None and featureid is not None:
                 ret = self.executeKart(commands)
-                changes[layername] = json.loads(ret)["features"]
+                changes[dataset] = json.loads(ret)["features"]
             else:
                 tmpdirname = tempfile.TemporaryDirectory()
                 commands.extend(["--output", tmpdirname.name])
                 self.executeKart(commands)
                 for filename in os.listdir(tmpdirname.name):
                     path = os.path.join(tmpdirname.name, filename)
-                    layername = os.path.splitext(filename)[0]
+                    name = os.path.splitext(filename)[0]
                     with open(path) as f:
-                        changes[layername] = json.load(f)["features"]
+                        changes[name] = json.load(f)["features"]
                 tmpdirname.cleanup()
         except Exception:
             pass
         return changes
 
-    def restore(self, ref, layer=None):
-        if layer is not None:
-            self.executeKart(["restore", "-s", ref, layer])
+    def restore(self, ref, dataset=None):
+        if dataset is not None:
+            self.executeKart(["restore", "-s", ref, dataset])
         else:
             self.executeKart(["restore", "-s", ref])
         self.updateCanvas()
@@ -546,14 +555,14 @@ class Repository:
         features = json.loads(self.executeKart(commands)).get("features", [])
         conflicts = {}
         for feature in features:
-            layer, elementtype, fid, version = feature["id"].split(":")
+            dataset, elementtype, fid, version = feature["id"].split(":")
             if elementtype != "feature":
                 raise KartNotSupportedOperationException()
-            if layer not in conflicts:
-                conflicts[layer] = {}
-            if fid not in conflicts[layer]:
+            if dataset not in conflicts:
+                conflicts[dataset] = {}
+            if fid not in conflicts[dataset]:
                 conflicts[layer][fid] = {"ancestor": None, "theirs": None, "ours": None}
-            conflicts[layer][fid][version] = feature
+            conflicts[dataset][fid][version] = feature
         return conflicts
 
     def resolveConflicts(self, resolved):
@@ -609,11 +618,11 @@ class Repository:
     def workingCopyLocation(self):
         return self._config()["kart.workingcopy.location"]
 
-    def workingCopyLayer(self, layername):
+    def workingCopyLayer(self, dataset):
         location = self.workingCopyLocation()
         path = os.path.join(self.path, location)
         if os.path.exists(path):
-            layer = QgsVectorLayer(f"{path}|layername={layername}", layername)
+            layer = QgsVectorLayer(f"{path}|layername={dataset}", dataset)
             return layer
         elif location.lower().startswith("postgres"):
             parse = urlparse(location)
@@ -622,26 +631,25 @@ class Repository:
             database, schema = parse.path.strip("/").split("/", 1)
             uri = QgsDataSourceUri()
             uri.setConnection(host, port, database)
-            uri.setDataSource(schema, layername, "geom")
-            layer = QgsVectorLayer(uri.uri(), layername, "postgres")
+            uri.setDataSource(schema, dataset, "geom")
+            layer = QgsVectorLayer(uri.uri(), dataset, "postgres")
             return layer
 
-    def workingCopyLayerIdField(self, layername):
-        schema = self.executeKart(["meta", "get", layername, "schema.json"], True)[
-            layername
+    def workingCopyLayerIdField(self, dataset):
+        schema = self.executeKart(["meta", "get", dataset, "schema.json"], True)[
+            dataset
         ]["schema.json"]
         for attr in schema:
             if attr.get("primaryKeyIndex") == 0:
                 return attr["name"]
 
-    def workingCopyLayerCrs(self, layername):
-        meta = self.executeKart(["meta", "get", layername], True)[layername]
+    def workingCopyLayerCrs(self, dataset):
+        meta = self.executeKart(["meta", "get", dataset], True)[dataset]
         for k in meta.keys():
             if k.startswith("crs/"):
                 return k[4:-4]
-        return "EPSG:4326"
 
-    def layerNameFromLayer(self, layer):
+    def datasetNameFromLayer(self, layer):
         location = self.workingCopyLocation()
         if location.lower().startswith("postgres"):
             uri = QgsDataSourceUri(layer.source())
@@ -649,18 +657,18 @@ class Repository:
         else:
             return layer.source().split("|")[-1].split("=")[-1]
 
-    def deleteLayer(self, layername):
+    def deleteDataset(self, dataset):
         # TODO handle case of layer not in gpkg-based repo
         name = os.path.basename(self.path)
         path = os.path.join(self.path, f"{name}.gpkg")
         ds = gdal.OpenEx(path, gdal.OF_UPDATE, allowed_drivers=["GPKG"])
         for i in range(ds.GetLayerCount()):
-            if ds.GetLayer(i).GetName() == layername:
+            if ds.GetLayer(i).GetName() == dataset:
                 ret = ds.DeleteLayer(i)
                 if ret == 0:
-                    self.commit(f"Removed layer {layername}", layername)
+                    self.commit(f"Removed dataset {dataset}", dataset)
                 else:
-                    raise KartException("Could not delete layer from repository")
+                    raise KartException("Could not delete dataset from repository")
 
     def createPatch(self, ref, filename):
         self.executeKart(["show", "-ojson", "--output", filename, ref])

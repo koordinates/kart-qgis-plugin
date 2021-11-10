@@ -54,7 +54,9 @@ importIcon = icon("import.png")
 checkoutIcon = icon("checkout.png")
 commitIcon = icon("commit.png")
 discardIcon = icon("reset.png")
-layerIcon = icon("layer.png")
+datasetIcon = icon("dataset.png")
+vectorDatasetIcon = icon("vector-polyline.png")
+tableIcon = icon("table.png")
 mergeIcon = icon("merge.png")
 addtoQgisIcon = icon("openinqgis.png")
 diffIcon = icon("changes.png")
@@ -244,8 +246,8 @@ class RepoItem(RefreshableItem):
             self.populate()
 
     def populate(self):
-        self.layersItem = LayersItem(self.repo)
-        self.addChild(self.layersItem)
+        self.datasetsItem = DatasetsItem(self.repo)
+        self.addChild(self.datasetsItem)
         self.populated = True
 
     def _actions(self):
@@ -333,7 +335,7 @@ class RepoItem(RefreshableItem):
                 "Import", "Layer correctly imported", level=Qgis.Info
             )
             if self.populated:
-                self.layersItem.refreshContent()
+                self.datasetsItem.refreshContent()
             if tmpfolder is not None:
                 tmpfolder.cleanup()
             self.setTitle()  # In case it's the first commit, update title to add branch name
@@ -367,7 +369,7 @@ class RepoItem(RefreshableItem):
     @executeskart
     def showChanges(self):
         changes = self.repo.diff()
-        hasChanges = any([bool(layerchanges) for layerchanges in changes.values()])
+        hasChanges = any([bool(c) for c in changes.values()])
         if hasChanges:
             dialog = DiffViewerDialog(iface.mainWindow(), changes, self.repo)
             dialog.exec()
@@ -497,36 +499,40 @@ class RepoItem(RefreshableItem):
             )
 
 
-class LayersItem(RefreshableItem):
+class DatasetsItem(RefreshableItem):
     def __init__(self, repo):
         QTreeWidgetItem.__init__(self)
 
         self.repo = repo
 
-        self.setText(0, "Layers")
-        self.setIcon(0, layerIcon)
+        self.setText(0, "Datasets")
+        self.setIcon(0, datasetIcon)
 
         self.populate()
 
     @executeskart
     def populate(self):
-        layers = self.repo.layers()
-        for layer in layers:
-            item = LayerItem(layer, self.repo)
+        vectorDatasets, tables = self.repo.datasets()
+        for dataset in vectorDatasets:
+            item = DatasetItem(dataset, self.repo, False)
+            self.addChild(item)
+        for table in tables:
+            item = DatasetItem(table, self.repo, True)
             self.addChild(item)
 
     def _actions(self):
         return []
 
 
-class LayerItem(QTreeWidgetItem):
-    def __init__(self, layername, repo):
+class DatasetItem(QTreeWidgetItem):
+    def __init__(self, name, repo, isTable):
         QTreeWidgetItem.__init__(self)
-        self.layername = layername
+        self.name = name
         self.repo = repo
+        self.isTable = isTable
 
-        self.setText(0, layername)
-        self.setIcon(0, layerIcon)
+        self.setText(0, name)
+        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
 
     def actions(self):
         actions = [
@@ -544,15 +550,15 @@ class LayerItem(QTreeWidgetItem):
 
     @executeskart
     def showLog(self):
-        dialog = HistoryDialog(self.repo, self.layername)
+        dialog = HistoryDialog(self.repo, self.name)
         dialog.exec()
 
     def addToProject(self):
-        layer = self.repo.workingCopyLayer(self.layername)
+        layer = self.repo.workingCopyLayer(self.name)
         if layer is None:
             iface.messageBar().pushMessage(
                 "Add layer",
-                "Layer could not be added\nOnly Gpkg-based repositories are supported",
+                "Dataset could not be added",
                 level=Qgis.Warning,
             )
         else:
@@ -561,28 +567,28 @@ class LayerItem(QTreeWidgetItem):
     @executeskart
     def removeFromRepo(self):
         name = os.path.basename(self.repo.path)
-        path = os.path.join(self.repo.path, f"{name}.gpkg|layername={self.layername}")
+        path = os.path.join(self.repo.path, f"{name}.gpkg|layername={self.name}")
         layer = layerFromSource(path)
         if layer:
             msg = (
-                "The layer is loaded in QGIS. \n"
+                "The dataset is loaded in QGIS. \n"
                 "It will be removed from the repository and from your current project.\n"
                 "Do you want to continue?"
             )
         else:
             msg = (
-                "The layer will be removed from the repository.\n"
+                "The dataset will be removed from the repository.\n"
                 "Do you want to continue?"
             )
 
         ret = QMessageBox.warning(
-            iface.mainWindow(), "Remove layer", msg, QMessageBox.Yes | QMessageBox.No
+            iface.mainWindow(), "Remove dataset", msg, QMessageBox.Yes | QMessageBox.No
         )
         if ret == QMessageBox.Yes:
-            self.repo.deleteLayer(self.layername)
+            self.repo.deleteDataset(self.name)
             iface.messageBar().pushMessage(
-                "Remove layer",
-                "Layer correctly removed",
+                "Remove dataset",
+                "Dataset correctly removed",
                 level=Qgis.Info,
             )
             if layer:
@@ -598,7 +604,7 @@ class LayerItem(QTreeWidgetItem):
                 level=Qgis.Warning,
             )
         else:
-            changes = self.repo.changes().get(self.layername, {})
+            changes = self.repo.changes().get(self.name, {})
             if changes:
                 msg, ok = QInputDialog.getMultiLineText(
                     iface.mainWindow(), "Commit", "Enter commit message:"

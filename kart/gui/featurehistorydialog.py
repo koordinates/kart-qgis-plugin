@@ -31,12 +31,12 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class FeatureHistoryDialog(BASE, WIDGET):
-    def __init__(self, history, workingCopyLayer, layername, fid, repo):
+    def __init__(self, history, workingCopyLayer, dataset, fid, repo):
         super(FeatureHistoryDialog, self).__init__(iface.mainWindow())
         self.history = history
         self.fid = fid
         self.repo = repo
-        self.layername = layername
+        self.dataset = dataset
         self.layer = None
         self.workingCopyLayer = workingCopyLayer
         self.workingCopyLayerIdField = None
@@ -62,7 +62,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.canvas.setMapTool(self.panTool)
 
         for commit in history:
-            item = CommitListItem(commit, workingCopyLayer, layername, fid, repo)
+            item = CommitListItem(commit, workingCopyLayer, dataset, fid, repo)
             self.listCommits.addItem(item)
 
         self.listCommits.setCurrentRow(0)
@@ -112,7 +112,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
 
         geomtype = QgsWkbTypes.displayString(geom.wkbType())
         if self.workingCopyLayerCrs is None:
-            self.workingCopyLayerCrs = self.repo.workingCopyLayerCrs(self.layername)
+            self.workingCopyLayerCrs = self.repo.workingCopyLayerCrs(self.dataset)
         self.layer = QgsVectorLayer(
             f"{geomtype}?crs={self.workingCopyLayerCrs}", "temp", "memory"
         )
@@ -139,7 +139,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         new = list(self.layer.getFeatures())[0]
         if self.workingCopyLayerIdField is None:
             self.workingCopyLayerIdField = self.repo.workingCopyLayerIdField(
-                self.layername
+                self.dataset
             )
         provider = self.workingCopyLayer.dataProvider()
         old = list(
@@ -168,11 +168,11 @@ class FeatureHistoryDialog(BASE, WIDGET):
 
 
 class CommitListItem(QListWidgetItem):
-    def __init__(self, commit, layer, layername, fid, repo):
+    def __init__(self, commit, layer, dataset, fid, repo):
         QListWidgetItem.__init__(self)
         self.commit = commit
         self.layer = layer
-        self.layername = layername
+        self.dataset = dataset
         self.repo = repo
         self.fid = fid
         self._feature = None
@@ -192,16 +192,16 @@ class CommitListItem(QListWidgetItem):
             diff = self.repo.diff(
                 self.commit["parents"][0],
                 self.commit["commit"],
-                self.layername,
+                self.dataset,
                 self.fid,
             )
-            geojson = diff[self.layername][0]
+            geojson = diff[self.dataset][0]
             self._feature = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))[0]
             props = geojson["properties"]
             self._feature.setFields(self.layer.fields())
             for prop in props:
                 self._feature[prop] = props[prop]
-            geojson = diff[self.layername][-1]
+            geojson = diff[self.dataset][-1]
             self._oldFeature = QgsJsonUtils.stringToFeatureList(json.dumps(geojson))[0]
             props = geojson["properties"]
             self._oldFeature.setFields(self.layer.fields())

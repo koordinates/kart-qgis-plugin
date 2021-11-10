@@ -153,14 +153,14 @@ class LayerTracker:
             .setFilterRect(r)
             .setFlags(QgsFeatureRequest.ExactIntersect)
         )
-        layername = self.mapToolRepo.layerNameFromLayer(self.mapToolLayer)
-        idField = self.mapToolRepo.workingCopyLayerIdField(layername)
+        dataset = self.mapToolRepo.datasetNameFromLayer(self.mapToolLayer)
+        idField = self.mapToolRepo.workingCopyLayerIdField(dataset)
         try:
             feature = next(feats)
             fid = feature[idField]
-            history = self.mapToolRepo.log(layername=layername, featureid=fid)
+            history = self.mapToolRepo.log(dataset=dataset, featureid=fid)
             dlg = FeatureHistoryDialog(
-                history, self.mapToolLayer, layername, fid, self.mapToolRepo
+                history, self.mapToolLayer, dataset, fid, self.mapToolRepo
             )
             dlg.exec()
         except StopIteration:
@@ -174,17 +174,17 @@ class LayerTracker:
     def showLog(self):
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
-            layername = repo.layerNameFromLayer(layer)
-            dialog = HistoryDialog(repo, layername)
+            dataset = repo.datasetNameFromLayer(layer)
+            dialog = HistoryDialog(repo, dataset)
             dialog.exec()
 
     @executeskart
     def showWorkingTreeChanges(self):
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
-            layername = repo.layerNameFromLayer(layer)
-            changes = repo.diff(layername=layername)
-            if changes.get(layername):
+            dataset = repo.datasetNameFromLayer(layer)
+            changes = repo.diff(layername=dataset)
+            if changes.get(dataset):
                 dialog = DiffViewerDialog(iface.mainWindow(), changes, repo)
                 dialog.exec()
             else:
@@ -198,8 +198,8 @@ class LayerTracker:
     def discardWorkingTreeChanges(self):
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
-            layername = repo.layerNameFromLayer(layer)
-            repo.restore("HEAD", layername)
+            dataset = repo.datasetNameFromLayer(layer)
+            repo.restore("HEAD", dataset)
             iface.messageBar().pushMessage(
                 "Discard changes",
                 f"Working tree changes for layer '{layer.name()}' have been discarded",
@@ -210,14 +210,14 @@ class LayerTracker:
     def commitWorkingTreeChanges(self):
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
-            layername = repo.layerNameFromLayer(layer)
-            changes = repo.changes().get(layername, {})
+            dataset = repo.datasetNameFromLayer(layer)
+            changes = repo.changes().get(dataset, {})
             if changes:
                 msg, ok = QInputDialog.getMultiLineText(
                     iface.mainWindow(), "Commit", "Enter commit message:"
                 )
                 if ok and msg:
-                    if repo.commit(msg, layer=layername):
+                    if repo.commit(msg, dataset=dataset):
                         iface.messageBar().pushMessage(
                             "Commit", "Changes correctly committed", level=Qgis.Info
                         )
@@ -241,8 +241,8 @@ class LayerTracker:
         if repo is not None:
             auto = setting(AUTOCOMMIT)
             if auto:
-                layername = repo.layerNameFromLayer(layer)
-                repo.commit(f"Changed layer '{layername}'", layer=layername)
+                dataset = repo.datasetNameFromLayer(layer)
+                repo.commit(f"Changed dataset '{dataset}'", layer=dataset)
                 iface.messageBar().pushMessage(
                     "Commit", "Changes correctly committed", level=Qgis.Info
                 )

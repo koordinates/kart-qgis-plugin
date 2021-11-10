@@ -57,7 +57,8 @@ def icon(f):
     return QIcon(os.path.join(pluginPath, "img", f))
 
 
-layerIcon = icon("layer_group.svg")
+vectorDatasetIcon = icon("vector-polyline.png")
+tableIcon = icon("table.png")
 featureIcon = icon("geometry.png")
 addedIcon = icon("add.png")
 removedIcon = icon("remove.png")
@@ -112,7 +113,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.layerDiffLayers = {}
         self.vertexDiffLayer = None
         self.currentFeatureItem = None
-        self.currentLayerItem = None
+        self.currentDatasetItem = None
         self.workingCopyLayers = {}
         self.workingCopyLayersIdFields = {}
         self.workingCopyLayerCrs = {}
@@ -159,7 +160,7 @@ class DiffViewerWidget(WIDGET, BASE):
             ref = old or new
             return ref["geometry"] is not None
         else:
-            oldLayer, newLayer = self.layerDiffLayers[item.layer]
+            oldLayer, newLayer = self.layerDiffLayers[item.dataset]
             return oldLayer.wkbType() != QgsWkbTypes.NoGeometry
 
     def treeItemChanged(self, current, previous):
@@ -171,7 +172,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.tabWidget.setCurrentIndex(TAB_ATTRIBUTES)
         if isinstance(current, FeatureItem):
             self.currentFeatureItem = current
-            self.currentLayerItem = None
+            self.currentDatasetItem = None
             self.fillAttributesDiff()
             self.removeMapLayers()
             self.attributesTable.setVisible(True)
@@ -183,9 +184,9 @@ class DiffViewerWidget(WIDGET, BASE):
                 self.fillCanvas()
             else:
                 self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
-        elif isinstance(current, LayerItem):
+        elif isinstance(current, DatasetItem):
             self.currentFeatureItem = None
-            self.currentLayerItem = current
+            self.currentDatasetItem = current
             self.removeMapLayers()
             self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, False)
             self.attributesTable.setVisible(False)
@@ -298,8 +299,13 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def fillTree(self):
         self.featuresTree.clear()
-        for layer, changes in self.changes.items():
-            layerItem = LayerItem(layer)
+        for dataset, changes in self.changes.items():
+            if dataset not in self.workingCopyLayerCrs:
+                self.workingCopyLayerCrs[dataset] = self.repo.workingCopyLayerCrs(
+                    dataset
+                )
+            crs = self.workingCopyLayerCrs[dataset]
+            datasetItem = DatasetItem(dataset, crs is None)
             addedItem = QTreeWidgetItem()
             addedItem.setText(0, "Added")
             addedItem.setIcon(0, addedIcon)
@@ -310,9 +316,6 @@ class DiffViewerWidget(WIDGET, BASE):
             modifiedItem.setText(0, "Modified")
             modifiedItem.setIcon(0, modifiedIcon)
 
-            if layer not in self.workingCopyLayerCrs:
-                self.workingCopyLayerCrs[layer] = self.repo.workingCopyLayerCrs(layer)
-            crs = self.workingCopyLayerCrs[layer]
             subItems = {"I": addedItem, "U": modifiedItem, "D": removedItem}
             changes = {feat["id"]: feat for feat in changes}
             usedids = []
@@ -330,9 +333,9 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = changes[f"U-::{featid}"]
                         new = changes[f"U+::{featid}"]
                     usedids.append(featid)
-                    item = FeatureItem(featid, old, new, layer)
+                    item = FeatureItem(featid, old, new, dataset)
                     subItems[changetype].addChild(item)
-                if layer not in self.layerDiffLayers:
+                if dataset not in self.layerDiffLayers:
                     ref = new or old
                     geom = ref["geometry"]
                     if geom is not None:
@@ -346,7 +349,7 @@ class DiffViewerWidget(WIDGET, BASE):
                     else:
                         oldLayer = QgsVectorLayer("None", "old", "memory")
                         newLayer = QgsVectorLayer("None", "new", "memory")
-                    self.layerDiffLayers[layer] = (oldLayer, newLayer)
+                    self.layerDiffLayers[dataset] = (oldLayer, newLayer)
 
                 if old and old["geometry"] is not None:
                     oldFeature = QgsFeature()
@@ -358,9 +361,9 @@ class DiffViewerWidget(WIDGET, BASE):
                     newLayer.dataProvider().addFeatures([newFeature])
             for subItem in subItems.values():
                 if subItem.childCount():
-                    layerItem.addChild(subItem)
-            if layerItem.childCount():
-                self.featuresTree.addTopLevelItem(layerItem)
+                    datasetItem.addChild(subItem)
+            if datasetItem.childCount():
+                self.featuresTree.addTopLevelItem(datasetItem)
 
         self.attributesTable.clear()
         self.attributesTable.verticalHeader().hide()
@@ -445,24 +448,24 @@ class DiffViewerWidget(WIDGET, BASE):
     def _createLayers(self):
         if self.currentFeatureItem is not None:
             self._createFeatureDiffLayers()
-        elif self.currentLayerItem is not None:
-            oldLayer, newLayer = self.layerDiffLayers[self.currentLayerItem.layer]
+        elif self.currentDatasetItem is not None:
+            oldLayer, newLayer = self.layerDiffLayers[self.currentDatasetItem.dataset]
             self.oldLayer = oldLayer.clone()
             self.newLayer = newLayer.clone()
 
     def _createFeatureDiffLayers(self):
         old = self.currentFeatureItem.old
         new = self.currentFeatureItem.new
-        layername = self.currentFeatureItem.layer
-        if layername not in self.workingCopyLayers:
-            self.workingCopyLayers[layername] = self.repo.workingCopyLayer(layername)
-        layer = self.workingCopyLayers[layername]
-        if layername not in self.workingCopyLayersIdFields:
-            self.workingCopyLayersIdFields[
-                layername
-            ] = self.repo.workingCopyLayerIdField(layername)
-        crs = self.workingCopyLayerCrs[layername]
-        idField = self.workingCopyLayersIdFields[layername]
+        dataset = self.currentFeatureItem.dataset
+        if dataset not in self.workingCopyLayers:
+            self.workingCopyLayers[dataset] = self.repo.workingCopyLayer(dataset)
+        layer = self.workingCopyLayers[dataset]
+        if dataset not in self.workingCopyLayersIdFields:
+            self.workingCopyLayersIdFields[dataset] = self.repo.workingCopyLayerIdField(
+                dataset
+            )
+        crs = self.workingCopyLayerCrs[dataset]
+        idField = self.workingCopyLayersIdFields[dataset]
         ref = new or old
         refGeom = ref["geometry"]
         if refGeom is not None:
@@ -516,8 +519,8 @@ class DiffViewerWidget(WIDGET, BASE):
                 data.append([line[2:], None])
             if line.startswith(" "):
                 data.append([line[2:], line[2:]])
-        layername = self.currentFeatureItem.layer
-        crs = self.workingCopyLayerCrs[layername]
+        dataset = self.currentFeatureItem.dataset
+        crs = self.workingCopyLayerCrs[dataset]
         self.vertexDiffLayer = QgsVectorLayer(
             f"Point?crs={crs}s&field=changetype:string", "vertexdiff", "memory"
         )
@@ -559,8 +562,8 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def _recoverVersion(self, layer):
         new = list(layer.getFeatures())[0]
-        layer = self.workingCopyLayers[self.currentFeatureItem.layer]
-        idField = self.workingCopyLayersIdFields[self.currentFeatureItem.layer]
+        layer = self.workingCopyLayers[self.currentFeatureItem.dataset]
+        idField = self.workingCopyLayersIdFields[self.currentFeatureItem.dataset]
         with edit(layer):
             old = list(
                 layer.getFeatures(f'"{idField}" = {self.currentFeatureItem.fid}')
@@ -573,22 +576,22 @@ class DiffViewerWidget(WIDGET, BASE):
 
 
 class FeatureItem(QTreeWidgetItem):
-    def __init__(self, fid, old, new, layer):
+    def __init__(self, fid, old, new, dataset):
         QTreeWidgetItem.__init__(self)
         self.setIcon(0, featureIcon)
         self.setText(0, fid)
         self.old = old
         self.new = new
-        self.layer = layer
+        self.dataset = dataset
         self.fid = fid
 
 
-class LayerItem(QTreeWidgetItem):
-    def __init__(self, layer):
+class DatasetItem(QTreeWidgetItem):
+    def __init__(self, dataset, isTable):
         QTreeWidgetItem.__init__(self)
-        self.layer = layer
-        self.setIcon(0, layerIcon)
-        self.setText(0, layer)
+        self.dataset = dataset
+        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
+        self.setText(0, dataset)
 
 
 class DiffItem(QTableWidgetItem):
