@@ -191,7 +191,7 @@ class LayerTracker:
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
             dataset = repo.datasetNameFromLayer(layer)
-            changes = repo.diff(layername=dataset)
+            changes = repo.diff(dataset=dataset)
             if changes.get(dataset):
                 dialog = DiffViewerDialog(iface.mainWindow(), changes, repo)
                 dialog.exec()
