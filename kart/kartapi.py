@@ -561,7 +561,11 @@ class Repository:
             if dataset not in conflicts:
                 conflicts[dataset] = {}
             if fid not in conflicts[dataset]:
-                conflicts[layer][fid] = {"ancestor": None, "theirs": None, "ours": None}
+                conflicts[dataset][fid] = {
+                    "ancestor": None,
+                    "theirs": None,
+                    "ours": None,
+                }
             conflicts[dataset][fid][version] = feature
         return conflicts
 
