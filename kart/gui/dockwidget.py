@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice
 from qgis.PyQt.QtGui import QIcon, QPixmap
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -16,7 +16,13 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from qgis.utils import iface
-from qgis.core import Qgis, QgsVectorLayer, QgsVectorFileWriter, QgsProject
+from qgis.core import (
+    Qgis,
+    QgsVectorLayer,
+    QgsVectorFileWriter,
+    QgsProject,
+    QgsMimeDataUtils,
+)
 
 from kart.kartapi import (
     repos,
@@ -85,12 +91,37 @@ class KartDockWidget(BASE, WIDGET):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.tree.customContextMenuRequested.connect(self.showPopupMenu)
+        self.tree.setDragDropMode(QAbstractItemView.DragDrop)
 
         def onItemExpanded(item):
             if hasattr(item, "onExpanded"):
                 item.onExpanded()
 
         self.tree.itemExpanded.connect(onItemExpanded)
+
+        def mimeTypes():
+            return ["application/x-vnd.qgis.qgis.uri"]
+
+        def mimeData(items):
+            mimeData = QMimeData()
+            encodedData = QByteArray()
+            stream = QDataStream(encodedData, QIODevice.WriteOnly)
+
+            for item in items:
+                if isinstance(item, DatasetItem):
+                    layer = item.repo.workingCopyLayer(item.name)
+                    uri = QgsMimeDataUtils.Uri(layer)
+                    stream.writeQString(uri.data())
+
+            mimeData.setData("application/x-vnd.qgis.qgis.uri", encodedData)
+            return mimeData
+
+        def dropMimeData(parent, index, data, action):
+            return False
+
+        self.tree.mimeData = mimeData
+        self.tree.mimeTypes = mimeTypes
+        self.tree.dropMimeData = dropMimeData
 
         self.fillTree()
 
