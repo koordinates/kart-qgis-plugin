@@ -11,8 +11,6 @@ from functools import partial
 
 from urllib.parse import urlparse
 
-from osgeo import gdal
-
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import (
     QApplication,
@@ -34,7 +32,7 @@ from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.utils import progressBar, setting, setSetting, KARTPATH
 from kart import logging
 
-SUPPORTED_VERSION = "0.10.4"
+SUPPORTED_VERSION = "0.10.6"
 
 
 class KartException(Exception):
@@ -662,17 +660,7 @@ class Repository:
             return layer.source().split("|")[-1].split("=")[-1]
 
     def deleteDataset(self, dataset):
-        # TODO handle case of layer not in gpkg-based repo
-        name = os.path.basename(self.path)
-        path = os.path.join(self.path, f"{name}.gpkg")
-        ds = gdal.OpenEx(path, gdal.OF_UPDATE, allowed_drivers=["GPKG"])
-        for i in range(ds.GetLayerCount()):
-            if ds.GetLayer(i).GetName() == dataset:
-                ret = ds.DeleteLayer(i)
-                if ret == 0:
-                    self.commit(f"Removed dataset {dataset}", dataset)
-                else:
-                    raise KartException("Could not delete dataset from repository")
+        self.executeKart(["data", "rm", "-m", f"Removed dataset {dataset}", dataset])
 
     def createPatch(self, ref, filename):
         self.executeKart(["show", "-ojson", "--output", filename, ref])
