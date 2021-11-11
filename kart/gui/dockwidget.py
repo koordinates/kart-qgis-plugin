@@ -373,13 +373,7 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def commitChanges(self):
-        if self.repo.isMerging():
-            iface.messageBar().pushMessage(
-                "Commit",
-                "Cannot commit if repository while repository is in merging status",
-                level=Qgis.Warning,
-            )
-        elif self.repo.isWorkingTreeClean():
+        if self.repo.isWorkingTreeClean():
             iface.messageBar().pushMessage(
                 "Commit", "Nothing to commit", level=Qgis.Warning
             )
@@ -566,18 +560,74 @@ class DatasetItem(QTreeWidgetItem):
         self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
 
     def actions(self):
-        actions = [
-            ("Show log...", self.showLog, logIcon),
-            ("Add to QGIS project", self.addToProject, addtoQgisIcon),
-            ("Remove from repository", self.removeFromRepo, removeIcon),
-        ]
-
+        actions = [("Add to QGIS project", self.addToProject, addtoQgisIcon)]
         if not self.repo.isMerging():
-            actions.append(
-                ("Commit working tree changes...", self.commitChanges, commitIcon)
+            actions.extend(
+                [
+                    ("Show log...", self.showLog, logIcon),
+                    ("Remove from repository", self.removeFromRepo, removeIcon),
+                    (
+                        "Show working tree changes for this dataset...",
+                        self.showChanges,
+                        diffIcon,
+                    ),
+                    (
+                        "Discard working tree changes for this dataset",
+                        self.discardChanges,
+                        discardIcon,
+                    ),
+                    (
+                        "Commit working tree changes for this dataset...",
+                        self.commitChanges,
+                        commitIcon,
+                    ),
+                ]
             )
 
         return actions
+
+    @executeskart
+    def commitChanges(self):
+        changes = changes = self.repo.changes().get(self.name)
+        if changes is None:
+            iface.messageBar().pushMessage(
+                "Commit", "Nothing to commit", level=Qgis.Warning
+            )
+        else:
+            msg, ok = QInputDialog.getMultiLineText(
+                iface.mainWindow(), "Commit", "Enter commit message:"
+            )
+            if ok and msg:
+                if self.repo.commit(msg, dataset=self.name):
+                    iface.messageBar().pushMessage(
+                        "Commit", "Changes correctly committed", level=Qgis.Info
+                    )
+                else:
+                    iface.messageBar().pushMessage(
+                        "Commit", "Changes could not be commited", level=Qgis.Warning
+                    )
+
+    @executeskart
+    def showChanges(self):
+        changes = self.repo.diff(dataset=self.name)
+        if changes.get(self.name):
+            dialog = DiffViewerDialog(iface.mainWindow(), changes, self.repo)
+            dialog.exec()
+        else:
+            iface.messageBar().pushMessage(
+                "Changes",
+                "There are no changes in the working tree for this dataset",
+                level=Qgis.Warning,
+            )
+
+    @executeskart
+    def discardChanges(self):
+        self.repo.restore("HEAD", self.name)
+        iface.messageBar().pushMessage(
+            "Discard changes",
+            "Working tree changes have been discarded",
+            level=Qgis.Info,
+        )
 
     @executeskart
     def showLog(self):
@@ -597,9 +647,16 @@ class DatasetItem(QTreeWidgetItem):
 
     @executeskart
     def removeFromRepo(self):
-        name = os.path.basename(self.repo.path)
-        path = os.path.join(self.repo.path, f"{name}.gpkg|layername={self.name}")
-        layer = layerFromSource(path)
+        if not self.repo.isWorkingTreeClean():
+            iface.messageBar().pushMessage(
+                "Remove dataset",
+                "There are pending changes in the working tree. "
+                "Commit them before deleting this dataset",
+                level=Qgis.Warning,
+            )
+            return
+        source = self.repo.workingCopyLayer(self.name).source()
+        layer = layerFromSource(source)
         if layer:
             msg = (
                 "The dataset is loaded in QGIS. \n"
@@ -625,33 +682,3 @@ class DatasetItem(QTreeWidgetItem):
             if layer:
                 QgsProject.instance().removeMapLayers([layer.id()])
                 iface.mapCanvas().refresh()
-
-    @executeskart
-    def commitChanges(self):
-        if self.repo.isMerging():
-            iface.messageBar().pushMessage(
-                "Commit",
-                "Cannot commit if repository while repository is in merging status",
-                level=Qgis.Warning,
-            )
-        else:
-            changes = self.repo.changes().get(self.name, {})
-            if changes:
-                msg, ok = QInputDialog.getMultiLineText(
-                    iface.mainWindow(), "Commit", "Enter commit message:"
-                )
-                if ok and msg:
-                    if self.repo.commit(msg):
-                        iface.messageBar().pushMessage(
-                            "Commit", "Changes correctly committed", level=Qgis.Info
-                        )
-                    else:
-                        iface.messageBar().pushMessage(
-                            "Commit",
-                            "Changes could not be commited",
-                            level=Qgis.Warning,
-                        )
-            else:
-                iface.messageBar().pushMessage(
-                    "Commit", "Nothing to commit", level=Qgis.Warning
-                )
