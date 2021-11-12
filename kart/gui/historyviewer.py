@@ -208,7 +208,7 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def createTag(self, item):
         name, ok = QInputDialog.getText(
-            self, "Create branch", "Enter name of branch to create"
+            self, "Create tag", "Enter name of tag to create"
         )
         if ok and name:
             self.repo.createTag(name, item.commit["commit"])
