@@ -320,7 +320,7 @@ class RepoItem(RefreshableItem):
         dialog = RepoPropertiesDialog(self.repo)
         dialog.show()
         dialog.exec()
-        self.setText(0, self.repo.title() or os.path.normpath(self.repo.path))
+        self.setTitle()
 
     def removeRepository(self):
         self.parent().takeChild(self.parent().indexOfChild(self))
