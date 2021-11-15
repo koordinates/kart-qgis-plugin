@@ -9,6 +9,10 @@ RUN pip3 install -r /tmp/requirements.txt
 COPY ./requirements_test.txt /tmp/
 RUN pip3 install -r /tmp/requirements_test.txt
 
+RUN apt-get install wget
+RUN wget https://github.com/koordinates/kart/releases/download/v0.10.6/kart_0.10.6-1_amd64.deb
+RUN apt install ./kart_0.10.6-1_amd64.deb
+
 ENV LANG=C.UTF-8
 
 WORKDIR /
