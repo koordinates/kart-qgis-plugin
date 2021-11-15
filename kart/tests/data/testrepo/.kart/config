@@ -1,0 +1,11 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logAllRefUpdates = always
+	symlinks = false
+	ignorecase = true
+[kart "repostructure"]
+	version = 3
+[kart "workingcopy"]
+	location = testrepo.gpkg

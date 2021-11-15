@@ -225,17 +225,21 @@ _repos = None
 def repos():
     global _repos
     if _repos is None:
-        s = setting("repos")
-        if s is None:
-            _repos = []
-        else:
-            _repos = []
-            paths = s.split("|")
-            for path in paths:
-                repo = Repository(path)
-                if repo.isInitialized():
-                    _repos.append(repo)
+        readReposFromSettings()
     return _repos
+
+
+def readReposFromSettings():
+    s = setting("repos")
+    if s is None:
+        _repos = []
+    else:
+        _repos = []
+        paths = s.split("|")
+        for path in paths:
+            repo = Repository(path)
+            if repo.isInitialized():
+                _repos.append(repo)
 
 
 def addRepo(repo):
