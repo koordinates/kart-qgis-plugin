@@ -3,7 +3,7 @@ name: Testing
 on:
   push:
     branches:
-      - master
+      - main
   pull_request:
     branches:
       - '**'
@@ -23,5 +23,4 @@ jobs:
         with:
           submodules: recursive
       - name: Test on QGIS
-        env:
         run: docker-compose -f .docker/docker-compose.gh.yml run qgis /usr/src/.docker/run-docker-tests.sh
