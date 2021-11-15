@@ -24,7 +24,7 @@ class TestKartapi(unittest.TestCase):
         patch_iface()
 
     def setUp(self):
-        pass
+        setSetting(KARTPATH, "")
 
     def test_error_wrong_kart_path(self):
         setSetting(KARTPATH, "wrongpath")
