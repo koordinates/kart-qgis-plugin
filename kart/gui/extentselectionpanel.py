@@ -1,5 +1,4 @@
 import os
-import warnings
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import (

@@ -267,7 +267,10 @@ class RepoItem(RefreshableItem):
 
     def setTitle(self):
         try:
-            title = f"{self.repo.title() or os.path.normpath(self.repo.path)} [{self.repo.currentBranch()}]"
+            title = (
+                f"{self.repo.title() or os.path.normpath(self.repo.path)}"
+                f"[{self.repo.currentBranch()}]"
+            )
         except KartException:
             title = f"{self.repo.title() or os.path.normpath(self.repo.path)}"
         self.setText(0, title)

@@ -399,7 +399,11 @@ class DiffViewerWidget(WIDGET, BASE):
         if self.comboAdditionalLayers.currentIndex() == PROJECT_LAYERS:
             layers.extend(iface.mapCanvas().layers())
         elif self.comboAdditionalLayers.currentIndex() == OSM_BASEMAP:
-            uri = "crs=EPSG:3857&type=xyz&url=https://tile.openstreetmap.org/{z}/{x}/{y}.png&zmax=19&zmin=0"
+            uri = (
+                "crs=EPSG:3857&type=xyz&"
+                "url=https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                "&zmax=19&zmin=0"
+            )
             self.osmLayer = QgsRasterLayer(uri, "OSM", "wms")
             QgsProject.instance().addMapLayer(self.osmLayer, False)
             layers.append(self.osmLayer)

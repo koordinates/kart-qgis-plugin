@@ -1,6 +1,5 @@
 import os
 
-from qgis.core import Qgis
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
