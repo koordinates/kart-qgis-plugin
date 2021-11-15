@@ -7,7 +7,7 @@ from kart.kartapi import (
     repos,
     addRepo,
     Repository,
-    readReposfromSettings,
+    readReposFromSettings,
 )
 from kart.utils import setSetting, KARTPATH
 from kart.tests.utils import patch_iface
@@ -36,7 +36,7 @@ class TestKartapi(unittest.TestCase):
         addRepo(validRepo)
         invalidRepo = Repository("wrongpath")
         addRepo(invalidRepo)
-        readReposfromSettings()
+        readReposFromSettings()
         repositories = repos()
         assert len(repositories) == 1
         assert repositories[0].path == path
