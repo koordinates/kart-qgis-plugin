@@ -14,6 +14,9 @@ from kart.tests.utils import patch_iface
 
 start_app()
 
+testRepoPath = os.path.join(os.path.dirname(__file__), "data", "testrepo")
+TESTREPO = Repository(testRepoPath)
+
 
 class TestKartapi(unittest.TestCase):
     @classmethod
@@ -31,12 +34,16 @@ class TestKartapi(unittest.TestCase):
     def test_store_repos_in_settings(self):
         repositories = repos()
         assert not bool(repositories)
-        path = os.path.join(os.path.dirname(__file__), "data", "testrepo")
-        validRepo = Repository(path)
+        validRepo = Repository(testRepoPath)
         addRepo(validRepo)
         invalidRepo = Repository("wrongpath")
         addRepo(invalidRepo)
         readReposFromSettings()
         repositories = repos()
         assert len(repositories) == 1
-        assert repositories[0].path == path
+        assert repositories[0].path == testRepoPath
+
+    def test_log(self):
+        assert TESTREPO.isInitialized()
+        log = TESTREPO.log()
+        assert len(log) == 1
