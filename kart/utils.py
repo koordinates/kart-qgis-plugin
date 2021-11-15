@@ -3,9 +3,16 @@ import os
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
 from qgis.PyQt.QtWidgets import QProgressBar, QLabel
 from qgis.core import QgsProject, Qgis
-from qgis.utils import iface
+from qgis.utils import iface as qgisiface
+from qgis.testing.mocked import get_iface
 
 from contextlib import contextmanager
+
+
+# This can be further patched using the test.utils module
+iface = qgisiface
+if iface is None:
+    iface = get_iface()
 
 
 class ProgressBar:
