@@ -77,7 +77,7 @@ def kartExecutable():
     elif sys.platform == "darwin":
         defaultFolder = "Applications/Kart.app/Contents/MacOS/"
     else:
-        defaultFolder = "/opt/kart/kart"
+        defaultFolder = "/opt/kart"
     folder = setting(KARTPATH) or defaultFolder
     for exe_name in ("kart.exe", "kart_cli", "kart"):
         path = os.path.join(folder, exe_name)
