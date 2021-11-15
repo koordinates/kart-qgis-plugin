@@ -223,13 +223,13 @@ _repos = None
 
 
 def repos():
-    global _repos
     if _repos is None:
         readReposFromSettings()
     return _repos
 
 
 def readReposFromSettings():
+    global _repos
     s = setting("repos")
     if s is None:
         _repos = []
