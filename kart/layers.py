@@ -250,7 +250,7 @@ class LayerTracker:
             auto = setting(AUTOCOMMIT)
             if auto:
                 dataset = repo.datasetNameFromLayer(layer)
-                repo.commit(f"Changed dataset '{dataset}'", layer=dataset)
+                repo.commit(f"Changed dataset '{dataset}'", dataset=dataset)
                 iface.messageBar().pushMessage(
                     "Commit", "Changes correctly committed", level=Qgis.Info
                 )
