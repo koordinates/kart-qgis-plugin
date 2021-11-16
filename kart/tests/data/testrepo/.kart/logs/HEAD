@@ -1,1 +1,5 @@
 0000000000000000000000000000000000000000 74fb5aa4abc10a1a2b7778892b2683979c72a1d7 volaya <volayaf@gmail.com> 1636979369 +0100	commit (initial): Import from testlayer.gpkg:testlayer to testlayer/
+74fb5aa4abc10a1a2b7778892b2683979c72a1d7 661b37ca5aa2f40ed105d480b4346e9d97c197c6 volaya <volayaf@gmail.com> 1637052978 +0100	commit: Added feature
+661b37ca5aa2f40ed105d480b4346e9d97c197c6 d39ad76b7fae5e8e418783df28dc04cc2094616b volaya <volayaf@gmail.com> 1637053014 +0100	commit: Modified geometry
+d39ad76b7fae5e8e418783df28dc04cc2094616b eb750a750d5e180708365898e75a08ae8c48caa9 volaya <volayaf@gmail.com> 1637053035 +0100	commit: Modified attribute
+eb750a750d5e180708365898e75a08ae8c48caa9 8af4935f8d79254b559f5953b7e1863a064f8420 volaya <volayaf@gmail.com> 1637053077 +0100	commit: Deleted feature
