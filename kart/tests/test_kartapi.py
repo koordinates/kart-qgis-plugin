@@ -110,7 +110,7 @@ class TestKartapi(unittest.TestCase):
         TESTREPO.createBranch("mynewbranch")
         branches = TESTREPO.branches()
         assert "mynewbranch" in branches
-        TESTREPO.deleteBranhc("mynewbranch")
+        TESTREPO.deleteBranch("mynewbranch")
         assert "mynewbranch" not in branches
 
     def testBranches(self):
