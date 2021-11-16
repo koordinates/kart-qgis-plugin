@@ -138,13 +138,9 @@ class TestKartapi(unittest.TestCase):
         layer = self.testRepo.workingCopyLayer("testlayer")
         feature = list(layer.getFeatures())[0]
         with edit(layer):
-            layer.deleteFeatures(feature.id())
+            layer.deleteFeatures([feature.id()])
         diff = self.testRepo.diff()
         assert "testlayer" in diff
         self.testRepo.restore("HEAD")
         diff = self.testRepo.diff()
         assert not bool(diff.get("testlayer", []))
-
-    def testPrintConfig(self):
-        ret = self.testRepo.executeKart(["config", "-l", "--show-origin"])
-        assert "" == ret
