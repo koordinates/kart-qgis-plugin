@@ -291,7 +291,7 @@ class Repository:
         return executeKart(commands, self.path, jsonoutput)
 
     @staticmethod
-    def clone(src, dst, location, extent=None):
+    def clone(src, dst, location=None, extent=None):
         if "://" not in src:
             src = f"file://{src}"
         commands = ["-vv", "clone", src, dst, "--progress"]
@@ -354,7 +354,7 @@ class Repository:
     def isInitialized(self):
         return os.path.exists(os.path.join(self.path, ".kart"))
 
-    def init(self, location):
+    def init(self, location=None):
         if location is not None:
             self.executeKart(["init", "--workingcopy", location])
         else:
