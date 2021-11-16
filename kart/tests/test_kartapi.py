@@ -25,12 +25,14 @@ class TestKartapi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         patch_iface()
-        cls.repoFolder = tempfile.TemporaryDirectory()
-        shutil.copytree(testRepoPath, cls.repoFolder.name)
+        cls.tempFolder = tempfile.TemporaryDirectory()
+        dst = os.path.join(cls.tempFolder.name, "testrepo")
+        shutil.copytree(testRepoPath, dst)
+        cls.testRepo = Repository(dst)
 
     @classmethod
     def tearDownClass(cls):
-        cls.repoFolder.cleanup()
+        cls.tempFolder.cleanup()
 
     def setUp(self):
         setSetting(KARTPATH, "")
@@ -54,7 +56,7 @@ class TestKartapi(unittest.TestCase):
         readReposFromSettings()
         repositories = repos()
         assert len(repositories) == 1
-        assert repositories[0].path == self.testRepoPath
+        assert repositories[0].path == self.testRepo.path
 
     def testInit(self):
         with tempfile.TemporaryDirectory() as folder:
