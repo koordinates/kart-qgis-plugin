@@ -9,6 +9,7 @@ from kart.kartapi import (
     addRepo,
     Repository,
     readReposFromSettings,
+    installedVersion,
 )
 from kart.utils import setSetting, KARTPATH
 from kart.tests.utils import patch_iface
