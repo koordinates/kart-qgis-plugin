@@ -135,7 +135,7 @@ def installedVersion():
         return kartVersion
     else:
         try:
-            version = executeKart(["--version"])
+            version = executeKart(["--version"], os.path.dirname(__file__))
             if not version.startswith("Kart v"):
                 raise Exception()
             else:
@@ -146,7 +146,6 @@ def installedVersion():
                 kartPath = path
                 return versionnum
         except Exception:
-            raise
             kartVersion = None
             kartPath = None
             return None
@@ -158,7 +157,7 @@ def kartVersionDetails():
         f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
     )
     try:
-        version = executeKart(["--version"])
+        version = executeKart(["--version"], os.path.dirname(__file__))
         if not version.startswith("Kart v"):
             return errtxt
         else:
@@ -371,11 +370,14 @@ class Repository:
             return True
         dlg = UserConfigDialog()
         if dlg.exec() == dlg.Accepted:
-            self.executeKart(["config", "--global", "user.name", f"{dlg.username}"])
-            self.executeKart(["config", "--global", "user.email", f"{dlg.email}"])
+            self.configureUser(dlg.username, dlg.email)
             return True
         else:
             return False
+
+    def configureUser(self, name, email):
+        self.executeKart(["config", "--global", "user.name", name])
+        self.executeKart(["config", "--global", "user.email", email])
 
     def commit(self, msg, dataset=None):
         if self.checkUserConfigured():
