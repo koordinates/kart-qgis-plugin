@@ -170,8 +170,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     commands.insert(0, kartExecutable())
     if jsonoutput:
         commands.append("-ojson")
-    if path is not None:
-        os.chdir(path)
 
     # The env PYTHONHOME from QGIS can interfere with Kart.
     if not hasattr(executeKart, "env"):
@@ -193,6 +191,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             stderr=subprocess.PIPE,
             universal_newlines=True,
             encoding=encoding,
+            cwd=path,
         ) as proc:
             if feedback is not None:
                 output = []
