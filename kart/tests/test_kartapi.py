@@ -61,7 +61,9 @@ class TestKartapi(unittest.TestCase):
             repo = Repository(folder)
             repo.init()
             assert repo.isInitialized()
-            gkpgPath = os.join(os.dirname(__file__), "data", "layers", "testlayer.gpkg")
+            gkpgPath = os.path.join(
+                os.dirname(__file__), "data", "layers", "testlayer.gpkg"
+            )
             repo.importGpkg(gkpgPath)
             vectorLayers, tables = repo.datasets()
             assert vectorLayers == ["testlayer"]
@@ -89,7 +91,7 @@ class TestKartapi(unittest.TestCase):
         assert "testlayer" in diff
         features = diff["testlayer"]
         assert len(features) == 1
-        assert features[0]["id"] == "D::2"
+        assert features[0]["id"].startswith("D::")
 
         diff = TESTREPO.diff("HEAD~1", "HEAD~2")
         assert "testlayer" in diff
