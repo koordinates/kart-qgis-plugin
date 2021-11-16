@@ -1,5 +1,6 @@
 import os
 import tempfile
+import shutil
 
 from qgis.core import edit
 from qgis.testing import unittest, start_app
@@ -18,13 +19,18 @@ from kart.tests.utils import patch_iface
 start_app()
 
 testRepoPath = os.path.join(os.path.dirname(__file__), "data", "testrepo")
-TESTREPO = Repository(testRepoPath)
 
 
 class TestKartapi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         patch_iface()
+        cls.repoFolder = tempfile.TemporaryDirectory()
+        shutil.copytree(testRepoPath, cls.repoFolder.name)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.repoFolder.cleanup()
 
     def setUp(self):
         setSetting(KARTPATH, "")
@@ -41,14 +47,14 @@ class TestKartapi(unittest.TestCase):
     def testStoreReposInSettings(self):
         repositories = repos()
         assert not bool(repositories)
-        validRepo = Repository(testRepoPath)
+        validRepo = Repository(self.testRepoPath)
         addRepo(validRepo)
         invalidRepo = Repository("wrongpath")
         addRepo(invalidRepo)
         readReposFromSettings()
         repositories = repos()
         assert len(repositories) == 1
-        assert repositories[0].path == testRepoPath
+        assert repositories[0].path == self.testRepoPath
 
     def testInit(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -71,22 +77,22 @@ class TestKartapi(unittest.TestCase):
             assert vectorLayers == ["testlayer"]
 
     def testDatasets(self):
-        vectorLayers, tables = TESTREPO.datasets()
+        vectorLayers, tables = self.testRepo.datasets()
         assert vectorLayers == ["testlayer"]
         assert tables == []
 
     def testClone(self):
         with tempfile.TemporaryDirectory() as folder:
-            clone = Repository.clone(TESTREPO.path, folder)
+            clone = Repository.clone(self.testRepo.path, folder)
             assert clone.isInitialized()
             clonedLog = clone.log()
-            log = TESTREPO.log()
+            log = self.testRepo.log()
             assert len(clonedLog) > 0
             assert len(clonedLog) == len(log)
 
     def testLog(self):
-        assert TESTREPO.isInitialized()
-        log = TESTREPO.log()
+        assert self.testRepo.isInitialized()
+        log = self.testRepo.log()
         assert len(log) == 5
         assert "Deleted" in log[0]["message"]
         assert "Modified" in log[1]["message"]
@@ -94,43 +100,44 @@ class TestKartapi(unittest.TestCase):
         assert "Added" in log[3]["message"]
 
     def testDiff(self):
-        diff = TESTREPO.diff("HEAD", "HEAD~1")
+        diff = self.testRepo.diff("HEAD", "HEAD~1")
         assert "testlayer" in diff
         features = diff["testlayer"]
         assert len(features) == 1
         assert features[0]["id"].startswith("D::")
 
-        diff = TESTREPO.diff("HEAD~1", "HEAD~2")
+        diff = self.testRepo.diff("HEAD~1", "HEAD~2")
         assert "testlayer" in diff
         features = diff["testlayer"]
         assert len(features) == 2
         assert features[0]["geometry"] == features[1]["geometry"]
 
     def testCreateAndDeleteBranch(self):
-        TESTREPO.createBranch("mynewbranch")
-        branches = TESTREPO.branches()
+        self.testRepo.createBranch("mynewbranch")
+        branches = self.testRepo.branches()
         assert "mynewbranch" in branches
-        TESTREPO.deleteBranch("mynewbranch")
+        self.testRepo.deleteBranch("mynewbranch")
+        branches = self.testRepo.branches()
         assert "mynewbranch" not in branches
 
     def testBranches(self):
-        branches = TESTREPO.branches()
+        branches = self.testRepo.branches()
         assert len(branches) == 2
 
     def testCurrentBranch(self):
-        current = TESTREPO.currentBranch()
+        current = self.testRepo.currentBranch()
         assert current == "main"
-        TESTREPO.checkoutBranch("anotherbranch")
-        current = TESTREPO.currentBranch()
+        self.testRepo.checkoutBranch("anotherbranch")
+        current = self.testRepo.currentBranch()
         assert current == "anotherbranch"
 
     def testModifyLayerAndRestore(self):
-        layer = TESTREPO.workingCopyLayer("testlayer")
+        layer = self.testRepo.workingCopyLayer("testlayer")
         feature = list(layer.getFeatures())[0]
         with edit(layer):
             layer.deleteFeatures(feature.id())
-        diff = TESTREPO.diff()
+        diff = self.testRepo.diff()
         assert "testlayer" in diff
-        TESTREPO.restore("HEAD")
-        diff = TESTREPO.diff()
+        self.testRepo.restore("HEAD")
+        diff = self.testRepo.diff()
         assert not bool(diff.get("testlayer", []))
