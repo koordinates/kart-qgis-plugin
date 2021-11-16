@@ -176,7 +176,8 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     # The env PYTHONHOME from QGIS can interfere with Kart.
     if not hasattr(executeKart, "env"):
         executeKart.env = os.environ.copy()
-        executeKart.env.pop("PYTHONHOME")
+        if "PYTHONHOME" in executeKart.env:
+            executeKart.env.pop("PYTHONHOME")
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
