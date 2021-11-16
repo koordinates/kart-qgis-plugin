@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 from qgis.testing import unittest, start_app
 
@@ -31,6 +32,10 @@ class TestKartapi(unittest.TestCase):
         ret = kartVersionDetails()
         assert "Kart is not correctly configured" in ret
 
+    def testKartVersion(self):
+        version = installedVersion()
+        assert version == "0.10.6"
+
     def testStoreReposInSettings(self):
         repositories = repos()
         assert not bool(repositories)
@@ -42,6 +47,32 @@ class TestKartapi(unittest.TestCase):
         repositories = repos()
         assert len(repositories) == 1
         assert repositories[0].path == testRepoPath
+
+    def testInit(self):
+        with tempfile.TemporaryDirectory() as folder:
+            repo = Repository(folder)
+            assert not repo.isInitialized()
+            repo.init()
+            assert repo.isInitialized()
+
+    def testImport(self):
+        with tempfile.TemporaryDirectory() as folder:
+            repo = Repository(folder)
+            repo.init()
+            assert repo.isInitialized()
+            gkpgPath = os.join(os.dirname(__file__), "data", "layers", "testlayer.gpkg")
+            repo.importGpkg(gkpgPath)
+            vectorLayers, tables = repo.datasets()
+            assert vectorLayers == ["testlayer"]
+
+    def testClone(self):
+        with tempfile.TemporaryDirectory() as folder:
+            Repository.clone(TESTREPO.path, folder)
+            repo = Repository(folder)
+            clonedLog = repo.log()
+            log = TESTREPO.log()
+            assert len(clonedLog) > 0
+            assert len(clonedLog) == len(log)
 
     def testLog(self):
         assert TESTREPO.isInitialized()
