@@ -28,6 +28,8 @@ class TestKartapi(unittest.TestCase):
         cls.tempFolder = tempfile.TemporaryDirectory()
         dst = os.path.join(cls.tempFolder.name, "testrepo")
         shutil.copytree(testRepoPath, dst)
+        with open(os.path.join(dst, ".git"), "w") as f:
+            f.write("gitdir: .kart")
         cls.testRepo = Repository(dst)
 
     @classmethod
