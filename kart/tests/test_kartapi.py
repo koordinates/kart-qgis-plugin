@@ -1,6 +1,7 @@
 import os
 import tempfile
 
+from qgis.core import edit
 from qgis.testing import unittest, start_app
 
 from kart.kartapi import (
@@ -69,16 +70,19 @@ class TestKartapi(unittest.TestCase):
             vectorLayers, tables = repo.datasets()
             assert vectorLayers == ["testlayer"]
 
+    def testDatasets(self):
+        vectorLayers, tables = TESTREPO.datasets()
+        assert vectorLayers == ["testlayer"]
+        assert tables == []
+
     def testClone(self):
         with tempfile.TemporaryDirectory() as folder:
             clone = Repository.clone(TESTREPO.path, folder)
             assert clone.isInitialized()
-            """
             clonedLog = clone.log()
             log = TESTREPO.log()
             assert len(clonedLog) > 0
             assert len(clonedLog) == len(log)
-            """
 
     def testLog(self):
         assert TESTREPO.isInitialized()
@@ -101,3 +105,32 @@ class TestKartapi(unittest.TestCase):
         features = diff["testlayer"]
         assert len(features) == 2
         assert features[0]["geometry"] == features[1]["geometry"]
+
+    def testCreateAndDeleteBranch(self):
+        TESTREPO.createBranch("mynewbranch")
+        branches = TESTREPO.branches()
+        assert "mynewbranch" in branches
+        TESTREPO.deleteBranhc("mynewbranch")
+        assert "mynewbranch" not in branches
+
+    def testBranches(self):
+        branches = TESTREPO.branches()
+        assert len(branches) == 2
+
+    def testCurrentBranch(self):
+        current = TESTREPO.currentBranch()
+        assert current == "main"
+        TESTREPO.checkoutBranch("anotherbranch")
+        current = TESTREPO.currentBranch()
+        assert current == "anotherbranch"
+
+    def testModifyLayerAndRestore(self):
+        layer = TESTREPO.workingCopyLayer("testlayer")
+        feature = list(layer.getFeatures())[0]
+        with edit(layer):
+            layer.deleteFeatures(feature.id())
+        diff = TESTREPO.diff()
+        assert "testlayer" in diff
+        TESTREPO.restore("HEAD")
+        diff = TESTREPO.diff()
+        assert not bool(diff.get("testlayer", []))
