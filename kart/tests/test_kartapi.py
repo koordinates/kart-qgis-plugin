@@ -26,12 +26,12 @@ class TestKartapi(unittest.TestCase):
     def setUp(self):
         setSetting(KARTPATH, "")
 
-    def test_error_wrong_kart_path(self):
+    def testErrorWrongKartPath(self):
         setSetting(KARTPATH, "wrongpath")
         ret = kartVersionDetails()
         assert "Kart is not correctly configured" in ret
 
-    def test_store_repos_in_settings(self):
+    def testStoreReposInSettings(self):
         repositories = repos()
         assert not bool(repositories)
         validRepo = Repository(testRepoPath)
@@ -43,7 +43,24 @@ class TestKartapi(unittest.TestCase):
         assert len(repositories) == 1
         assert repositories[0].path == testRepoPath
 
-    def test_log(self):
+    def testLog(self):
         assert TESTREPO.isInitialized()
         log = TESTREPO.log()
-        assert len(log) == 1
+        assert len(log) == 5
+        assert "Deleted" in log[0]["message"]
+        assert "Modified" in log[1]["message"]
+        assert "Modified" in log[2]["message"]
+        assert "Added" in log[3]["message"]
+
+    def testDiff(self):
+        diff = TESTREPO.diff("HEAD", "HEAD~1")
+        assert "testlayers" in diff
+        features = diff["testlayers"]
+        assert len(features) == 1
+        assert features[0]["id"] == "D::2"
+
+        diff = TESTREPO.diff("HEAD~1", "HEAD~2")
+        assert "testlayers" in diff
+        features = diff["testlayers"]
+        assert len(features) == 2
+        assert features[0]["geometry"] == features[1]["geometry"]
