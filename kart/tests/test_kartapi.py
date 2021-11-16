@@ -49,8 +49,7 @@ class TestKartapi(unittest.TestCase):
     def testStoreReposInSettings(self):
         repositories = repos()
         assert not bool(repositories)
-        validRepo = Repository(self.testRepoPath)
-        addRepo(validRepo)
+        addRepo(self.testRepo)
         invalidRepo = Repository("wrongpath")
         addRepo(invalidRepo)
         readReposFromSettings()
@@ -143,3 +142,7 @@ class TestKartapi(unittest.TestCase):
         self.testRepo.restore("HEAD")
         diff = self.testRepo.diff()
         assert not bool(diff.get("testlayer", []))
+
+    def testPrintConfig(self):
+        ret = self.testRepo.executeKart(["config", "-l", "--show-origin"])
+        assert "" == ret
