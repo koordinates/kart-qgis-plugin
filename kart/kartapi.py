@@ -146,6 +146,7 @@ def installedVersion():
                 kartPath = path
                 return versionnum
         except Exception:
+            raise
             kartVersion = None
             kartPath = None
             return None
