@@ -54,13 +54,13 @@ class TestKartapi(unittest.TestCase):
 
     def testDiff(self):
         diff = TESTREPO.diff("HEAD", "HEAD~1")
-        assert "testlayers" in diff
-        features = diff["testlayers"]
+        assert "testlayer" in diff
+        features = diff["testlayer"]
         assert len(features) == 1
         assert features[0]["id"] == "D::2"
 
         diff = TESTREPO.diff("HEAD~1", "HEAD~2")
-        assert "testlayers" in diff
-        features = diff["testlayers"]
+        assert "testlayer" in diff
+        features = diff["testlayer"]
         assert len(features) == 2
         assert features[0]["geometry"] == features[1]["geometry"]
