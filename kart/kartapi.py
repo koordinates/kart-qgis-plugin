@@ -331,8 +331,9 @@ class Repository:
             lines = ret.splitlines()
             self._configDict = {}
             for line in lines:
-                k, v = line.split("=")
-                self._configDict[k] = v
+                tokens = line.split("=")
+                if len(tokens) == 2:
+                    self._configDict[tokens[0]] = tokens[1]
         return self._configDict
 
     def spatialFilter(self):
