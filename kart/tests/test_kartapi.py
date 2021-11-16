@@ -70,9 +70,8 @@ class TestKartapi(unittest.TestCase):
 
     def testClone(self):
         with tempfile.TemporaryDirectory() as folder:
-            Repository.clone(TESTREPO.path, folder)
-            repo = Repository(folder)
-            clonedLog = repo.log()
+            clone = Repository.clone(TESTREPO.path, folder)
+            clonedLog = clone.log()
             log = TESTREPO.log()
             assert len(clonedLog) > 0
             assert len(clonedLog) == len(log)
