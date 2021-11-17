@@ -108,13 +108,24 @@ class TestKartapi(unittest.TestCase):
             assert len(clonedLog) == len(log)
 
     def testLog(self):
-        assert self.testRepo.isInitialized()
         log = self.testRepo.log()
         assert len(log) == 5
         assert "Deleted" in log[0]["message"]
         assert "Modified" in log[1]["message"]
         assert "Modified" in log[2]["message"]
         assert "Added" in log[3]["message"]
+
+    def testLogForDataset(self):
+        log = self.testRepo.log(dataset="testlayer")
+        assert len(log) == 5
+        assert "Deleted" in log[0]["message"]
+        assert "Modified" in log[1]["message"]
+        assert "Modified" in log[2]["message"]
+        assert "Added" in log[3]["message"]
+
+    def testLogForMissingDataset(self):
+        log = self.testRepo.log(dataset="wronglayer")
+        assert len(log) == 0
 
     def testDiff(self):
         diff = self.testRepo.diff("HEAD", "HEAD~1")
@@ -248,4 +259,13 @@ class TestKartapi(unittest.TestCase):
         repo.mergeBranch("newbranch", "")
         log = repo.log()
         assert log[0]["message"] == "A new commit"
+        folder.cleanup()
+
+    def testTags(self):
+        folder, repo = createRepoCopy()
+        assert repo.tags() == []
+        repo.createTag("mytag", "HEAD")
+        assert repo.tags() == ["mytag"]
+        repo.deleteTag("mytag")
+        assert repo.tags() == []
         folder.cleanup()
