@@ -324,6 +324,9 @@ class Repository:
 
     _configDict = None
 
+    def _invalidateConfigCache(self):
+        self._configDict = None
+
     def _config(self):
         if self._configDict is None:
             ret = self.executeKart(["config", "-l"])
@@ -350,6 +353,7 @@ class Repository:
             self.executeKart(["checkout", "--spatial-filter", kartExtent])
         else:
             self.executeKart(["checkout", "--spatial-filter="])
+        self._invalidateConfigCache()
         self.updateCanvas()
 
     def isInitialized(self):
