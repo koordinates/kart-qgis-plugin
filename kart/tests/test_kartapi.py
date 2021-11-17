@@ -7,6 +7,9 @@ from qgis.core import (
     QgsRectangle,
     QgsReferencedRectangle,
     QgsCoordinateReferenceSystem,
+    QgsFeature,
+    QgsGeometry,
+    QgsPointXY,
 )
 from qgis.testing import unittest, start_app
 
@@ -214,13 +217,16 @@ class TestKartapi(unittest.TestCase):
         layer = repo.workingCopyLayer("testlayer")
         feature = list(layer.getFeatures())[0]
         with edit(layer):
-            layer.deleteFeatures([feature.id()])
+            feature = QgsFeature(layer.fields())
+            feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(0, 0)))
+            feature.setAttributes([5, 5])
+            layer.addFeatures([feature])
         repo.commit("A new commit")
         repo.checkoutBranch("main")
         assert "main" == repo.currentBranch()
         log = repo.log()
         assert log[0]["message"] != "A new commit"
-        repo.merge("newbranch", "")
+        repo.mergeBranch("newbranch", "")
         log = repo.log()
         assert log[0]["message"] == "A new commit"
         folder.cleanup()
