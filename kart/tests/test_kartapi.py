@@ -2,7 +2,12 @@ import os
 import tempfile
 import shutil
 
-from qgis.core import edit
+from qgis.core import (
+    edit,
+    QgsRectangle,
+    QgsReferencedRectangle,
+    QgsCoordinateReferenceSystem,
+)
 from qgis.testing import unittest, start_app
 
 from kart.kartapi import (
@@ -21,16 +26,21 @@ start_app()
 testRepoPath = os.path.join(os.path.dirname(__file__), "data", "testrepo")
 
 
+def createRepoCopy():
+    tempFolder = tempfile.TemporaryDirectory()
+    dst = os.path.join(tempFolder.name, "testrepo")
+    shutil.copytree(testRepoPath, dst)
+    with open(os.path.join(dst, ".git"), "w") as f:
+        f.write("gitdir: .kart")
+    repoCopy = Repository(dst)
+    return tempFolder, repoCopy
+
+
 class TestKartapi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         patch_iface()
-        cls.tempFolder = tempfile.TemporaryDirectory()
-        dst = os.path.join(cls.tempFolder.name, "testrepo")
-        shutil.copytree(testRepoPath, dst)
-        with open(os.path.join(dst, ".git"), "w") as f:
-            f.write("gitdir: .kart")
-        cls.testRepo = Repository(dst)
+        cls.tempFolder, cls.testRepo = createRepoCopy()
 
     @classmethod
     def tearDownClass(cls):
@@ -135,12 +145,60 @@ class TestKartapi(unittest.TestCase):
         assert current == "anotherbranch"
 
     def testModifyLayerAndRestore(self):
-        layer = self.testRepo.workingCopyLayer("testlayer")
+        folder, repo = createRepoCopy()
+        layer = repo.workingCopyLayer("testlayer")
         feature = list(layer.getFeatures())[0]
         with edit(layer):
             layer.deleteFeatures([feature.id()])
-        diff = self.testRepo.diff()
+        diff = repo.diff()
         assert "testlayer" in diff
         self.testRepo.restore("HEAD")
-        diff = self.testRepo.diff()
+        diff = repo.diff()
         assert not bool(diff.get("testlayer", []))
+        folder.cleanup()
+
+    def testCommit(self):
+        folder, repo = createRepoCopy()
+        layer = repo.workingCopyLayer("testlayer")
+        feature = list(layer.getFeatures())[0]
+        with edit(layer):
+            layer.deleteFeatures([feature.id()])
+        repo.commit("A new commit")
+        log = repo.log()
+        assert log[0]["message"] == "A new commit"
+        diff = repo.diff("HEAD", "HEAD~1")
+        assert "testlayer" in diff
+        features = diff["testlayer"]
+        assert len(features) == 1
+        assert features[0]["id"].startswith("D::")
+        folder.cleanup()
+
+    def testSetSpatialFilter(self):
+        folder, repo = createRepoCopy()
+        crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        rect = QgsRectangle(0, 0, 1, 1)
+        referencedRectangle = QgsReferencedRectangle(rect, crs)
+        repo.setSpatialFilter(referencedRectangle)
+        assert repo.spatialFilter() is not None
+        repo.setSpatialFilter(None)
+        assert repo.spatialFilter() is None
+        folder.cleanup()
+
+    def testDatasetNameFromLayer(self):
+        layer = self.testRepo.workingCopyLayer("testlayer")
+        assert self.testRepo.datasetNameFromLayer(layer) == "testlayer"
+
+    def testWorkingCopyLayerIdField(self):
+        assert "fid" == self.testRepo.workingCopyLayerIdField("testlayer")
+
+    def testWorkingCopyLayerCrs(self):
+        assert "EPSG:4326" == self.testRepo.workingCopyLayerCrs("testlayer")
+
+    def testDeleteDataset(self):
+        folder, repo = createRepoCopy()
+        ncommits = len(repo.log())
+        assert "testlayer" in repo.datasets()
+        repo.deleteDataset("testlayer")
+        assert ncommits + 1 == len(repo.log())
+        assert "testlayer" not in repo.datasets()
+        folder.cleanup()
