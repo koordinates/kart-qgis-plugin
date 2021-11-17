@@ -345,7 +345,7 @@ class Repository:
             return None
 
     def setSpatialFilter(self, extent=None):
-        if extent:
+        if extent is not None:
             kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
             self.executeKart(["checkout", "--spatial-filter", kartExtent])
         else:
@@ -468,7 +468,7 @@ class Repository:
     def deleteBranch(self, branch):
         return self.executeKart(["branch", "-d", branch])
 
-    def mergeBranch(self, branch, msg, noff=False, ffonly=False):
+    def mergeBranch(self, branch, msg="", noff=False, ffonly=False):
         commands = ["merge", branch]
         if msg:
             commands.extend(["--message", msg])
