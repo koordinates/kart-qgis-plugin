@@ -33,6 +33,7 @@ def createRepoCopy():
     with open(os.path.join(dst, ".git"), "w") as f:
         f.write("gitdir: .kart")
     repoCopy = Repository(dst)
+    repoCopy.configureUser("user", "user@user.use")
     return tempFolder, repoCopy
 
 
@@ -152,7 +153,7 @@ class TestKartapi(unittest.TestCase):
             layer.deleteFeatures([feature.id()])
         diff = repo.diff()
         assert "testlayer" in diff
-        self.testRepo.restore("HEAD")
+        repo.restore("HEAD")
         diff = repo.diff()
         assert not bool(diff.get("testlayer", []))
         folder.cleanup()
@@ -175,12 +176,13 @@ class TestKartapi(unittest.TestCase):
 
     def testSetSpatialFilter(self):
         folder, repo = createRepoCopy()
+        assert repo.spatialFilter() is None
         crs = QgsCoordinateReferenceSystem("EPSG:4326")
         rect = QgsRectangle(0, 0, 1, 1)
         referencedRectangle = QgsReferencedRectangle(rect, crs)
         repo.setSpatialFilter(referencedRectangle)
         assert repo.spatialFilter() is not None
-        repo.setSpatialFilter(None)
+        repo.setSpatialFilter()
         assert repo.spatialFilter() is None
         folder.cleanup()
 
@@ -197,8 +199,28 @@ class TestKartapi(unittest.TestCase):
     def testDeleteDataset(self):
         folder, repo = createRepoCopy()
         ncommits = len(repo.log())
-        assert "testlayer" in repo.datasets()
+        assert "testlayer" in repo.datasets()[0]
         repo.deleteDataset("testlayer")
         assert ncommits + 1 == len(repo.log())
-        assert "testlayer" not in repo.datasets()
+        assert "testlayer" not in repo.datasets()[0]
+        folder.cleanup()
+
+    def testBranchAndMerge(self):
+        folder, repo = createRepoCopy()
+        repo.createBranch("newbranch")
+        assert "newbranch" in repo.branches()
+        repo.checkoutBranch("newbranch")
+        assert "newbranch" == repo.currentBranch()
+        layer = repo.workingCopyLayer("testlayer")
+        feature = list(layer.getFeatures())[0]
+        with edit(layer):
+            layer.deleteFeatures([feature.id()])
+        repo.commit("A new commit")
+        repo.checkoutBranch("main")
+        assert "main" == repo.currentBranch()
+        log = repo.log()
+        assert log[0]["message"] != "A new commit"
+        repo.merge("newbranch", "")
+        log = repo.log()
+        assert log[0]["message"] == "A new commit"
         folder.cleanup()
