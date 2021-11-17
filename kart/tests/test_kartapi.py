@@ -215,12 +215,31 @@ class TestKartapi(unittest.TestCase):
         repo.checkoutBranch("newbranch")
         assert "newbranch" == repo.currentBranch()
         layer = repo.workingCopyLayer("testlayer")
-        feature = list(layer.getFeatures())[0]
         with edit(layer):
             feature = QgsFeature(layer.fields())
             feature.setGeometry(QgsGeometry.fromPointXY(QgsPointXY(0, 0)))
             feature.setAttributes([5, 5])
             layer.addFeatures([feature])
+        repo.commit("A new commit")
+        repo.checkoutBranch("main")
+        assert "main" == repo.currentBranch()
+        log = repo.log()
+        assert log[0]["message"] != "A new commit"
+        repo.mergeBranch("newbranch", "")
+        log = repo.log()
+        assert log[0]["message"] == "A new commit"
+        folder.cleanup()
+
+    def testBranchAndMergeWithDelete(self):
+        folder, repo = createRepoCopy()
+        repo.createBranch("newbranch")
+        assert "newbranch" in repo.branches()
+        repo.checkoutBranch("newbranch")
+        assert "newbranch" == repo.currentBranch()
+        layer = repo.workingCopyLayer("testlayer")
+        feature = list(layer.getFeatures())[0]
+        with edit(layer):
+            layer.deleteFeatures([feature.id()])
         repo.commit("A new commit")
         repo.checkoutBranch("main")
         assert "main" == repo.currentBranch()
