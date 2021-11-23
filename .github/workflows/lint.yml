@@ -4,14 +4,17 @@ on: [push, pull_request]
 
 jobs:
   flake8-lint:
-    runs-on: ubuntu-latest
     name: Lint
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Check out source repository
+      - name: Checkout
         uses: actions/checkout@v2
-      - name: Set up Python environment
+
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: "3.8"
+          python-version: "3.7"
+
       - name: flake8 Lint
         uses: py-actions/flake8@v1
