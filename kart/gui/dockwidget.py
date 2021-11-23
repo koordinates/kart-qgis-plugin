@@ -302,9 +302,9 @@ class RepoItem(RefreshableItem):
             actions.extend(
                 [
                     ("Show log...", self.showLog, logIcon),
-                    ("Show working tree changes...", self.showChanges, diffIcon),
-                    ("Discard working tree changes", self.discardChanges, discardIcon),
-                    ("Commit working tree changes...", self.commitChanges, commitIcon),
+                    ("Show working copy changes...", self.showChanges, diffIcon),
+                    ("Discard working copy changes", self.discardChanges, discardIcon),
+                    ("Commit working copy changes...", self.commitChanges, commitIcon),
                     ("Switch branch...", self.switchBranch, checkoutIcon),
                     ("Merge into current branch...", self.mergeBranch, mergeIcon),
                     ("divider", None, None),
@@ -404,7 +404,7 @@ class RepoItem(RefreshableItem):
         else:
             iface.messageBar().pushMessage(
                 "Changes",
-                "There are no changes in the working tree",
+                "There are no changes in the working copy",
                 level=Qgis.Warning,
             )
 
@@ -439,7 +439,7 @@ class RepoItem(RefreshableItem):
         self.repo.restore("HEAD")
         iface.messageBar().pushMessage(
             "Discard changes",
-            "Working tree changes have been discarded",
+            "Working copy changes have been discarded",
             level=Qgis.Info,
         )
 
@@ -570,17 +570,17 @@ class DatasetItem(QTreeWidgetItem):
                     ("Show log...", self.showLog, logIcon),
                     ("Remove from repository", self.removeFromRepo, removeIcon),
                     (
-                        "Show working tree changes for this dataset...",
+                        "Show working copy changes for this dataset...",
                         self.showChanges,
                         diffIcon,
                     ),
                     (
-                        "Discard working tree changes for this dataset",
+                        "Discard working copy changes for this dataset",
                         self.discardChanges,
                         discardIcon,
                     ),
                     (
-                        "Commit working tree changes for this dataset...",
+                        "Commit working copy changes for this dataset...",
                         self.commitChanges,
                         commitIcon,
                     ),
@@ -619,7 +619,7 @@ class DatasetItem(QTreeWidgetItem):
         else:
             iface.messageBar().pushMessage(
                 "Changes",
-                "There are no changes in the working tree for this dataset",
+                "There are no changes in the working copy for this dataset",
                 level=Qgis.Warning,
             )
 
@@ -628,7 +628,7 @@ class DatasetItem(QTreeWidgetItem):
         self.repo.restore("HEAD", self.name)
         iface.messageBar().pushMessage(
             "Discard changes",
-            "Working tree changes have been discarded",
+            "Working copy changes have been discarded",
             level=Qgis.Info,
         )
 
@@ -653,7 +653,7 @@ class DatasetItem(QTreeWidgetItem):
         if not self.repo.isWorkingTreeClean():
             iface.messageBar().pushMessage(
                 "Remove dataset",
-                "There are pending changes in the working tree. "
+                "There are pending changes in the working copy. "
                 "Commit them before deleting this dataset",
                 level=Qgis.Warning,
             )

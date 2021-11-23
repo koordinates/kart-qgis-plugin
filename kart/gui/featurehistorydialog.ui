@@ -182,7 +182,7 @@
         <item>
          <widget class="QPushButton" name="btnRecover">
           <property name="text">
-           <string>Recover this version into working tree</string>
+           <string>Recover this version into working copy</string>
           </property>
          </widget>
         </item>

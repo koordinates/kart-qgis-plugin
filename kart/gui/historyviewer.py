@@ -311,7 +311,7 @@ class HistoryTree(QTreeWidget):
                 dataset = None
             self.repo.restore(item.commit["commit"], dataset)
             self.message(
-                "Selected dataset(s) correctly restored in working tree", Qgis.Info
+                "Selected dataset(s) correctly restored in working copy", Qgis.Info
             )
 
     def message(self, text, level):

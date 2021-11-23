@@ -58,7 +58,7 @@
       <item row="0" column="0">
        <widget class="QCheckBox" name="chkForce">
         <property name="text">
-         <string>Overwrite working tree changes (force)</string>
+         <string>Overwrite working copy changes (force)</string>
         </property>
        </widget>
       </item>

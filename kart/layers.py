@@ -71,7 +71,7 @@ class LayerTracker:
         )
 
         self.showWorkingTreeChangesAction = QAction(
-            diffIcon, "Show working tree changes...", iface
+            diffIcon, "Show working copy changes...", iface
         )
         self.showWorkingTreeChangesAction.triggered.connect(
             _f(self.showWorkingTreeChanges)
@@ -81,7 +81,7 @@ class LayerTracker:
         )
 
         self.discardWorkingTreeChangesAction = QAction(
-            discardIcon, "Discard working tree changes...", iface
+            discardIcon, "Discard working copy changes...", iface
         )
         self.discardWorkingTreeChangesAction.triggered.connect(
             _f(self.discardWorkingTreeChanges)
@@ -91,7 +91,7 @@ class LayerTracker:
         )
 
         self.commitWorkingTreeChangesAction = QAction(
-            commitIcon, "Commit working tree changes...", iface
+            commitIcon, "Commit working copy changes...", iface
         )
         self.commitWorkingTreeChangesAction.triggered.connect(
             _f(self.commitWorkingTreeChanges)
@@ -198,7 +198,7 @@ class LayerTracker:
             else:
                 iface.messageBar().pushMessage(
                     "Changes",
-                    "There are no changes in the working tree",
+                    "There are no changes in the working copy",
                     level=Qgis.Warning,
                 )
 
@@ -210,7 +210,7 @@ class LayerTracker:
             repo.restore("HEAD", dataset)
             iface.messageBar().pushMessage(
                 "Discard changes",
-                f"Working tree changes for layer '{layer.name()}' have been discarded",
+                f"Working copy changes for layer '{layer.name()}' have been discarded",
                 level=Qgis.Info,
             )
 
