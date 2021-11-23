@@ -93,12 +93,12 @@ def checkKartInstalled():
     if version is None:
         url = "https://github.com/koordinates/kart#installing"
         msg = (
-            "<p><b>Kart folder is not configured or Kart is not installed in the"
-            f' specified folder</b>.</p><p><a href="{url}"> Install Kart </a>  if'
-            ' needed and then <a href="settings"> configure </a> the Kart folder.</p>'
+            "<p><b>Your Kart installation location is not configured</b>.</p>"
+            f'<p><a href="{url}"> Install Kart </a> if needed and then '
+            '<a href="settings"> configure </a> the Kart folder.</p>'
         )
     else:
-        major, minor, patch = version.split(".")
+        major, minor, patch = version.split(".")[:3]
         versionOk = (
             major == supported_major
             and minor == supported_minor
