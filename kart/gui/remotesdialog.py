@@ -53,7 +53,8 @@ class RemotesDialog(BASE, WIDGET):
                 Qgis.Warning,
                 duration=5,
             )
-            return
+        else:
+            self._addRemote(name, url)
 
     @executeskart
     def _addRemote(self, name, url):
@@ -74,7 +75,7 @@ class RemotesDialog(BASE, WIDGET):
             )
         else:
             self._removeRemote(name)
-            self.listWidget.takeItem(item)
+            self.listWidget.takeItem(self.listWidget.row(item))
 
     @executeskart
     def _removeRemote(self, name):
@@ -82,6 +83,6 @@ class RemotesDialog(BASE, WIDGET):
 
     def itemFromName(self, name):
         for i in range(self.listWidget.count()):
-            item = self.listWidget(i)
+            item = self.listWidget.item(i)
             if item.text() == name:
                 return item
