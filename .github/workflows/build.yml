@@ -8,21 +8,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Get source code
-      uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.7"
 
-    - name: Build package
-      run: |
-        python helper.py package dev-${GITHUB_SHA}
-        mkdir tmp
-        unzip kart.zip -d tmp
+      - name: Build package
+        run: |
+          python helper.py package dev-${GITHUB_SHA}
+          mkdir tmp
+          unzip kart.zip -d tmp
 
-    - uses: actions/upload-artifact@v2
-      with:
-        name: kart_package
-        path: tmp
+      - uses: actions/upload-artifact@v2
+        with:
+          name: kart_package
+          path: tmp
