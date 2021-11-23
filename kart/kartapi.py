@@ -105,7 +105,7 @@ def checkKartInstalled():
             and patch >= supported_patch
         )
         if not versionOk:
-            url = f"https://github.com/koordinates/kart/releases/latest"
+            url = "https://github.com/koordinates/kart/releases/latest"
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
                 f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
