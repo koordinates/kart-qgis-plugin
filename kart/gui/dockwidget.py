@@ -268,7 +268,7 @@ class RepoItem(RefreshableItem):
     def setTitle(self):
         try:
             title = (
-                f"{self.repo.title() or os.path.normpath(self.repo.path)}"
+                f"{self.repo.title() or os.path.normpath(self.repo.path)} "
                 f"[{self.repo.currentBranch()}]"
             )
         except KartException:
@@ -284,12 +284,9 @@ class RepoItem(RefreshableItem):
         self.addChild(self.datasetsItem)
         self.populated = True
 
-    def _actions(self):
-        actions = [
-            ("Remove this repository", self.removeRepository, removeIcon),
-            ("Properties...", self.showProperties, propertiesIcon),
-            ("divider", None, None),
-        ]
+    def actions(self):
+        actions = []
+
         if self.repo.isMerging():
             actions.extend(
                 [
@@ -308,14 +305,22 @@ class RepoItem(RefreshableItem):
                     ("Switch branch...", self.switchBranch, checkoutIcon),
                     ("Merge into current branch...", self.mergeBranch, mergeIcon),
                     ("divider", None, None),
-                    ("Import layer into repo...", self.importLayer, importIcon),
-                    ("divider", None, None),
                     ("Pull...", self.pull, pullIcon),
                     ("Push...", self.push, pushIcon),
                     ("divider", None, None),
+                    ("Import layer into repo...", self.importLayer, importIcon),
                     ("Apply patch...", self.applyPatch, patchIcon),
                 ]
             )
+
+        actions.extend(
+            [
+                ("divider", None, None),
+                ("Refresh", self.refreshContent, refreshIcon),
+                ("Properties...", self.showProperties, propertiesIcon),
+                ("Remove this repository", self.removeRepository, removeIcon),
+            ]
+        )
 
         return actions
 
@@ -567,8 +572,8 @@ class DatasetItem(QTreeWidgetItem):
         if not self.repo.isMerging():
             actions.extend(
                 [
+                    ("divider", None, None),
                     ("Show log...", self.showLog, logIcon),
-                    ("Remove from repository", self.removeFromRepo, removeIcon),
                     (
                         "Show working copy changes for this dataset...",
                         self.showChanges,
@@ -584,6 +589,8 @@ class DatasetItem(QTreeWidgetItem):
                         self.commitChanges,
                         commitIcon,
                     ),
+                    ("divider", None, None),
+                    ("Remove from repository", self.removeFromRepo, removeIcon),
                 ]
             )
 
