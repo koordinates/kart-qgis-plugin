@@ -133,8 +133,6 @@ You can create branches in the repository, to keep certains changes isolated. Br
 
 To create a branch at a given commit, right-click on it in the history dialog and select `Create branch at this commit`. In the dialog that will appear, enter the name for the new branch.
 
-![Branch label](img/createbranch.png)
-
 You will see that a new label appears now in the `Refs` column for that commit, along with the `main`label that already existed before.
 
 ![Branch label](img/branchlabel.png)
