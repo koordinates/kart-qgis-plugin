@@ -6,35 +6,38 @@ We welcome all contributions, bug reports, and suggestions!
 
 To install the latest version from this repository, follow these steps:
 
+- Install [Kart](https://github.com/koordinates/kart)
 - Clone this repository using `git clone`.
 
 ```console
 $ git clone https://github.com/koordinates/kart-qgis-plugin.git
 ```
-- Move to the `kart-qgis-plugin` folder and run the helper install task by running
+
+- Create a link between the repository folder and the QGIS 3 plugins folder.
 
 ```console
+$ cd kart-qgis-plugn
 $ python helper.py install
 ```
 
-That will create a symlink between the repository folder and the QGIS 3 plugins folder.
-
-- Start QGIS and you will find the plugin in the plugins menu. If it's not available yet, activate it in the QGIS Plugin Manager.
+- Start QGIS and you will find the plugin in the plugins menu. If it's not available yet, activate
+it in the QGIS Plugin Manager.
 
 
 ## Packaging
 
-To package the plugin, run the helper package task by running
+To package the plugin, suitable for installing into QGIS:
 
 ```console
-$ python helper.py install
+$ python helper.py package
 ```
 
 A `kart.zip` file is generated in the repo root.
 
 ## CI
 
-Continuous integration builds an install package for every commit. Artifacts are published to Github Actions.
+Continuous integration builds an plugin package for every commit, artifacts are
+[available to download](https://github.com/koordinates/kart-qgis-plugin/actions/workflows/build.yml).
 
 ## Code formatting
 
