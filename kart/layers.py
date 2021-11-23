@@ -193,7 +193,9 @@ class LayerTracker:
             dataset = repo.datasetNameFromLayer(layer)
             changes = repo.diff(dataset=dataset)
             if changes.get(dataset):
-                dialog = DiffViewerDialog(iface.mainWindow(), changes, repo)
+                dialog = DiffViewerDialog(
+                    iface.mainWindow(), changes, repo, showRecoverNewButton=False
+                )
                 dialog.exec()
             else:
                 iface.messageBar().pushMessage(
