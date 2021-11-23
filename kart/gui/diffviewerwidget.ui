@@ -147,12 +147,12 @@
                   <widget class="QComboBox" name="comboAdditionalLayers">
                    <item>
                     <property name="text">
-                     <string>OSM basemap</string>
+                     <string>Project layers</string>
                     </property>
                    </item>
                    <item>
                     <property name="text">
-                     <string>Project layers</string>
+                     <string>OSM basemap</string>
                     </property>
                    </item>
                    <item>
@@ -261,14 +261,14 @@
             <item>
              <widget class="QPushButton" name="btnRecoverOldVersion">
               <property name="text">
-               <string>Recover old version</string>
+               <string>Restore old version</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QPushButton" name="btnRecoverNewVersion">
               <property name="text">
-               <string>Recover new version</string>
+               <string>Restore new version</string>
               </property>
              </widget>
             </item>

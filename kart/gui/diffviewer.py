@@ -39,8 +39,8 @@ from kart.utils import setting, DIFFSTYLES
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
-OSM_BASEMAP = 0
-PROJECT_LAYERS = 1
+PROJECT_LAYERS = 0
+OSM_BASEMAP = 1
 NO_LAYERS = 2
 
 TRANSPARENCY = 0
@@ -90,9 +90,7 @@ class DiffViewerDialog(QDialog):
         self.setWindowTitle("Diff viewer")
 
     def workingLayerChanged(self):
-        self.bar.pushMessage(
-            "Diff", "Working copy has been correctly modified", Qgis.Success, 5
-        )
+        self.bar.pushMessage("Diff", "Working copy has been updated", Qgis.Success, 5)
 
     def closeEvent(self, evt):
         self.history.removeMapLayers()
@@ -123,6 +121,8 @@ class DiffViewerWidget(WIDGET, BASE):
         self.setWindowFlags(self.windowFlags() | Qt.WindowSystemMenuHint)
 
         self.canvas = QgsMapCanvas(self.canvasWidget)
+        self.canvas.setCanvasColor(Qt.white)
+        self.canvas.enableAntiAliasing(True)
         tabLayout = QVBoxLayout()
         tabLayout.setMargin(0)
         tabLayout.addWidget(self.canvas)
@@ -435,7 +435,7 @@ class DiffViewerWidget(WIDGET, BASE):
 
         extent = self.oldLayer.extent()
         extent.combineExtentWith(self.newLayer.extent())
-        extent = extent.buffered(min(extent.width(), extent.height()) * 0.01)
+        extent = extent.buffered(min(extent.width(), extent.height()) * 0.07)
         self.canvas.setExtent(extent)
         self.canvas.refresh()
 
