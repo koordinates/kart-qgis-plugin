@@ -74,7 +74,7 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class DiffViewerDialog(QDialog):
-    def __init__(self, parent, changes, repo):
+    def __init__(self, parent, changes, repo, showRecoverNewButton=True):
         super(QDialog, self).__init__(parent)
         self.setWindowFlags(Qt.Window)
         layout = QVBoxLayout()
@@ -82,7 +82,7 @@ class DiffViewerDialog(QDialog):
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addWidget(self.bar)
-        self.history = DiffViewerWidget(changes, repo)
+        self.history = DiffViewerWidget(changes, repo, showRecoverNewButton)
         self.history.workingLayerChanged.connect(self.workingLayerChanged)
         layout.addWidget(self.history)
         self.setLayout(layout)
@@ -101,13 +101,14 @@ class DiffViewerWidget(WIDGET, BASE):
 
     workingLayerChanged = pyqtSignal()
 
-    def __init__(self, changes, repo):
+    def __init__(self, changes, repo, showRecoverNewButton):
         super(DiffViewerWidget, self).__init__()
         self.changes = changes
         self.repo = repo
         self.oldLayer = None
         self.newLayer = None
         self.osmLayer = None
+        self.showRecoverNewButton = showRecoverNewButton
         self.layerDiffLayers = {}
         self.vertexDiffLayer = None
         self.currentFeatureItem = None
@@ -176,7 +177,7 @@ class DiffViewerWidget(WIDGET, BASE):
             self.fillAttributesDiff()
             self.removeMapLayers()
             self.attributesTable.setVisible(True)
-            self.btnRecoverNewVersion.setVisible(True)
+            self.btnRecoverNewVersion.setVisible(True and self.showRecoverNewButton)
             self.btnRecoverOldVersion.setVisible(True)
             self._createLayers()
             if self._hasGeometry(current):
@@ -501,7 +502,7 @@ class DiffViewerWidget(WIDGET, BASE):
         if refGeom is not None:
             self._createVertexDiffLayer(geoms)
         self.btnRecoverOldVersion.setEnabled(bool(old))
-        self.btnRecoverNewVersion.setEnabled(bool(new))
+        self.btnRecoverNewVersion.setEnabled(bool(new) and self.showRecoverNewButton)
         self.sliderTransparency.setEnabled(bool(old))
 
     def _createVertexDiffLayer(self, geoms):

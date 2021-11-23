@@ -404,7 +404,9 @@ class RepoItem(RefreshableItem):
         changes = self.repo.diff()
         hasChanges = any([bool(c) for c in changes.values()])
         if hasChanges:
-            dialog = DiffViewerDialog(iface.mainWindow(), changes, self.repo)
+            dialog = DiffViewerDialog(
+                iface.mainWindow(), changes, self.repo, showRecoverNewButton=False
+            )
             dialog.exec()
         else:
             iface.messageBar().pushMessage(
@@ -621,7 +623,9 @@ class DatasetItem(QTreeWidgetItem):
     def showChanges(self):
         changes = self.repo.diff(dataset=self.name)
         if changes.get(self.name):
-            dialog = DiffViewerDialog(iface.mainWindow(), changes, self.repo)
+            dialog = DiffViewerDialog(
+                iface.mainWindow(), changes, self.repo, showRecoverNewButton=False
+            )
             dialog.exec()
         else:
             iface.messageBar().pushMessage(
