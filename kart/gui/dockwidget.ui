@@ -80,6 +80,9 @@
     </item>
     <item>
      <widget class="QTreeWidget" name="tree">
+      <property name="textElideMode">
+       <enum>Qt::ElideMiddle</enum>
+      </property>
       <attribute name="headerVisible">
        <bool>false</bool>
       </attribute>
