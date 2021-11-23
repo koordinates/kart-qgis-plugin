@@ -1,26 +1,28 @@
-# QGIS Kart Plugin
+# Kart QGIS Plugin
 
-A plugin to work with Kart repositories
+A [QGIS](https://qgis.org) plugin to integrate and work with
+[Kart](https://kartproject.org) repositories. Kart provides modern, open source,
+distributed version control for geospatial and tabular data.
 
-[![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE.md)
+[![License: GPL v2](https://img.shields.io/badge/License-GPLv2-blue.svg)](./LICENSE.md)
 
 ## Installation
 
-The Kart plugin is available in the QGIS Plugins server. To install the latest version, use the QGIS Plugin Manager and search for the Kart plugin.
+The Kart plugin is available in the QGIS Plugins server. To install the latest
+version, use the QGIS Plugin Manager and search for the Kart plugin.
 
-Alternatively, you can get the latest version from the [release page](https://github.com/koordinates/kart-qgis-plugin/releases/latest)
+Alternatively, you can get the latest version from the [release page](https://github.com/koordinates/kart-qgis-plugin/releases/latest), then open the QGIS Plugin manager and install
+the downloaded zip file.
 
-Open the QGIS Plugin manager and install the downloaded zip file.
-
-This plugin is compatible with QGIS 3.4 or later.
+This plugin is compatible with QGIS v3.16 or later.
 
 ## Usage
 
-Usage documentation can be found [here](./docs/index.md)
+See the [documentation](./docs/index.md).
 
-### For developers
+## Contributing
 
-For Kart development see the [Contributing Notes](CONTRIBUTING.md).
+For development see the [contributing notes](./CONTRIBUTING.md).
 
 ## License - GPLv2
 

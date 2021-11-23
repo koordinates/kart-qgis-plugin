@@ -1,11 +1,14 @@
 [general]
 name=Kart
-description=A plugin to interact with Kart repositories from QGIS
-about=Kart
-category=Plugins
-version=0.1.0
 qgisMinimumVersion=3.16
-tracker=https://github.com/koordinates/kart-qgis-plugin/issues
+description=Work with Kart repositories directly from QGIS.
+about=<p><a href="https://kartproject.org">Kart</a> provides modern, open source, distributed version-control for geospatial and tabular datasets.</p><ul><li><strong>Geospatial and Tabular Data in Git</strong><br/>Kart stores geospatial and tabular data in Git, providing version control at the row and cell level.</li><li><strong>Built on Git, works like Git</strong><br/>Uses standard Git repositories and Git-like CLI commands. If you know Git, you’ll feel right at home with Kart.</li><li><strong>Supports current GIS workflows</strong><br/>Provides repository working copies as GIS databases and files. Edit directly in QGIS and other common GIS software.</li></ul><p>The Kart QGIS plugin requires you to [install Kart](https://github.com/koordinates/kart/releases/latest).</p>
+version=0.1.0
+author=Koordinates
+email=support@koordinates.com
+tags=versioning, data
+homepage=https://kartproject.org
 repository=https://github.com/koordinates/kart-qgis-plugin
-author=Victor Olaya
-email=volayaf@gmail.com
+tracker=https://github.com/koordinates/kart-qgis-plugin/issues
+icon=img/kart.png
+category=Plugins
