@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    uses: volaya/kart-qgis-plugin/.github/workflows/testing.yml@main
+    uses: koordinates/kart-qgis-plugin/.github/workflows/testing.yml@main
   release:
     name: "Release on tag"
     runs-on: ubuntu-latest
