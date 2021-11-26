@@ -247,13 +247,9 @@ class ReposItem(RefreshableItem):
         dialog.show()
         ret = dialog.exec_()
         if ret == dialog.Accepted:
-
-            src = dialog.src
-            # Prefix file protocol if the protcol is otherwise unknown.
-            if not re.match(r"^(kart@|http(s)?://|file://).*", src):
-                src = f"file://{src}"
-
-            repo = Repository.clone(src, dialog.dst, dialog.location, dialog.extent)
+            repo = Repository.clone(
+                dialog.src, dialog.dst, dialog.location, dialog.extent
+            )
             item = RepoItem(repo)
             self.addChild(item)
             addRepo(repo)
