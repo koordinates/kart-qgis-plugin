@@ -290,8 +290,6 @@ class Repository:
 
     @staticmethod
     def clone(src, dst, location=None, extent=None):
-        if "://" not in src:
-            src = f"file://{src}"
         commands = ["-vv", "clone", src, dst, "--progress"]
         if location is not None:
             commands.extend(["--workingcopy", location])
