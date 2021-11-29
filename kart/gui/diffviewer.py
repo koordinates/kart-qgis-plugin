@@ -473,13 +473,20 @@ class DiffViewerWidget(WIDGET, BASE):
         idField = self.workingCopyLayersIdFields[dataset]
         ref = new or old
         refGeom = ref["geometry"]
+        options = QgsVectorLayer.LayerOptions()
+        options.skipCrsValidation = True
         if refGeom is not None:
             geomtype = refGeom["type"]
-            self.oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
-            self.newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
+            self.oldLayer = QgsVectorLayer(
+                f"{geomtype}?crs={crs}", "old", "memory", options
+            )
+            self.newLayer = QgsVectorLayer(
+                f"{geomtype}?crs={crs}", "new", "memory", options
+            )
         else:
-            self.oldLayer = QgsVectorLayer("None", "old", "memory")
-            self.newLayer = QgsVectorLayer("None", "new", "memory")
+            self.oldLayer = QgsVectorLayer("None", "old", "memory", options)
+            self.newLayer = QgsVectorLayer("None", "new", "memory", options)
+
         self.oldLayer.dataProvider().addAttributes(layer.fields().toList())
         self.oldLayer.updateFields()
         self.newLayer.dataProvider().addAttributes(layer.fields().toList())
