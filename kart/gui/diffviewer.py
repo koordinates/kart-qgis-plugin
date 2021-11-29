@@ -436,7 +436,10 @@ class DiffViewerWidget(WIDGET, BASE):
 
         extent = self.oldLayer.extent()
         extent.combineExtentWith(self.newLayer.extent())
-        extent = extent.buffered(min(extent.width(), extent.height()) * 0.07)
+        d = min(extent.width(), extent.height())
+        if d == 0:
+            d = 1
+        extent = extent.buffered(d * 0.07)
         self.canvas.setExtent(extent)
         self.canvas.refresh()
 
