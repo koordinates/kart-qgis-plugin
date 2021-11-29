@@ -395,7 +395,12 @@ class Repository:
 
     def log(self, ref="HEAD", dataset=None, featureid=None):
         if dataset is not None:
-            commands = ["log", "-ojson", ref, "--", "--", dataset]
+            if featureid is not None:
+                filt = f"{dataset}:{featureid}"
+            else:
+                filt = dataset
+
+            commands = ["log", "-ojson", ref, "--", "--", filt]
         else:
             commands = ["log", "-ojson", ref]
         ret = self.executeKart(commands)
