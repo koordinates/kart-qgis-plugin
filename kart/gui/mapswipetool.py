@@ -3,7 +3,6 @@
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
 from qgis.PyQt.QtCore import Qt, QPoint
-
 from qgis.PyQt.QtGui import QCursor
 
 from qgis.gui import QgsMapTool
@@ -57,6 +56,7 @@ class MapSwipeTool(QgsMapTool):
         self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
 
     def canvasMoveEvent(self, e):
+        THRESHOLD = 10
         if self.hasSwipe:
             if self.checkDirection:
                 dX = abs(e.x() - self.firstPoint.x())
@@ -67,6 +67,18 @@ class MapSwipeTool(QgsMapTool):
                 self.canvas().setCursor(self.cursorH if isVertical else self.cursorV)
 
             self.swipe.setLength(e.x(), e.y())
+        else:
+            length = (
+                e.x()
+                if self.swipe.isVertical
+                else self.swipe.boundingRect().height() - e.y()
+            )
+            if self.swipe.length != 0 and abs(self.swipe.length - length) < THRESHOLD:
+                self.canvas().setCursor(
+                    self.cursorH if self.swipe.isVertical else self.cursorV
+                )
+            else:
+                self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
 
     def setLayersSwipe(self):
         if self.disabledSwipe:
