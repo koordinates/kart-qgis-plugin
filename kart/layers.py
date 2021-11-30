@@ -191,7 +191,7 @@ class LayerTracker:
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
             dataset = repo.datasetNameFromLayer(layer)
-            hasSchemaChanges = repo.hasSchemaChanges(dataset=dataset)
+            hasSchemaChanges = repo.diffHasSchemaChanges(dataset=dataset)
             if hasSchemaChanges:
                 iface.messageBar().pushMessage(
                     "Changes",

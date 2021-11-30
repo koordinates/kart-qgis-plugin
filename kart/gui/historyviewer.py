@@ -246,7 +246,7 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def showDiff(self, item, parent):
         refa = item.commit["commit"]
-        hasSchemaChanges = self.repo.hasSchemaChanges(refa, parent)
+        hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, parent)
         if hasSchemaChanges:
             self.message(
                 "There are schema changes in the selected commit and changes cannot be shown",
@@ -259,7 +259,7 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def showChangesBetweenCommits(self, refa, refb):
-        hasSchemaChanges = self.repo.hasSchemaChanges(refa, refb)
+        hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, refb)
         if hasSchemaChanges:
             self.message(
                 "There are schema changes between the selected commits and changes cannot be shown",
@@ -282,7 +282,7 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def saveAsLayer(self, refa, refb):
-        hasSchemaChanges = self.repo.hasSchemaChanges(refb, refa)
+        hasSchemaChanges = self.repo.diffHasSchemaChanges(refb, refa)
         if hasSchemaChanges:
             self.message(
                 "There are schema changes between the selected commits and changes cannot be saved as a layer",

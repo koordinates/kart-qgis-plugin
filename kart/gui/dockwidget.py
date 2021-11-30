@@ -402,7 +402,7 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def showChanges(self):
-        hasSchemaChanges = self.repo.hasSchemaChanges()
+        hasSchemaChanges = self.repo.diffHasSchemaChanges()
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 "Changes",
@@ -484,6 +484,13 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def resolveConflicts(self):
+        if self.repo.conflictsHaveSchemaChanges():
+            iface.messageBar().pushMessage(
+                "Resolve",
+                "Conflicts involve schema changes and cannot be resolved using the plugin interface",
+                level=Qgis.Warning,
+            )
+            return
         conflicts = self.repo.conflicts()
         if conflicts:
             dialog = ConflictsDialog(conflicts)
@@ -630,7 +637,7 @@ class DatasetItem(QTreeWidgetItem):
 
     @executeskart
     def showChanges(self):
-        hasSchemaChanges = self.repo.hasSchemaChanges(dataset=self.name)
+        hasSchemaChanges = self.repo.diffHasSchemaChanges(dataset=self.name)
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 "Changes",

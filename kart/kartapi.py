@@ -500,7 +500,7 @@ class Repository:
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
-    def hasSchemaChanges(self, refa=None, refb=None, dataset=None):
+    def diffHasSchemaChanges(self, refa=None, refb=None, dataset=None):
         commands = ["diff"]
         if refa and refb:
             commands.append(f"{refb}...{refa}")
@@ -586,6 +586,14 @@ class Repository:
             with open(filepath) as f:
                 msg = f.read()
         return msg
+
+    def conflictsHaveSchemaChanges(self):
+        ret = self.executeKart(["conflicts"], True)
+        for datasetConflicts in list(ret.values())[0].values():
+            schemaChanges = datasetConflicts.get("meta", {}).get("schema.json", None)
+            if schemaChanges is not None:
+                return True
+        return False
 
     def conflicts(self):
         commands = ["conflicts", "-ogeojson", "--json-style", "extracompact"]
