@@ -180,7 +180,6 @@ class ReposItem(RefreshableItem):
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
         self.populated = False
-        # self.populate()
 
     def onExpanded(self):
         if not self.populated:
@@ -266,6 +265,11 @@ class RepoItem(RefreshableItem):
 
         self.populated = False
 
+    def refreshContent(self):
+        self.takeChildren()
+        self.populate()
+        self.setTitle()
+
     def setTitle(self):
         try:
             title = (
@@ -339,6 +343,7 @@ class RepoItem(RefreshableItem):
     def showLog(self):
         dialog = HistoryDialog(self.repo)
         dialog.exec()
+        self.refreshContent()
 
     @executeskart
     def importLayer(self):
@@ -429,6 +434,7 @@ class RepoItem(RefreshableItem):
         dialog = SwitchDialog(self.repo)
         if dialog.exec() == dialog.Accepted:
             self.repo.checkoutBranch(dialog.branch, dialog.force)
+            self.setTitle()
 
     @executeskart
     def mergeBranch(self):
