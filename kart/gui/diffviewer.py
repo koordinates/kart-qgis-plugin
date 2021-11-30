@@ -215,6 +215,8 @@ class DiffViewerWidget(WIDGET, BASE):
     def fillAttributesDiff(self):
         old = self.currentFeatureItem.old
         new = self.currentFeatureItem.new
+        oldprops = old.get("properties", {})
+        newprops = new.get("properties", {})
         self.attributesTable.clear()
         fields = []
         fields.extend(new.get("properties", {}).keys())
@@ -234,17 +236,13 @@ class DiffViewerWidget(WIDGET, BASE):
         )
         for i, attrib in enumerate(fields):
             try:
-                if not bool(old):
-                    newvalue = new["properties"].get(attrib)
-                    oldvalue = ""
+                oldvalue = oldprops.get(attrib, "")
+                newvalue = newprops.get(attrib, "")
+                if attrib not in oldprops:
                     changeType = ADDED
-                elif not bool(new):
-                    oldvalue = old["properties"].get(attrib)
-                    newvalue = ""
+                elif attrib not in newprops:
                     changeType = REMOVED
                 else:
-                    oldvalue = old["properties"].get(attrib)
-                    newvalue = new["properties"].get(attrib)
                     if oldvalue != newvalue:
                         changeType = MODIFIED
                     else:
@@ -511,8 +509,17 @@ class DiffViewerWidget(WIDGET, BASE):
                 geoms.append(None)
         if refGeom is not None:
             self._createVertexDiffLayer(geoms)
-        self.btnRecoverOldVersion.setEnabled(bool(old))
-        self.btnRecoverNewVersion.setEnabled(bool(new) and self.showRecoverNewButton)
+
+        currentFieldNames = set(layer.fields().names())
+        oldFieldNames = set(old.get("properties", {}).keys())
+        newFieldNames = set(new.get("properties", {}).keys())
+
+        noSchemaChange = currentFieldNames == oldFieldNames == newFieldNames
+
+        self.btnRecoverOldVersion.setEnabled(bool(old) and noSchemaChange)
+        self.btnRecoverNewVersion.setEnabled(
+            bool(new) and self.showRecoverNewButton and noSchemaChange
+        )
         self.sliderTransparency.setEnabled(bool(old))
 
     def _createVertexDiffLayer(self, geoms):

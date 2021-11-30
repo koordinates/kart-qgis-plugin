@@ -246,12 +246,26 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def showDiff(self, item, parent):
         refa = item.commit["commit"]
+        hasSchemaChanges = self.repo.hasSchemaChanges(refa, parent)
+        if hasSchemaChanges:
+            self.message(
+                "There are schema changes in the selected commit and changes cannot be shown",
+                Qgis.Warning,
+            )
+            return
         changes = self.repo.diff(refa, parent)
         dialog = DiffViewerDialog(self, changes, self.repo)
         dialog.exec()
 
     @executeskart
     def showChangesBetweenCommits(self, refa, refb):
+        hasSchemaChanges = self.repo.hasSchemaChanges(refa, refb)
+        if hasSchemaChanges:
+            self.message(
+                "There are schema changes between the selected commits and changes cannot be shown",
+                Qgis.Warning,
+            )
+            return
         changes = self.repo.diff(refa, refb)
         dialog = DiffViewerDialog(self, changes, self.repo)
         dialog.exec()
@@ -268,6 +282,13 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def saveAsLayer(self, refa, refb):
+        hasSchemaChanges = self.repo.hasSchemaChanges(refb, refa)
+        if hasSchemaChanges:
+            self.message(
+                "There are schema changes between the selected commits and changes cannot be saved as a layer",
+                Qgis.Warning,
+            )
+            return
         changes = self.repo.diff(refb, refa)
         for dataset in changes:
             geojson = {"type": "FeatureCollection", "features": changes[dataset]}

@@ -402,6 +402,14 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def showChanges(self):
+        hasSchemaChanges = self.repo.hasSchemaChanges()
+        if hasSchemaChanges:
+            iface.messageBar().pushMessage(
+                "Changes",
+                "There are schema changes in the working copy and changes cannot be shown",
+                level=Qgis.Warning,
+            )
+            return
         changes = self.repo.diff()
         hasChanges = any([bool(c) for c in changes.values()])
         if hasChanges:
@@ -622,6 +630,14 @@ class DatasetItem(QTreeWidgetItem):
 
     @executeskart
     def showChanges(self):
+        hasSchemaChanges = self.repo.hasSchemaChanges(dataset=self.name)
+        if hasSchemaChanges:
+            iface.messageBar().pushMessage(
+                "Changes",
+                "There are schema changes in the working copy and changes cannot be shown",
+                level=Qgis.Warning,
+            )
+            return
         changes = self.repo.diff(dataset=self.name)
         if changes.get(self.name):
             dialog = DiffViewerDialog(

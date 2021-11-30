@@ -172,7 +172,7 @@ class LayerTracker:
             )
             dlg.exec()
         except StopIteration:
-            iface.pushMessage(
+            iface.messageBar().pushMessage(
                 "Kart",
                 "No feature was found at the selected point.",
                 level=Qgis.Warning,
@@ -191,6 +191,14 @@ class LayerTracker:
         layer, repo = self._kartActiveLayerAndRepo()
         if layer is not None:
             dataset = repo.datasetNameFromLayer(layer)
+            hasSchemaChanges = repo.hasSchemaChanges(dataset=dataset)
+            if hasSchemaChanges:
+                iface.messageBar().pushMessage(
+                    "Changes",
+                    "There are schema changes in the working tree and changes cannot be shown",
+                    level=Qgis.Warning,
+                )
+                return
             changes = repo.diff(dataset=dataset)
             if changes.get(dataset):
                 dialog = DiffViewerDialog(

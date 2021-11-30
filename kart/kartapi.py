@@ -500,6 +500,32 @@ class Repository:
     def deleteTag(self, tag):
         return self.executeKart(["tag", "-d", tag])
 
+    def hasSchemaChanges(self, refa=None, refb=None, dataset=None):
+        commands = ["diff"]
+        if refa and refb:
+            commands.append(f"{refb}...{refa}")
+        elif refa:
+            commands.append(refa)
+        else:
+            commands.append("HEAD")
+        if dataset is not None:
+            commands.append(f"{dataset}:meta")
+            ret = self.executeKart(commands, True)
+            schemaChanges = (
+                list(ret.values())[0]
+                .get(dataset, {})
+                .get("meta", {})
+                .get("schema.json", None)
+            )
+            return schemaChanges is not None
+        else:
+            ret = self.executeKart(commands, True)
+            for datasetChanges in list(ret.values())[0].values():
+                schemaChanges = datasetChanges.get("meta", {}).get("schema.json", None)
+                if schemaChanges is not None:
+                    return True
+            return False
+
     def diff(self, refa=None, refb=None, dataset=None, featureid=None):
         changes = {}
         try:
