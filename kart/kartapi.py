@@ -241,6 +241,7 @@ def readReposFromSettings():
 
 
 def addRepo(repo):
+    repos()
     _repos.append(repo)
     saveRepos()
 
