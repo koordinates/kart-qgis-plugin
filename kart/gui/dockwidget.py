@@ -207,9 +207,10 @@ class ReposItem(RefreshableItem):
         if folder:
             repo = Repository(folder)
             if repo.isInitialized():
-                item = RepoItem(repo)
-                self.addChild(item)
                 addRepo(repo)
+                if self.populated:
+                    item = RepoItem(repo)
+                    self.addChild(item)
             else:
                 iface.messageBar().pushMessage(
                     "Error",
@@ -232,9 +233,10 @@ class ReposItem(RefreshableItem):
             repo = Repository(dialog.folder)
             repo.init(dialog.location)
             if repo.isInitialized():
-                item = RepoItem(repo)
-                self.addChild(item)
                 addRepo(repo)
+                if self.populated:
+                    item = RepoItem(repo)
+                    self.addChild(item)
             else:
                 iface.messageBar().pushMessage(
                     "Error", "Could not initialize repository", level=Qgis.Warning
@@ -249,9 +251,10 @@ class ReposItem(RefreshableItem):
             repo = Repository.clone(
                 dialog.src, dialog.dst, dialog.location, dialog.extent
             )
-            item = RepoItem(repo)
-            self.addChild(item)
             addRepo(repo)
+            if self.populated:
+                item = RepoItem(repo)
+                self.addChild(item)
 
 
 class RepoItem(RefreshableItem):
