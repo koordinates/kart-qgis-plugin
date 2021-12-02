@@ -262,7 +262,8 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, refb)
         if hasSchemaChanges:
             self.message(
-                "There are schema changes between the selected commits and changes cannot be shown",
+                "There are schema changes between the selected commits "
+                "and changes cannot be shown",
                 Qgis.Warning,
             )
             return
@@ -285,7 +286,8 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refb, refa)
         if hasSchemaChanges:
             self.message(
-                "There are schema changes between the selected commits and changes cannot be saved as a layer",
+                "There are schema changes between the selected commits "
+                "and changes cannot be saved as a layer",
                 Qgis.Warning,
             )
             return

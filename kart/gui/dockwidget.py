@@ -1,5 +1,4 @@
 import os
-import re
 import tempfile
 
 from qgis.PyQt import uic
@@ -496,7 +495,8 @@ class RepoItem(RefreshableItem):
         if self.repo.conflictsHaveSchemaChanges():
             iface.messageBar().pushMessage(
                 "Resolve",
-                "Conflicts involve schema changes and cannot be resolved using the plugin interface",
+                "Conflicts involve schema changes and cannot be resolved "
+                "using the plugin interface",
                 level=Qgis.Warning,
             )
             return
