@@ -53,6 +53,7 @@ class KartPlugin(object):
         self.tracker = LayerTracker.instance()
         QgsProject.instance().layerWillBeRemoved.connect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.connect(self.tracker.layerAdded)
+        QgsProject.instance().crsChanged.connect(self.tracker.reprojectRubberBands)
 
     def showDock(self):
         if checkKartInstalled():

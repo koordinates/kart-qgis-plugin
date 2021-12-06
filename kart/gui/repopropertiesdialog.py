@@ -8,9 +8,9 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 
+from kart.layers import LayerTracker
 from kart.kartapi import executeskart
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
-
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui")
@@ -31,8 +31,10 @@ class RepoPropertiesDialog(BASE, WIDGET):
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
 
+        self.chkShowBoundingBox.stateChanged.connect(self.showBoundingBoxStateChanged)
+
         self.extentPanel = ExtentSelectionPanel(self)
-        self.grpFilter.layout().addWidget(self.extentPanel, 1, 0)
+        self.grpFilter.layout().addWidget(self.extentPanel)
 
         self.populate()
 
@@ -41,6 +43,9 @@ class RepoPropertiesDialog(BASE, WIDGET):
         self.txtTitle.setText(self.repo.title())
         self.labelRepoLocation.setText(os.path.normpath(self.repo.path))
         self.labelWorkingCopyLocation.setText(self.repo.workingCopyLocation())
+        self.btnColor.setColor(self.repo.boundingBoxColor)
+        self.chkShowBoundingBox.setChecked(self.repo.showBoundingBox)
+        self.btnColor.setEnabled(self.repo.showBoundingBox)
         spatialFilter = self.repo.spatialFilter()
         if spatialFilter is not None:
             self.grpFilter.setChecked(True)
@@ -51,6 +56,8 @@ class RepoPropertiesDialog(BASE, WIDGET):
     @executeskart
     def okClicked(self):
         self.repo.setTitle(self.txtTitle.text())
+        self.repo.boundingBoxColor = self.btnColor.color()
+        self.repo.showBoundingBox = self.chkShowBoundingBox.isChecked()
         if self.grpFilter.isChecked():
             extent = self.extentPanel.getExtent()
             if extent is None:
@@ -59,4 +66,8 @@ class RepoPropertiesDialog(BASE, WIDGET):
         else:
             extent = None
         self.repo.setSpatialFilter(extent)
+        LayerTracker.instance().updateRubberBandsForRepo(self.repo)
         self.accept()
+
+    def showBoundingBoxStateChanged(self, _):
+        self.btnColor.setEnabled(self.chkShowBoundingBox.isChecked())

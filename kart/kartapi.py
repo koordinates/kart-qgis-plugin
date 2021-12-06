@@ -12,6 +12,7 @@ from functools import partial
 from urllib.parse import urlparse
 
 from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import (
     QApplication,
 )
@@ -285,6 +286,8 @@ def _processProgressLine(bar, line):
 class Repository:
     def __init__(self, path):
         self.path = path
+        self.boundingBoxColor = QColor(150, 0, 0)
+        self.showBoundingBox = True
 
     def executeKart(self, commands, jsonoutput=False):
         return executeKart(commands, self.path, jsonoutput)

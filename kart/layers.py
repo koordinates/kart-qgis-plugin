@@ -9,10 +9,14 @@ from qgis.core import (
     QgsFeatureRequest,
     QgsRectangle,
     QgsWkbTypes,
+    QgsCoordinateTransform,
+    QgsProject,
+    QgsGeometry,
 )
-from qgis.gui import QgsMapToolEmitPoint
+from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand
 
-from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 
 from kart.gui.historyviewer import HistoryDialog
@@ -59,6 +63,7 @@ class LayerTracker:
         LayerTracker.__instance = self
 
         self.connected = {}
+        self.rubberBands = {}
 
         self.mapTool = QgsMapToolEmitPoint(iface.mapCanvas())
         self.mapTool.canvasClicked.connect(self.canvasClicked)
@@ -142,6 +147,71 @@ class LayerTracker:
                 )
                 if layer.wkbType() != QgsWkbTypes.NoGeometry:
                     iface.addCustomActionForLayer(self.setMapToolAction, layer)
+
+                rect = repo.spatialFilter()
+                if rect is not None:
+                    rubberBand = QgsRubberBand(
+                        iface.mapCanvas(), QgsWkbTypes.PolygonGeometry
+                    )
+                    rubberBand.setFillColor(QColor(0, 0, 0, 0))
+                    if repo.showBoundingBox:
+                        rubberBand.setStrokeColor(repo.boundingBoxColor)
+                    else:
+                        rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
+                    rubberBand.setWidth(2)
+                    rubberBand.setLineStyle(Qt.DashLine)
+                    self.rubberBands[layer.id()] = (rubberBand, rect)
+                    transform = QgsCoordinateTransform(
+                        rect.crs(),
+                        QgsProject.instance().crs(),
+                        QgsProject.instance(),
+                    )
+                    geom = QgsGeometry.fromRect(rect)
+                    geom.transform(transform)
+                    rubberBand.setToGeometry(geom)
+
+    def updateRubberBandsForRepo(self, repo):
+        rect = repo.spatialFilter()
+        for layer in QgsProject.instance().mapLayers().values():
+            _repo = repoForLayer(layer)
+            if _repo == repo:
+                if layer.id() in self.rubberBands:
+                    rubberBand = self.rubberBands[layer.id()][0]
+                else:
+                    rubberBand = QgsRubberBand(
+                        iface.mapCanvas(), QgsWkbTypes.PolygonGeometry
+                    )
+                    rubberBand.setFillColor(QColor(0, 0, 0, 0))
+                    rubberBand.setWidth(2)
+                    rubberBand.setLineStyle(Qt.DashLine)
+                if repo.showBoundingBox:
+                    rubberBand.setStrokeColor(repo.boundingBoxColor)
+                else:
+                    rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
+                self.rubberBands[layer.id()] = (rubberBand, rect)
+                if rect is not None:
+                    transform = QgsCoordinateTransform(
+                        rect.crs(),
+                        QgsProject.instance().crs(),
+                        QgsProject.instance(),
+                    )
+                    geom = QgsGeometry.fromRect(rect)
+                    geom.transform(transform)
+                    rubberBand.setToGeometry(geom)
+                else:
+                    rubberBand.reset(QgsWkbTypes.PolygonGeometry)
+
+    def reprojectRubberBands(self):
+        for rubberBand, rect in self.rubberBands.values():
+            if rect is not None:
+                transform = QgsCoordinateTransform(
+                    rect.crs(),
+                    QgsProject.instance().crs(),
+                    QgsProject.instance(),
+                )
+                geom = QgsGeometry.fromRect(rect)
+                geom.transform(transform)
+                rubberBand.setToGeometry(geom)
 
     def setMapTool(self):
         layer, repo = self._kartActiveLayerAndRepo()
@@ -250,8 +320,10 @@ class LayerTracker:
                     "Commit", "Nothing to commit", level=Qgis.Warning
                 )
 
-    def layerRemoved(self, layer):
-        pass
+    def layerRemoved(self, layerid):
+        if layerid in self.rubberBands:
+            self.rubberBands[layerid][0].reset(QgsWkbTypes.PolygonGeometry)
+            del self.rubberBands[layerid]
 
     @executeskart
     def commitLayerChanges(self, layer):
