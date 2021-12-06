@@ -299,7 +299,7 @@ class Repository:
             commands.extend(["--workingcopy", location])
         if extent is not None:
             kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
-            commands.extent(["--spatial-filter", kartExtent])
+            commands.extend(["--spatial-filter", kartExtent])
 
         with progressBar("Clone") as bar:
             bar.setText("Cloning repository")
