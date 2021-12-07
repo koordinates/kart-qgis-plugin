@@ -24,6 +24,7 @@ from qgis.PyQt.QtGui import (
     QPainterPath,
     QPen,
     QPalette,
+    QBrush,
 )
 
 from qgis.PyQt.QtWidgets import (
@@ -106,6 +107,8 @@ class HistoryTree(QTreeWidget):
 
         point = self.mapToGlobal(point)
         selected = self.selectedItems()
+        if any([isinstance(item, ShallowCloneWarningItem) for item in selected]):
+            return
         if selected and len(selected) == 1:
             item = self.currentItem()
             actions = {}
@@ -350,6 +353,7 @@ class HistoryTree(QTreeWidget):
         maxcol = max([c["commitColumn"] for c in commits])
         width = COL_SPACING * maxcol + 2 * RADIUS
 
+        grafted = False
         for i, commit in enumerate(commits):
             item = CommitTreeItem(commit, self)
             self.addTopLevelItem(item)
@@ -357,7 +361,11 @@ class HistoryTree(QTreeWidget):
             w = GraphWidget(img)
             w.setFixedHeight(COMMIT_GRAPH_HEIGHT)
             self.setItemWidget(item, 0, w)
-
+            if "grafted" in commit["refs"]:
+                grafted = True
+        if grafted:
+            item = ShallowCloneWarningItem(self)
+            self.addTopLevelItem(item)
         for i in range(1, 6):
             self.resizeColumnToContents(i)
         self.setColumnWidth(0, width + MARGIN)
@@ -428,18 +436,21 @@ class HistoryTree(QTreeWidget):
         root = self.invisibleRootItem()
         for i in range(root.childCount()):
             item = root.child(i)
-            values = [
-                item.commit["message"],
-                item.commit["authorName"],
-                item.commit["commit"],
-            ]
-            hide = bool(self.filterText) and not any(
-                self.filterText in t.lower() for t in values
-            )
-            date = QDateTime.fromString(item.commit["authorTime"], Qt.ISODate).date()
-            withinDates = date >= self.startDate and date <= self.endDate
-            hide = hide or not withinDates
-            item.setHidden(hide)
+            if isinstance(item, CommitTreeItem):
+                values = [
+                    item.commit["message"],
+                    item.commit["authorName"],
+                    item.commit["commit"],
+                ]
+                hide = bool(self.filterText) and not any(
+                    self.filterText in t.lower() for t in values
+                )
+                date = QDateTime.fromString(
+                    item.commit["authorTime"], Qt.ISODate
+                ).date()
+                withinDates = date >= self.startDate and date <= self.endDate
+                hide = hide or not withinDates
+                item.setHidden(hide)
 
 
 class GraphWidget(QWidget):
@@ -462,6 +473,8 @@ class CommitTreeItem(QTreeWidgetItem):
         if commit["refs"]:
             labelslist = []
             for label in commit["refs"]:
+                if label == "grafted":
+                    continue
                 if "HEAD ->" in label:
                     labelslist.append(
                         '<span style="background-color:crimson; color:white"> '
@@ -477,7 +490,10 @@ class CommitTreeItem(QTreeWidgetItem):
                         '<span style="background-color:salmon; color:white"> '
                         f"&nbsp;&nbsp;{label}&nbsp;&nbsp;</span>"
                     )
-            labels = " ".join(labelslist) + "&nbsp;&nbsp;"
+            if labelslist:
+                labels = " ".join(labelslist) + "&nbsp;&nbsp;"
+            else:
+                labels = ""
         else:
             labels = ""
         qlabel = QLabel(labels)
@@ -492,6 +508,17 @@ class CommitTreeItem(QTreeWidgetItem):
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "historyviewer.ui")
 )
+
+
+class ShallowCloneWarningItem(QTreeWidgetItem):
+    def __init__(self, parent):
+        QTreeWidgetItem.__init__(self, parent)
+        message = (
+            "This repository is a shallow clone, "
+            "history past this point is not available locally"
+        )
+        self.setText(2, message)
+        self.setForeground(2, QBrush(QColor(100, 100, 100)))
 
 
 class HistoryDialog(WIDGET, BASE):
@@ -518,7 +545,7 @@ class HistoryDialog(WIDGET, BASE):
         self.resize(1024, 768)
 
     def commitSelected(self, new, old):
-        if new is not None:
+        if new is not None and isinstance(new, CommitTreeItem):
             commit = new.commit
             html = (
                 f"<b>SHA-1:</b> {commit['commit']} <br>"
