@@ -66,7 +66,7 @@ class RepoPropertiesDialog(BASE, WIDGET):
         else:
             extent = None
         self.repo.setSpatialFilter(extent)
-        LayerTracker.instance().updateRubberBandsForRepo(self.repo)
+        LayerTracker.instance().updateRubberBands()
         self.accept()
 
     def showBoundingBoxStateChanged(self, _):

@@ -12,11 +12,15 @@ from qgis.core import (
     QgsCoordinateTransform,
     QgsProject,
     QgsGeometry,
+    QgsTextAnnotation,
+    QgsMarkerSymbol,
+    QgsPointXY,
+    QgsFillSymbol,
 )
 from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand
 
-from qgis.PyQt.QtCore import Qt
-from qgis.PyQt.QtGui import QIcon, QColor
+from qgis.PyQt.QtCore import Qt, QSizeF, QPointF
+from qgis.PyQt.QtGui import QIcon, QColor, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 
 from kart.gui.historyviewer import HistoryDialog
@@ -148,6 +152,8 @@ class LayerTracker:
                 if layer.wkbType() != QgsWkbTypes.NoGeometry:
                     iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
+                self.updateRubberBands()
+                """
                 rect = repo.spatialFilter()
                 if rect is not None:
                     rubberBand = QgsRubberBand(
@@ -158,8 +164,8 @@ class LayerTracker:
                         rubberBand.setStrokeColor(repo.boundingBoxColor)
                     else:
                         rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
-                    rubberBand.setWidth(2)
-                    rubberBand.setLineStyle(Qt.DashLine)
+                    rubberBand.setWidth(1)
+                    rubberBand.setLineStyle(Qt.DotLine)
                     self.rubberBands[layer.id()] = (rubberBand, rect)
                     transform = QgsCoordinateTransform(
                         rect.crs(),
@@ -170,26 +176,60 @@ class LayerTracker:
                     geom.transform(transform)
                     rubberBand.setToGeometry(geom)
 
-    def updateRubberBandsForRepo(self, repo):
-        rect = repo.spatialFilter()
+                    self.addAnnotation(repo, rect, layer)
+                """
+
+    def addAnnotation(self, repo, rect, layer):
+        symbol = QgsMarkerSymbol()
+        symbol.setSize(0)
+        fillSymbol = QgsFillSymbol.createSimple(
+            {
+                "color": "#ffffff",
+                "color_border": "#000000",
+                "width_border": "0",
+                "style": "no",
+                "style_border": "no",
+            }
+        )
+        html = f'<p style="color:{repo.boundingBoxColor.name()};">kart:{repo.title() or os.path.basename(repo.path)}</p>'
+        doc = QTextDocument()
+        doc.setHtml(html)
+        annotation = QgsTextAnnotation(iface.mapCanvas())
+        annotation.setMapPositionCrs(rect.crs())
+        annotation.setMapPosition(QgsPointXY(rect.xMaximum(), rect.yMaximum()))
+        annotation.setDocument(doc)
+        annotation.setFillSymbol(fillSymbol)
+        annotation.setFrameSize(QSizeF(doc.size().width(), doc.size().height()))
+        annotation.setHasFixedMapPosition(True)
+        annotation.setMarkerSymbol(symbol)
+        annotation.setObjectName(f"kart:{layer.id()}")
+        PT_MM = 25.4 / 72.0
+        annotation.setFrameOffsetFromReferencePointMm(
+            QPointF(-doc.size().width() * PT_MM, -5)
+        )
+        QgsProject.instance().annotationManager().addAnnotation(annotation)
+
+    def updateRubberBands(self):
+        self.clearRubberBands()
+        usedRepos = []
         for layer in QgsProject.instance().mapLayers().values():
-            _repo = repoForLayer(layer)
-            if _repo == repo:
-                if layer.id() in self.rubberBands:
-                    rubberBand = self.rubberBands[layer.id()][0]
-                else:
+            repo = repoForLayer(layer)
+            if repo is not None and repo not in usedRepos:
+                print(repo.path)
+                usedRepos.append(repo)
+                rect = repo.spatialFilter()
+                if rect is not None and repo.showBoundingBox:
                     rubberBand = QgsRubberBand(
                         iface.mapCanvas(), QgsWkbTypes.PolygonGeometry
                     )
                     rubberBand.setFillColor(QColor(0, 0, 0, 0))
-                    rubberBand.setWidth(2)
-                    rubberBand.setLineStyle(Qt.DashLine)
-                if repo.showBoundingBox:
-                    rubberBand.setStrokeColor(repo.boundingBoxColor)
-                else:
-                    rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
-                self.rubberBands[layer.id()] = (rubberBand, rect)
-                if rect is not None:
+                    rubberBand.setWidth(1)
+                    rubberBand.setLineStyle(Qt.DotLine)
+                    if repo.showBoundingBox:
+                        rubberBand.setStrokeColor(repo.boundingBoxColor)
+                    else:
+                        rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
+                    self.rubberBands.append(rubberBand)
                     transform = QgsCoordinateTransform(
                         rect.crs(),
                         QgsProject.instance().crs(),
@@ -198,20 +238,23 @@ class LayerTracker:
                     geom = QgsGeometry.fromRect(rect)
                     geom.transform(transform)
                     rubberBand.setToGeometry(geom)
-                else:
-                    rubberBand.reset(QgsWkbTypes.PolygonGeometry)
+                    self.addAnnotation(repo, rect, layer)
 
-    def reprojectRubberBands(self):
-        for rubberBand, rect in self.rubberBands.values():
-            if rect is not None:
-                transform = QgsCoordinateTransform(
-                    rect.crs(),
-                    QgsProject.instance().crs(),
-                    QgsProject.instance(),
-                )
-                geom = QgsGeometry.fromRect(rect)
-                geom.transform(transform)
-                rubberBand.setToGeometry(geom)
+    def clearRubberBands(self):
+        print(self.rubberBands)
+        for rubberBand in self.rubberBands:
+            iface.mapCanvas().scene().removeItem(rubberBand)
+        self.rubberBands = []
+        for annotation in QgsProject.instance().annotationManager().annotations():
+            if isinstance(
+                annotation, QgsTextAnnotation
+            ) and annotation.document().toPlainText().startswith("kart:"):
+                try:
+                    QgsProject.instance().annotationManager().removeAnnotation(
+                        annotation
+                    )
+                except Exception:
+                    pass
 
     def setMapTool(self):
         layer, repo = self._kartActiveLayerAndRepo()
@@ -321,9 +364,19 @@ class LayerTracker:
                 )
 
     def layerRemoved(self, layerid):
+        self.updateRubberBands()
+        """
         if layerid in self.rubberBands:
-            self.rubberBands[layerid][0].reset(QgsWkbTypes.PolygonGeometry)
+            try:
+                self.rubberBands[layerid][0].reset(QgsWkbTypes.PolygonGeometry)
+            except Exception:
+                pass
             del self.rubberBands[layerid]
+            try:
+                self.removeAnnotation(layerid)
+            except Exception:
+                pass
+        """
 
     @executeskart
     def commitLayerChanges(self, layer):
