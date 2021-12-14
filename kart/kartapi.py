@@ -62,10 +62,15 @@ def executeskart(f):
                 if line.strip():
                     msglines.append(line)
             errors = "<br>".join(msglines)
-            msg = f"""
-                <p><b>Kart failed with the following message:</b></p>
-                <p style="color:red">{errors}</p>
-                """
+            if "You have uncommitted changes" in errors:
+                msg = """<p><b>This operation requires a clean working tree.<br>
+                    Commit or discard your working tree changes and then retry.</b></p>
+                    """
+            else:
+                msg = f"""
+                    <p><b>Kart failed with the following message:</b></p>
+                    <p style="color:red">{errors}</p>
+                    """
             dlg.setMessage(msg, QgsMessageOutput.MessageHtml)
             dlg.showMessage()
 
