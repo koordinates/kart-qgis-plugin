@@ -75,16 +75,18 @@ class KartPlugin(object):
         kartVersion = kartVersionDetails().replace("\n", "<br>")
         qgisVersion = Qgis.QGIS_VERSION
         html = (
-            "<style>body, "
+            "<html><style>body, "
             "table {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
-            "<style><body>"
+            "</style><body>"
             '<table cellspacing="4" width="100%"><tr><td>'
             f"<h3>QGIS version</h3> <p>{qgisVersion}</p>"
             f"<h3>Kart version details</h3> <p>{kartVersion}</p>"
             f"<h3>Plugin version</h3> <p>{pluginVersion}</p>"
             "</td></tr></table>"
             "</body>"
+            "</html>"
         )
+        print(html)
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle("About Kart")
         dlg.setMessage(html, QgsMessageOutput.MessageHtml)
