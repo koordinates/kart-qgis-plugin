@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Kart Community Discussions
+    url: https://github.com/koordinates/kart/discussions/categories/qgis
+    about: Please ask and answer questions and post general ideas on the Kart project rather than filing an issue.
