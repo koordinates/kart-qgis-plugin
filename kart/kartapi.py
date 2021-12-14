@@ -308,7 +308,10 @@ class Repository:
         return Repository(dst)
 
     def title(self):
-        with open(os.path.join(self.path, ".kart", "description")) as f:
+        filepath = os.path.join(self.path, ".kart", "description")
+        if not os.path.exists(filepath):
+            return ""
+        with open(filepath) as f:
             description = f.read()
         if description:
             if "unnamed" in description.lower():
