@@ -1,7 +1,7 @@
 import os
 
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
-from qgis.PyQt.QtWidgets import QProgressBar, QLabel
+from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox
 from qgis.core import QgsProject, Qgis
 from qgis.utils import iface as qgisiface
 from qgis.testing.mocked import get_iface
@@ -29,7 +29,6 @@ class ProgressBar:
         QCoreApplication.processEvents()
 
     def setValue(self, value):
-        print(value)
         self.progress.setValue(value)
         QCoreApplication.processEvents()
 
@@ -49,6 +48,11 @@ def progressBar(title):
         yield bar
     finally:
         bar.close()
+
+
+def confirm(msg):
+    ret = QMessageBox.warning("Kart", msg, QMessageBox.Yes | QMessageBox.No)
+    return ret == QMessageBox.Yes
 
 
 def layerFromSource(path):

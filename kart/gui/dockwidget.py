@@ -42,7 +42,7 @@ from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
 from kart.gui.switchdialog import SwitchDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
-from kart.utils import layerFromSource
+from kart.utils import layerFromSource, confirm
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -338,8 +338,9 @@ class RepoItem(RefreshableItem):
         self.setTitle()
 
     def removeRepository(self):
-        self.parent().takeChild(self.parent().indexOfChild(self))
-        removeRepo(self.repo)
+        if confirm("Are you sure you want to remove this repository?"):
+            self.parent().takeChild(self.parent().indexOfChild(self))
+            removeRepo(self.repo)
 
     @executeskart
     def showLog(self):
@@ -460,12 +461,13 @@ class RepoItem(RefreshableItem):
 
     @executeskart
     def discardChanges(self):
-        self.repo.restore("HEAD")
-        iface.messageBar().pushMessage(
-            "Discard changes",
-            "Working copy changes have been discarded",
-            level=Qgis.Info,
-        )
+        if confirm("Are you sure you want to discard the working copy changes?"):
+            self.repo.restore("HEAD")
+            iface.messageBar().pushMessage(
+                "Discard changes",
+                "Working copy changes have been discarded",
+                level=Qgis.Info,
+            )
 
     @executeskart
     def continueMerge(self):
@@ -669,12 +671,15 @@ class DatasetItem(QTreeWidgetItem):
 
     @executeskart
     def discardChanges(self):
-        self.repo.restore("HEAD", self.name)
-        iface.messageBar().pushMessage(
-            "Discard changes",
-            "Working copy changes have been discarded",
-            level=Qgis.Info,
-        )
+        if confirm(
+            "Are you sure you want to discard the working copy changes for this dataset?"
+        ):
+            self.repo.restore("HEAD", self.name)
+            iface.messageBar().pushMessage(
+                "Discard changes",
+                "Working copy changes have been discarded",
+                level=Qgis.Info,
+            )
 
     @executeskart
     def showLog(self):
