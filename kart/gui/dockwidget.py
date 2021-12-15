@@ -250,9 +250,8 @@ class ReposItem(RefreshableItem):
                 dialog.src, dialog.dst, dialog.location, dialog.extent
             )
             addRepo(repo)
-            if self.populated:
-                item = RepoItem(repo)
-                self.addChild(item)
+            item = RepoItem(repo)
+            self.addChild(item)
 
 
 class RepoItem(RefreshableItem):
