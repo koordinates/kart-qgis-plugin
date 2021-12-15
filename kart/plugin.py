@@ -34,16 +34,12 @@ class KartPlugin(object):
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-        self.explorerAction = QAction(
-            "Repositories...", self.iface.mainWindow()
-        )
+        self.explorerAction = QAction("Repositories...", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
-        self.settingsAction = QAction(
-            "Settings...", self.iface.mainWindow()
-        )
+        self.settingsAction = QAction("Settings...", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
@@ -86,7 +82,6 @@ class KartPlugin(object):
             "</body>"
             "</html>"
         )
-        print(html)
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle("About Kart")
         dlg.setMessage(html, QgsMessageOutput.MessageHtml)

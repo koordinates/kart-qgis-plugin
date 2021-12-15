@@ -218,7 +218,6 @@ class LayerTracker:
                     self.addAnnotation(repo, rect, layer)
 
     def clearRubberBands(self):
-        print(self.rubberBands)
         for rubberBand in self.rubberBands:
             iface.mapCanvas().scene().removeItem(rubberBand)
         self.rubberBands = []

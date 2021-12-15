@@ -432,7 +432,6 @@ class HistoryTree(QTreeWidget):
         self.startDate = startDate or self.startDate
         self.endDate = endDate or self.endDate
         self.filterText = self.filterText.strip(" ").lower()
-        print(self.filterText)
         root = self.invisibleRootItem()
         for i in range(root.childCount()):
             item = root.child(i)
