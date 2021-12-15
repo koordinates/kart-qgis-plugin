@@ -403,7 +403,9 @@ class DiffViewerWidget(WIDGET, BASE):
                 "url=https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 "&zmax=19&zmin=0"
             )
-            self.osmLayer = QgsRasterLayer(uri, "OSM", "wms")
+            options = QgsRasterLayer.LayerOptions()
+            options.skipCrsValidation = True
+            self.osmLayer = QgsRasterLayer(uri, "OSM", "wms", options)
             QgsProject.instance().addMapLayer(self.osmLayer, False)
             layers.append(self.osmLayer)
 
@@ -543,8 +545,10 @@ class DiffViewerWidget(WIDGET, BASE):
                 data.append([line[2:], line[2:]])
         dataset = self.currentFeatureItem.dataset
         crs = self.workingCopyLayerCrs[dataset]
+        options = QgsVectorLayer.LayerOptions()
+        options.skipCrsValidation = True
         self.vertexDiffLayer = QgsVectorLayer(
-            f"Point?crs={crs}s&field=changetype:string", "vertexdiff", "memory"
+            f"Point?crs={crs}&field=changetype:string", "vertexdiff", "memory", options
         )
         feats = []
         for coords in data:
