@@ -11,10 +11,10 @@ from .swipemap import SwipeMap
 
 
 class MapSwipeTool(QgsMapTool):
-    def __init__(self, canvas, layers):
+    def __init__(self, canvas, layer):
         super().__init__(canvas)
         self.swipe = SwipeMap(canvas)
-        self.layers = layers
+        self.layer = layer
         self.checkDirection = self.hasSwipe = self.disabledSwipe = None
         self.firstPoint = QPoint()
         self.cursorV = QCursor(Qt.SplitVCursor)
@@ -84,7 +84,7 @@ class MapSwipeTool(QgsMapTool):
         if self.disabledSwipe:
             return
         self.swipe.clear()
-        self.swipe.setLayers(self.layers)
+        self.swipe.setLayer(self.layer)
         self.swipe.setMap()
 
     def disable(self):

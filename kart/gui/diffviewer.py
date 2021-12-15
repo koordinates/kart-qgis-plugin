@@ -410,7 +410,7 @@ class DiffViewerWidget(WIDGET, BASE):
             layers.append(self.osmLayer)
 
         if self.comboDiffType.currentIndex() == SWIPE:
-            self.mapTool = MapSwipeTool(self.canvas, [self.newLayer])
+            self.mapTool = MapSwipeTool(self.canvas, self.newLayer)
             layers.remove(self.newLayer)
             self.newLayer.setOpacity(100)
             self.oldLayer.setOpacity(100)

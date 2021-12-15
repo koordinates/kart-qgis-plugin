@@ -24,9 +24,8 @@ class SwipeMap(QgsMapCanvasItem):
         del self.layers[:]
         self.length = -1
 
-    def setLayers(self, layers):
-        for item in layers:
-            self.layers.append(item)
+    def setLayer(self, layer):
+        self.layers = [layer]
 
     def setIsVertical(self, isVertical):
         self.isVertical = isVertical
@@ -34,6 +33,7 @@ class SwipeMap(QgsMapCanvasItem):
     def setLength(self, x, y):
         y = self.boundingRect().height() - y
         self.length = x if self.isVertical else y
+        self.setMap()
         self.update()
 
     def paint(self, painter, *args):  # NEED *args for WINDOWS!
@@ -55,14 +55,7 @@ class SwipeMap(QgsMapCanvasItem):
 
     def setMap(self):
         def finished():
-            # https://qgis.org/api/2.18/qgsmapcanvasmap_8cpp_source.html
-            # setContent()
             image = job.renderedImage()
-            if bool(self.canvas.property("retro")):
-                image = image.scaled(image.width() / 3, image.height() / 3)
-                image = image.convertToFormat(
-                    QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither
-                )
             self.image = image
 
         if len(self.layers) == 0:
