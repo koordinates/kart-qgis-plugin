@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -66,8 +67,8 @@ def install():
     os.makedirs(dst_plugins, exist_ok=True)
     dst = os.path.abspath(os.path.join(dst_plugins, "kart"))
     src = os.path.abspath(src)
+    shutil.rmtree(dst)
     if not hasattr(os, "symlink"):
-        shutil.rmtree(dst)
         shutil.copytree(src, dst)
     elif not os.path.exists(dst):
         os.symlink(src, dst, True)
