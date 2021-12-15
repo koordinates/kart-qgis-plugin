@@ -31,22 +31,22 @@ class SwipeMap(QgsMapCanvasItem):
         self.isVertical = isVertical
 
     def setLength(self, x, y):
-        y = self.boundingRect().height() - y
+        y = self.image.height() - y
         self.length = x if self.isVertical else y
         self.setMap()
         self.update()
 
     def paint(self, painter, *args):  # NEED *args for WINDOWS!
-        if len(self.layers) == 0 or self.length == -1:
+        if len(self.layers) == 0 or self.length == -1 or self.image is None:
             return
 
         if self.isVertical:
-            h = self.boundingRect().height() - 2
+            h = self.image.height() - 2
             w = self.length
             line = QLine(w - 1, 0, w - 1, h - 1)
         else:
-            h = self.boundingRect().height() - self.length
-            w = self.boundingRect().width() - 2
+            h = self.image.height() - self.length
+            w = self.image.width() - 2
             line = QLine(0, h - 1, w - 1, h - 1)
 
         image = self.image.copy(0, 0, int(w), int(h))
@@ -57,6 +57,7 @@ class SwipeMap(QgsMapCanvasItem):
         def finished():
             image = job.renderedImage()
             self.image = image
+            print(image.width(), image.height())
 
         if len(self.layers) == 0:
             return
