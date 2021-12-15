@@ -199,7 +199,7 @@ class HistoryTree(QTreeWidget):
             }
         else:
             actions = []
-        self.menu = QMenu()
+        self.menu = QMenu(self)
         for text in actions:
             func, icon = actions[text]
             action = QAction(icon, text, self.menu)
