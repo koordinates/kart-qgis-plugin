@@ -72,23 +72,17 @@ class KartPlugin(object):
         return version
 
     def openAbout(self):
-        osName = platform.system()
-        osVersion = platform.release()
+        osInfo = platform.platform().replace("-", " ")
         pluginVersion = self.pluginVersion()
         kartVersion = kartVersionDetails().replace("\n", "<br>")
         qgisVersion = Qgis.QGIS_VERSION
         html = (
-            "<html><style>body, "
-            "table {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
+            "<html><style>body {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
             "</style><body>"
-            '<table cellspacing="4" width="100%"><tr><td>'
-            "<h3>Operating system</h3>"
-            f"<p>Name: {osName}</p>"
-            f"<p>Version: {osVersion}</p>"
-            f"<h3>QGIS version</h3> <p>{qgisVersion}</p>"
-            f"<h3>Kart version details</h3> <p>{kartVersion}</p>"
-            f"<h3>Plugin version</h3> <p>{pluginVersion}</p>"
-            "</td></tr></table>"
+            f"<h4>Kart Plugin version</h4><p>{pluginVersion}</p>"
+            f"<h4>QGIS version</h4> <p>{qgisVersion}</p>"
+            f"<h4>Operating system</h4><p>{osInfo}</p>"
+            f"<h4>Kart version</h4> <p>{kartVersion}</p>"
             "</body>"
             "</html>"
         )
