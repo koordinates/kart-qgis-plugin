@@ -426,7 +426,7 @@ class Repository:
                 "--format=format:%H%n ",
                 "--",
                 "--",
-                dataset,
+                filt,
             ]
         else:
             commands = ["log", ref, "--graph", "--format=format:%H%n "]
