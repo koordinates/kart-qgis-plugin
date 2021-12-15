@@ -1,5 +1,6 @@
 import configparser
 import os
+import platform
 
 from qgis.core import QgsProject, Qgis, QgsMessageOutput
 
@@ -71,6 +72,8 @@ class KartPlugin(object):
         return version
 
     def openAbout(self):
+        osName = platform.system()
+        osVersion = platform.release()
         pluginVersion = self.pluginVersion()
         kartVersion = kartVersionDetails().replace("\n", "<br>")
         qgisVersion = Qgis.QGIS_VERSION
@@ -79,6 +82,9 @@ class KartPlugin(object):
             "table {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
             "</style><body>"
             '<table cellspacing="4" width="100%"><tr><td>'
+            "<h3>Operating system</h3>"
+            f"<p>Name: {osName}</p>"
+            f"<p>Version: {osVersion}</p>"
             f"<h3>QGIS version</h3> <p>{qgisVersion}</p>"
             f"<h3>Kart version details</h3> <p>{kartVersion}</p>"
             f"<h3>Plugin version</h3> <p>{pluginVersion}</p>"
