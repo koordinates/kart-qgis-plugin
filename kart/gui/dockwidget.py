@@ -208,6 +208,7 @@ class ReposItem(RefreshableItem):
                 addRepo(repo)
                 item = RepoItem(repo)
                 self.addChild(item)
+                item.setExpanded(True)
             else:
                 iface.messageBar().pushMessage(
                     "Error",
