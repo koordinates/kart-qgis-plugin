@@ -153,31 +153,6 @@ class LayerTracker:
                     iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
                 self.updateRubberBands()
-                """
-                rect = repo.spatialFilter()
-                if rect is not None:
-                    rubberBand = QgsRubberBand(
-                        iface.mapCanvas(), QgsWkbTypes.PolygonGeometry
-                    )
-                    rubberBand.setFillColor(QColor(0, 0, 0, 0))
-                    if repo.showBoundingBox:
-                        rubberBand.setStrokeColor(repo.boundingBoxColor)
-                    else:
-                        rubberBand.setStrokeColor(QColor(0, 0, 0, 0))
-                    rubberBand.setWidth(1)
-                    rubberBand.setLineStyle(Qt.DotLine)
-                    self.rubberBands[layer.id()] = (rubberBand, rect)
-                    transform = QgsCoordinateTransform(
-                        rect.crs(),
-                        QgsProject.instance().crs(),
-                        QgsProject.instance(),
-                    )
-                    geom = QgsGeometry.fromRect(rect)
-                    geom.transform(transform)
-                    rubberBand.setToGeometry(geom)
-
-                    self.addAnnotation(repo, rect, layer)
-                """
 
     def addAnnotation(self, repo, rect, layer):
         symbol = QgsMarkerSymbol()
@@ -191,7 +166,10 @@ class LayerTracker:
                 "style_border": "no",
             }
         )
-        html = f'<p style="color:{repo.boundingBoxColor.name()};">kart:{repo.title() or os.path.basename(repo.path)}</p>'
+        html = (
+            f'<p style="color:{repo.boundingBoxColor.name()};">kart:'
+            f"{repo.title() or os.path.basename(repo.path)}</p>"
+        )
         doc = QTextDocument()
         doc.setHtml(html)
         annotation = QgsTextAnnotation(iface.mapCanvas())
@@ -215,7 +193,6 @@ class LayerTracker:
         for layer in QgsProject.instance().mapLayers().values():
             repo = repoForLayer(layer)
             if repo is not None and repo not in usedRepos:
-                print(repo.path)
                 usedRepos.append(repo)
                 rect = repo.spatialFilter()
                 if rect is not None and repo.showBoundingBox:
