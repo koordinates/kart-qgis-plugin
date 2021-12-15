@@ -3,7 +3,7 @@ import tempfile
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice
-from qgis.PyQt.QtGui import QIcon, QPixmap
+from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QTreeWidgetItem,
@@ -42,7 +42,7 @@ from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
 from kart.gui.switchdialog import SwitchDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
-from kart.utils import layerFromSource, confirm
+from kart.utils import layerFromSource, confirm, setting, setSetting, LASTREPO
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -83,10 +83,6 @@ class KartDockWidget(BASE, WIDGET):
         super(QDockWidget, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
-        pixmap = QPixmap(
-            os.path.join(pluginPath, "img", "karticon.png")
-        ).scaledToHeight(self.labelHeaderText.height() * 2)
-        self.labelHeaderIcon.setPixmap(pixmap)
         self.tree.setFocusPolicy(Qt.NoFocus)
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -129,6 +125,14 @@ class KartDockWidget(BASE, WIDGET):
         self.tree.clear()
         self.reposItem = ReposItem()
         self.tree.addTopLevelItem(self.reposItem)
+        self.reposItem.setExpanded(True)
+        lastRepo = setting(LASTREPO)
+        for i in range(self.reposItem.childCount()):
+            item = self.reposItem.child(i)
+            if item.repo.path == lastRepo:
+                item.populate()
+                item.setExpanded(True)
+                item.datasetsItem.setExpanded(True)
 
     def showPopupMenu(self, point):
         item = self.tree.currentItem()
@@ -178,17 +182,12 @@ class ReposItem(RefreshableItem):
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
-        self.populated = False
-
-    def onExpanded(self):
-        if not self.populated:
-            self.populate()
+        self.populate()
 
     def populate(self):
         for repo in repos():
             item = RepoItem(repo)
             self.addChild(item)
-        self.populated = True
 
     def _actions(self):
         actions = [
@@ -261,11 +260,11 @@ class RepoItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
         self.repo = repo
 
+        self.populated = False
+
         self.setTitle()
         self.setIcon(0, repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
-
-        self.populated = False
 
     def refreshContent(self):
         self.takeChildren()
@@ -273,12 +272,15 @@ class RepoItem(RefreshableItem):
         self.setTitle()
 
     def setTitle(self):
-        try:
-            title = (
-                f"{self.repo.title() or os.path.normpath(self.repo.path)} "
-                f"[{self.repo.currentBranch()}]"
-            )
-        except KartException:
+        if self.populated:
+            try:
+                title = (
+                    f"{self.repo.title() or os.path.normpath(self.repo.path)} "
+                    f"[{self.repo.currentBranch()}]"
+                )
+            except KartException:
+                title = f"{self.repo.title() or os.path.normpath(self.repo.path)}"
+        else:
             title = f"{self.repo.title() or os.path.normpath(self.repo.path)}"
         self.setText(0, title)
 
@@ -289,7 +291,10 @@ class RepoItem(RefreshableItem):
     def populate(self):
         self.datasetsItem = DatasetsItem(self.repo)
         self.addChild(self.datasetsItem)
+        setSetting(LASTREPO, self.repo.path)
         self.populated = True
+        self.datasetsItem.setExpanded(True)
+        self.setTitle()
 
     def actions(self):
         actions = []

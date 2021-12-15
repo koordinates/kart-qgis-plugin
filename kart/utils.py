@@ -68,6 +68,7 @@ NAMESPACE = "kart"
 KARTPATH = "KartPath"
 AUTOCOMMIT = "AutoCommit"
 DIFFSTYLES = "DiffStyles"
+LASTREPO = "LastRepo"
 
 setting_types = {AUTOCOMMIT: bool}
 
