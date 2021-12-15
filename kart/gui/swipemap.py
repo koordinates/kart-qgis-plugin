@@ -3,7 +3,7 @@
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
 from qgis.PyQt.QtCore import QRect, QLine, Qt
-from qgis.PyQt.QtGui import QColor, QImage
+from qgis.PyQt.QtGui import QColor
 
 from qgis.core import QgsMapRendererParallelJob, QgsMapSettings
 from qgis.gui import QgsMapCanvasItem
