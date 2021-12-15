@@ -51,7 +51,9 @@ def progressBar(title):
 
 
 def confirm(msg):
-    ret = QMessageBox.warning("Kart", msg, QMessageBox.Yes | QMessageBox.No)
+    ret = QMessageBox.warning(
+        iface.mainWindow(), "Kart", msg, QMessageBox.Yes | QMessageBox.No
+    )
     return ret == QMessageBox.Yes
 
 
