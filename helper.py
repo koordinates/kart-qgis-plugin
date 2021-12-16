@@ -12,7 +12,11 @@ from io import StringIO
 
 
 def package(version=None):
-    archive = f"kart-{version}.zip" if version else "kart.zip"
+    if not version or version.startswith.startswith("dev-"):
+        # CI uses dev-{SHA}
+        archive = "kart.zip"
+    else:
+        archive = f"kart-{version}.zip"
     print(f"Creating {archive} ...")
 
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zipFile:
