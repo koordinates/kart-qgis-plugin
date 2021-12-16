@@ -3,9 +3,9 @@
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
 from qgis.PyQt.QtCore import QRect, QLine, Qt
-from qgis.PyQt.QtGui import QColor
+from qgis.PyQt.QtGui import QColor, QImage, QPainter
 
-from qgis.core import QgsMapRendererParallelJob, QgsMapSettings
+from qgis.core import QgsMapRendererCustomPainterJob, QgsMapSettings
 from qgis.gui import QgsMapCanvasItem
 
 
@@ -54,20 +54,23 @@ class SwipeMap(QgsMapCanvasItem):
         painter.drawLine(line)
 
     def setMap(self):
-        def finished():
-            image = job.renderedImage()
-            self.image = image
-            print(image.width(), image.height())
-
         if len(self.layers) == 0:
             return
+
+        self.setRect(self.canvas.extent())
+        self.image = QImage(self.canvas.size(), QImage.Format_ARGB32_Premultiplied)
+        self.image.fill(QColor(Qt.transparent))
 
         settings = QgsMapSettings(self.canvas.mapSettings())
         settings.setLayers(self.layers)
         settings.setBackgroundColor(QColor(Qt.transparent))
+        settings.setExtent(self.canvas.extent())
+        settings.setOutputSize(self.image.size())
 
-        self.setRect(self.canvas.extent())
-        job = QgsMapRendererParallelJob(settings)
+        p = QPainter()
+        p.begin(self.image)
+        p.setRenderHint(QPainter.Antialiasing)
+        job = QgsMapRendererCustomPainterJob(settings, p)
         job.start()
-        job.finished.connect(finished)
         job.waitForFinished()
+        p.end()
