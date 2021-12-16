@@ -31,4 +31,4 @@ jobs:
         with:
           draft: true
           files: |
-            kart-*.zip"
+            kart-*.zip
