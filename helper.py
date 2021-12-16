@@ -84,3 +84,4 @@ elif sys.argv[1] == "package" and len(sys.argv) in [2, 3]:
     package()
 else:
     usage()
+    sys.exit(2)

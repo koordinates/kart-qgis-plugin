@@ -22,7 +22,7 @@ jobs:
 
       - name: Build package
         run: |
-          python helper.py "${GITHUB_REF/refs\/tags\//}"
+          python helper.py package "${GITHUB_REF/refs\/tags\//}"
 
       - name: Create release
         uses: softprops/action-gh-release@v1
