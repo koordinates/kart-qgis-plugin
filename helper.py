@@ -1,18 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import shutil
 import fnmatch
+import os
+import re
+import shutil
+import sys
 import zipfile
 from configparser import ConfigParser
 from io import StringIO
 
 
-def package():
-    print("Creating zip...")
-    with zipfile.ZipFile("./kart.zip", "w", zipfile.ZIP_DEFLATED) as zipFile:
+def package(version=None):
+    archive = f"kart-{version}.zip" if version else "kart.zip"
+    print(f"Creating {archive} ...")
+
+    with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zipFile:
         excludes = {"test", "tests", "*.pyc", ".git", "metadata.txt"}
         src_dir = os.path.join(os.path.dirname(__file__), "kart")
         exclude = lambda p: any([fnmatch.fnmatch(p, e) for e in excludes])
@@ -20,13 +23,10 @@ def package():
         cfg = ConfigParser()
         cfg.optionxform = str
         cfg.read(os.path.join(src_dir, "metadata.txt"))
-        try:
-            version = sys.argv[2]
-        except IndexError:
-            version = cfg.get("general", "version")
-        if version.startswith("v"):
-            version = version[1:]
-        cfg.set("general", "version", version)
+
+        if version:
+            cfg.set("general", "version", re.sub(r'^v', '', version))
+
         buf = StringIO()
         cfg.write(buf)
         zipFile.writestr("kart/metadata.txt", buf.getvalue())
@@ -75,13 +75,16 @@ def install():
 
 
 def usage():
-    print("Usage: python helper.py install|package")
+    print((
+        "Usage:\n"
+        f"  {sys.argv[0]} package [VERSION]    Build a QGIS plugin zip file\n"
+        f"  {sys.argv[0]} install              Install in your local QGIS (for development)\n"
+    ), file=sys.stderr)
+    sys.exit(2)
 
-
-if sys.argv[1] == "install" and len(sys.argv) == 2:
+if len(sys.argv) == 2 and sys.argv[1] == "install":
     install()
-elif sys.argv[1] == "package" and len(sys.argv) in [2, 3]:
-    package()
+elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
+    package(*sys.argv[2:])
 else:
     usage()
-    sys.exit(2)
