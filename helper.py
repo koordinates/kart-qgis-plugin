@@ -70,8 +70,13 @@ def install():
     dst_plugins = os.path.expanduser(default_profile_plugins)
     os.makedirs(dst_plugins, exist_ok=True)
     dst = os.path.abspath(os.path.join(dst_plugins, "kart"))
+    print(f"Installing to {dst} ...")
     src = os.path.abspath(src)
-    shutil.rmtree(dst)
+    if os.path.exists(dst):
+        try:
+            os.remove(dst)
+        except IsADirectoryError:
+            shutil.rmtree(dst)
     if not hasattr(os, "symlink"):
         shutil.copytree(src, dst)
     elif not os.path.exists(dst):
