@@ -2,7 +2,7 @@
 # (C) 2015 by Hirofumi Hayashi and Luiz Motta
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
-from qgis.PyQt.QtCore import QRect, QLine, Qt
+from qgis.PyQt.QtCore import QRect, QLine, Qt, QMargins
 from qgis.PyQt.QtGui import QColor, QImage, QPainter
 
 from qgis.core import QgsMapRendererCustomPainterJob, QgsMapSettings
@@ -58,7 +58,10 @@ class SwipeMap(QgsMapCanvasItem):
             return
 
         self.setRect(self.canvas.extent())
-        self.image = QImage(self.canvas.size(), QImage.Format_ARGB32_Premultiplied)
+        self.image = QImage(
+            self.canvas.size().grownBy(QMargins(-1, -1, -1, -1)),
+            QImage.Format_ARGB32_Premultiplied,
+        )
         self.image.fill(QColor(Qt.transparent))
 
         settings = QgsMapSettings(self.canvas.mapSettings())
