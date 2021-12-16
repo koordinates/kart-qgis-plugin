@@ -12,7 +12,7 @@ from io import StringIO
 
 
 def package(version=None):
-    if not version or version.startswith.startswith("dev-"):
+    if not version or version.startswith("dev-"):
         # CI uses dev-{SHA}
         archive = "kart.zip"
     else:
