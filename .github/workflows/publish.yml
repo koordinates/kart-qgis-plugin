@@ -1,0 +1,26 @@
+name: Publish
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  publish:
+    name: "Publish QGIS release"
+    if: ${{ github.repository == 'koordinates/kart-qgis-plugin' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download release
+        uses: i3h/download-release-asset@v1
+        with:
+          owner: koordinates
+          repo: kart-qgis-plugin
+          tag: ${{ env.GITHUB_REF_NAME }}
+          file: "kart-${{ env.GITHUB_REF_NAME }}.zip"
+
+      - name: Publish to QGIS
+        env:
+          QGIS_CREDENTIALS: ${{ secrets.QGIS_CREDENTIALS }}
+        run: |
+          ./helper.py publish kart-${{ env.GITHUB_REF_NAME }}.zip
