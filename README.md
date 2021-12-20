@@ -8,7 +8,7 @@ distributed version control for geospatial and tabular data.
 
 ## Installation
 
-The Kart plugin is available in the QGIS Plugins server. To install the latest
+The Kart plugin is available in the [QGIS Plugins Repository](https://plugins.qgis.org/plugins/kart/). To install the latest
 version, use the QGIS Plugin Manager and search for the Kart plugin.
 
 Alternatively, you can get the latest version from the [release page](https://github.com/koordinates/kart-qgis-plugin/releases/latest), then open the QGIS Plugin manager and install
