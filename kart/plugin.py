@@ -63,7 +63,7 @@ class KartPlugin(object):
     def pluginVersion(add_commit=False):
         config = configparser.ConfigParser()
         path = os.path.join(os.path.dirname(__file__), "metadata.txt")
-        config.read(path)
+        config.read(path, encoding="utf-8")
         version = config.get("general", "version")
         return version
 
