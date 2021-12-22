@@ -221,13 +221,22 @@ class ReposItem(RefreshableItem):
         dialog = InitDialog()
         ret = dialog.exec()
         if ret == dialog.Accepted:
-            try:
-                os.makedirs(dialog.folder)
-            except FileExistsError:
-                iface.messageBar().pushMessage(
-                    "Error", "The specified folder already exists", level=Qgis.Warning
-                )
-                return
+            if os.path.exists(dialog.folder):
+                if any(os.scandir(dialog.folder)):
+                    iface.messageBar().pushMessage(
+                        "Error", "The specified folder is not empty", level=Qgis.Warning
+                    )
+                    return
+            else:
+                try:
+                    os.makedirs(dialog.folder)
+                except Exception:
+                    iface.messageBar().pushMessage(
+                        "Error",
+                        "Could not create the specified folder",
+                        level=Qgis.Warning,
+                    )
+                    return
             repo = Repository(dialog.folder)
             repo.init(dialog.location)
             if repo.isInitialized():
