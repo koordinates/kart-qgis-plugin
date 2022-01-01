@@ -17,8 +17,9 @@ WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedial
 
 
 class CloneDialog(BASE, WIDGET):
-    def __init__(self):
-        super(QDialog, self).__init__(iface.mainWindow())
+    def __init__(self, parent=None):
+        parent = parent or iface.mainWindow()
+        super(QDialog, self).__init__(parent)
         self.setupUi(self)
 
         self.bar = QgsMessageBar()
