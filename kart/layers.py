@@ -341,18 +341,6 @@ class LayerTracker:
 
     def layerRemoved(self, layerid):
         self.updateRubberBands()
-        """
-        if layerid in self.rubberBands:
-            try:
-                self.rubberBands[layerid][0].reset(QgsWkbTypes.PolygonGeometry)
-            except Exception:
-                pass
-            del self.rubberBands[layerid]
-            try:
-                self.removeAnnotation(layerid)
-            except Exception:
-                pass
-        """
 
     @executeskart
     def commitLayerChanges(self, layer):
