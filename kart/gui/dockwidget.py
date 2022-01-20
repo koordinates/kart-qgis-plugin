@@ -538,8 +538,7 @@ class RepoItem(RefreshableItem):
     def push(self):
         dialog = PushDialog(self.repo)
         if dialog.exec() == dialog.Accepted:
-            remote, branch, pushall = dialog.result
-            self.repo.push(dialog.remote, dialog.branch, dialog.pushall)
+            self.repo.push(dialog.remote, dialog.branch, dialog.pushAll)
 
     @executeskart
     def pull(self):
