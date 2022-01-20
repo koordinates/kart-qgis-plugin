@@ -31,6 +31,7 @@ from kart.kartapi import (
     Repository,
     executeskart,
     KartException,
+    checkKartInstalled,
 )
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
@@ -126,13 +127,14 @@ class KartDockWidget(BASE, WIDGET):
         self.reposItem = ReposItem()
         self.tree.addTopLevelItem(self.reposItem)
         self.reposItem.setExpanded(True)
-        lastRepo = setting(LASTREPO)
-        for i in range(self.reposItem.childCount()):
-            item = self.reposItem.child(i)
-            if item.repo.path == lastRepo:
-                item.populate()
-                item.setExpanded(True)
-                item.datasetsItem.setExpanded(True)
+        if checkKartInstalled(False):
+            lastRepo = setting(LASTREPO)
+            for i in range(self.reposItem.childCount()):
+                item = self.reposItem.child(i)
+                if item.repo.path == lastRepo:
+                    item.populate()
+                    item.setExpanded(True)
+                    item.datasetsItem.setExpanded(True)
 
     def showPopupMenu(self, point):
         item = self.tree.currentItem()

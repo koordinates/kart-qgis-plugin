@@ -25,7 +25,9 @@ from qgis.core import (
     QgsRectangle,
     QgsReferencedRectangle,
     QgsVectorLayer,
+    Qgis,
 )
+from qgis.utils import iface
 
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
@@ -92,16 +94,15 @@ def kartExecutable():
     return path
 
 
-def checkKartInstalled():
+def checkKartInstalled(showMessage=True):
     version = installedVersion()
     supported_major, supported_minor, supported_patch = SUPPORTED_VERSION.split(".")
     msg = ""
     if version is None:
-        url = "https://github.com/koordinates/kart#installing"
         msg = (
-            "<p><b>Your Kart installation location is not configured</b>.</p>"
-            f'<p><a href="{url}"> Install Kart </a> if needed and then '
-            '<a href="settings"> configure </a> the Kart folder.</p>'
+            "<p><b>Kart is not installed or your Kart installation "
+            "location is not correctly configured.</b></p>"
+            "<p>Install Kart if needed or configure the Kart folder.</p>"
         )
     else:
         major, minor, patch = version.split(".")[:3]
@@ -111,15 +112,30 @@ def checkKartInstalled():
             and patch >= supported_patch
         )
         if not versionOk:
-            url = "https://github.com/koordinates/kart/releases/latest"
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
                 f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
-                f' <p>Please <a href="{url}">install the supported version</a>.'
+                " <p>Please install the supported version or configure the Kart folder."
             )
     if msg:
-        dlg = InstallationWarningDialog(msg)
-        dlg.exec()
+        if showMessage:
+            dlg = InstallationWarningDialog(msg, SUPPORTED_VERSION)
+            dlg.exec()
+            installed = checkKartInstalled(False)
+            if installed:
+                setSetting(KARTPATH, "")
+                iface.messageBar().pushMessage(
+                    "Install",
+                    "Kart has been correctly installed",
+                    level=Qgis.Success,
+                )
+                return True
+            else:
+                iface.messageBar().pushMessage(
+                    "Install",
+                    "Kart could not be installed. Please install it manually.",
+                    level=Qgis.Warning,
+                )
         return False
     else:
         return True
@@ -524,21 +540,15 @@ class Repository:
             commands.append("HEAD")
         if dataset is not None:
             commands.append(f"{dataset}:meta")
-            ret = self.executeKart(commands, True)
-            schemaChanges = (
-                list(ret.values())[0]
-                .get(dataset, {})
-                .get("meta", {})
-                .get("schema.json", None)
-            )
-            return schemaChanges is not None
         else:
-            ret = self.executeKart(commands, True)
-            for datasetChanges in list(ret.values())[0].values():
-                schemaChanges = datasetChanges.get("meta", {}).get("schema.json", None)
-                if schemaChanges is not None:
-                    return True
-            return False
+            commands.append("*:meta")
+        ret = self.executeKart(commands, True)
+        changes = list(ret.values())[0]
+        schemaChanges = list(
+            changes.get(name, {}).get("meta", {}).get("schema.json", None)
+            for name in changes
+        )
+        return any(s is not None for s in schemaChanges)
 
     def diff(self, refa=None, refb=None, dataset=None, featureid=None):
         changes = {}

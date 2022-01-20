@@ -28,7 +28,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtKartPath"/>
+       <widget class="QLineEdit" name="txtKartPath">
+        <property name="placeholderText">
+         <string>[Leave empty to use default Kart installation path]</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QToolButton" name="btnBrowsePath">

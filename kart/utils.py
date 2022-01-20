@@ -1,7 +1,7 @@
 import os
 
 from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
-from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox
+from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox, QApplication
 from qgis.core import QgsProject, Qgis
 from qgis.utils import iface as qgisiface
 
@@ -49,6 +49,19 @@ def progressBar(title):
         yield bar
     finally:
         bar.close()
+
+
+def waitcursor(method):
+    def func(*args, **kw):
+        try:
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            return method(*args, **kw)
+        except Exception as ex:
+            raise ex
+        finally:
+            QApplication.restoreOverrideCursor()
+
+    return func
 
 
 def confirm(msg):
