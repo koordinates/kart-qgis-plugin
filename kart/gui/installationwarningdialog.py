@@ -1,4 +1,5 @@
 import os
+import sys
 import subprocess
 import tempfile
 import requests
@@ -23,6 +24,7 @@ DOWNLOAD_URL = "https://github.com/koordinates/kart/releases/download/v{version}
 RELEASE_URL = "https://github.com/koordinates/kart/releases/tag/v{version}"
 
 WINDOWS_FILE = "Kart-{version}.msi"
+OSX_FILE = "Kart-{version}.pkg"
 
 
 class InstallationWarningDialog(BASE, WIDGET):
@@ -77,6 +79,12 @@ class InstallationWarningDialog(BASE, WIDGET):
             )
             subprocess.call(command, shell=True)
             shutil.rmtree(os.path.dirname(msipath))
+        elif sys.platform == "darwin":
+            filename = OSX_FILE.format(version=self.supportedVersion)
+            pkgpath = self._download(url, filename)
+            command = f"open -W {pkgpath}"
+            subprocess.call(command, shell=True)
+            shutil.rmtree(os.path.dirname(pkgpath))
         else:
             url = RELEASE_URL.format(version=self.supportedVersion)
             webbrowser.open_new_tab(url)
