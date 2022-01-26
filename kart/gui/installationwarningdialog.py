@@ -7,7 +7,7 @@ import webbrowser
 import shutil
 
 from qgis.PyQt.QtWidgets import QDialog
-
+from qgis.PyQt.QtCore import QThread, Qt, pyqtSignal, QEventLoop
 from qgis.PyQt import uic
 
 
@@ -27,6 +27,42 @@ WINDOWS_FILE = "Kart-{version}.msi"
 OSX_FILE = "Kart-{version}.pkg"
 
 
+class DownloadThread(QThread):
+
+    progressChanged = pyqtSignal(int)
+    finished = pyqtSignal()
+
+    def __init__(self, url, filename):
+        QThread.__init__(self, iface.mainWindow())
+        self.url = url
+        self.filename = filename
+        self.exception = None
+        self.fullpath = None
+
+    def run(self):
+        try:
+            fullurl = f"{self.url}/{self.filename}"
+            dirname = tempfile.mkdtemp()
+            fullpath = os.path.join(dirname, self.filename)
+            chunk_size = 1024
+            r = requests.get(fullurl, stream=True)
+            file_size = r.headers.get("content-length") or 0
+            file_size = int(file_size)
+            percentage_per_chunk = 100.0 / (file_size / chunk_size)
+            progress = 0
+            with open(fullpath, "wb") as f:
+                for chunk in r.iter_content(chunk_size):
+                    f.write(chunk)
+                    progress += percentage_per_chunk
+                    self.progressChanged.emit(int(progress))
+                self.fullpath = fullpath
+        except Exception as e:
+            self.exception = e
+            self.fullpath = None
+        finally:
+            self.finished.emit()
+
+
 class InstallationWarningDialog(BASE, WIDGET):
     def __init__(self, msg, supportedVersion):
         super(QDialog, self).__init__(iface.mainWindow())
@@ -41,21 +77,14 @@ class InstallationWarningDialog(BASE, WIDGET):
     def _download(self, url, filename):
         self.progressBar.setValue(0)
         self.widgetDownload.setVisible(True)
-        fullurl = f"{url}/{filename}"
-        dirname = tempfile.mkdtemp()
-        fullpath = os.path.join(dirname, filename)
-        chunk_size = 1024
-        r = requests.get(fullurl, stream=True)
-        file_size = r.headers.get("content-length") or 0
-        file_size = int(file_size)
-        percentage_per_chunk = 100.0 / (file_size / chunk_size)
-        progress = 0
-        with open(fullpath, "wb") as f:
-            for chunk in r.iter_content(chunk_size):
-                f.write(chunk)
-                progress += percentage_per_chunk
-                self.progressBar.setValue(int(progress))
-        return fullpath
+        t = DownloadThread(url, filename)
+        loop = QEventLoop()
+        t.progressChanged.connect(self.progressBar.setValue)
+        t.finished.connect(loop.exit, Qt.QueuedConnection)
+        t.start()
+        loop.exec_(flags=QEventLoop.ExcludeUserInputEvents)
+
+        return t.fullpath
 
     def install(self):
         try:
@@ -77,14 +106,18 @@ class InstallationWarningDialog(BASE, WIDGET):
                 fr"""{powershell} -Command "& {{ Start-Process 'msiexec' -ArgumentList @('/a',"""
                 fr''' '{msipath}', '/qb', 'TARGETDIR=\"%ProgramFiles%\"') -Verb RunAs -Wait}}"'''
             )
-            subprocess.call(command, shell=True)
-            shutil.rmtree(os.path.dirname(msipath))
+            self.hide()
+            if msipath is not None:
+                subprocess.call(command, shell=True)
+                shutil.rmtree(os.path.dirname(msipath))
         elif sys.platform == "darwin":
             filename = OSX_FILE.format(version=self.supportedVersion)
             pkgpath = self._download(url, filename)
             command = f"open -W {pkgpath}"
-            subprocess.call(command, shell=True)
-            shutil.rmtree(os.path.dirname(pkgpath))
+            self.hide()
+            if pkgpath is not None:
+                subprocess.call(command, shell=True)
+                shutil.rmtree(os.path.dirname(pkgpath))
         else:
             url = RELEASE_URL.format(version=self.supportedVersion)
             webbrowser.open_new_tab(url)
