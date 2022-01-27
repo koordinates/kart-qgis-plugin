@@ -102,7 +102,9 @@ def checkKartInstalled(showMessage=True):
         msg = (
             "<p><b>Kart is not installed or your Kart installation "
             "location is not correctly configured.</b></p>"
-            "<p>Install Kart if needed or configure the Kart folder.</p>"
+            "<p>Click Install to download and install the latest Kart release. "
+            "You can also download releases from <a href='https://kartproject.org'>"
+            "https://kartproject.org</a>.</p>"
         )
     else:
         major, minor, patch = version.split(".")[:3]
@@ -115,7 +117,9 @@ def checkKartInstalled(showMessage=True):
             msg = (
                 f"<p><b>The installed Kart version ({version}) is different from the version"
                 f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
-                " <p>Please install the supported version or configure the Kart folder."
+                "<p>Click Install to download and install the latest Kart release. "
+                "You can also download releases from <a href='https://kartproject.org'>"
+                "https://kartproject.org</a>.</p>"
             )
     if msg:
         if showMessage:
@@ -133,7 +137,7 @@ def checkKartInstalled(showMessage=True):
             else:
                 iface.messageBar().pushMessage(
                     "Install",
-                    "Kart could not be installed. Please install it manually.",
+                    "Kart was not installed. Please install it manually.",
                     level=Qgis.Warning,
                 )
         return False
@@ -282,9 +286,12 @@ def saveRepos():
 
 
 def repoForLayer(layer):
-    for repo in repos():
-        if repo.layerBelongsToRepo(layer):
-            return repo
+    try:
+        for repo in repos():
+            if repo.layerBelongsToRepo(layer):
+                return repo
+    except KartException:
+        return None
 
 
 def _processProgressLine(bar, line):
