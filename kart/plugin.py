@@ -48,7 +48,7 @@ class KartPlugin(object):
         self.aboutAction.triggered.connect(self.openAbout)
 
         self.tracker = LayerTracker.instance()
-        QgsProject.instance().layerWillBeRemoved.connect(self.tracker.layerRemoved)
+        QgsProject.instance().layerRemoved.connect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.connect(self.tracker.layerAdded)
         QgsProject.instance().crsChanged.connect(self.tracker.updateRubberBands)
 
@@ -94,5 +94,5 @@ class KartPlugin(object):
         self.iface.removePluginMenu("Kart", self.settingsAction)
         self.iface.removePluginMenu("Kart", self.aboutAction)
 
-        QgsProject.instance().layerWillBeRemoved.disconnect(self.tracker.layerRemoved)
+        QgsProject.instance().layerRemoved.disconnect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)
