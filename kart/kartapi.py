@@ -459,16 +459,20 @@ class Repository:
         lines = logb.splitlines()
         lines.insert(0, "")
         lines.append("")
+        commitlinesidxs = []
+        for i, line in enumerate(lines):
+            if "*" in line:
+                commitlinesidxs.append(i)
         commits = []
-        for i in range(len(log)):
-            commitline = lines[i * 2 + 1]
+        for commitlineidx in commitlinesidxs:
+            commitline = lines[commitlineidx]
             commitid = commitline.split(" ")[-1]
             log[commitid]["commitColumn"] = (commitline.index("*")) // 2
             graph = []
             for j in range(3):
                 graph.append({})
                 for char in [r"\|", "/", r"\\"]:
-                    line = lines[i * 2 + j]
+                    line = lines[commitlineidx - 1 + j]
                     matches = re.finditer(char, line)
                     positions = [match.start() // 2 for match in matches]
                     graph[j][char] = positions
@@ -512,8 +516,9 @@ class Repository:
 
     def mergeBranch(self, branch, msg="", noff=False, ffonly=False):
         commands = ["merge", branch]
-        if msg:
-            commands.extend(["--message", msg])
+        if not msg:
+            msg = f"Merge branch '{branch}' into {self.currentBranch()}"
+        commands.extend(["--message", msg])
         if noff:
             commands.append("--no-ff")
         if ffonly:

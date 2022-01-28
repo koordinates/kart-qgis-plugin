@@ -350,7 +350,15 @@ class HistoryTree(QTreeWidget):
         self.log = {c["commit"]: c for c in commits}
         self.clear()
 
-        maxcol = max([c["commitColumn"] for c in commits])
+        maxcol = 0
+        for c in commits:
+            graph = c["graph"]
+            for i in range(3):
+                for positions in graph[i].values():
+                    if positions:
+                        maxcol = max(maxcol, max(positions))
+
+        # maxcol = max([c["commitColumn"] for c in commits])
         width = COL_SPACING * maxcol + 2 * RADIUS
 
         grafted = False
