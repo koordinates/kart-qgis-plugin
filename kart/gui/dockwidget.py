@@ -775,6 +775,7 @@ class DatasetItem(QTreeWidgetItem):
                 "Dataset correctly removed",
                 level=Qgis.Info,
             )
+            self.parent().refreshContent()
             if layer:
                 QgsProject.instance().removeMapLayers([layer.id()])
                 iface.mapCanvas().refresh()
