@@ -3,6 +3,7 @@ import tempfile
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice
+
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -43,7 +44,15 @@ from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
 from kart.gui.switchdialog import SwitchDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
-from kart.utils import layerFromSource, confirm, setting, setSetting, LASTREPO
+from kart.gui.postgisconnectiondialog import PostgisConnectionDialog
+from kart.utils import (
+    layerFromSource,
+    confirm,
+    setting,
+    setSetting,
+    LASTREPO,
+    waitcursor,
+)
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -330,7 +339,16 @@ class RepoItem(RefreshableItem):
                     ("Pull...", self.pull, pullIcon),
                     ("Push...", self.push, pushIcon),
                     ("divider", None, None),
-                    ("Import layer into repo...", self.importLayer, importIcon),
+                    (
+                        "Import layer from file into repo...",
+                        self.importLayerFromFile,
+                        importIcon,
+                    ),
+                    (
+                        "Import layer from PostGIS database into repo...",
+                        self.importLayerFromPostgis,
+                        importIcon,
+                    ),
                     ("Apply patch...", self.applyPatch, patchIcon),
                 ]
             )
@@ -363,45 +381,57 @@ class RepoItem(RefreshableItem):
         dialog.exec()
         self.refreshContent()
 
-    @executeskart
-    def importLayer(self):
-        filename, _ = QFileDialog.getOpenFileName(
+    def importLayerFromPostgis(self):
+        dlg = PostgisConnectionDialog()
+        ret = dlg.exec()
+        if ret == dlg.Accepted:
+            self.importIntoRepo(dlg.url)
+
+    def importLayerFromFile(self):
+        filepath, _ = QFileDialog.getOpenFileName(
             iface.mainWindow(), "Select vector layer to import", "", "*.*"
         )
-        if filename:
-            if os.path.splitext(filename)[-1].lower() != ".gpkg":
-                layer = QgsVectorLayer(filename, "", "ogr")
-                if not layer.isValid():
-                    iface.messageBar().pushMessage(
-                        "Import",
-                        "The selected file is not a valid vector layer",
-                        level=Qgis.Warning,
-                    )
-                    return
-                tmpfolder = tempfile.TemporaryDirectory()
-                filename = os.path.splitext(os.path.basename(filename))[0]
-                gpkgfilename = os.path.join(tmpfolder.name, f"{filename}.gpkg")
-                ret = QgsVectorFileWriter.writeAsVectorFormat(
-                    layer, gpkgfilename, "utf-8", layer.crs()
-                )
-                if ret == QgsVectorFileWriter.NoError:
-                    iface.messageBar().pushMessage(
-                        "Import",
-                        "Could not convert the selected layer to a gpkg file",
-                        level=Qgis.Warning,
-                    )
+        if filepath:
+            if os.path.splitext(filepath)[-1].lower() not in [".gpkg", ".shp"]:
+                self._exportToGpkgAndImportIntoRepo(filepath)
             else:
-                tmpfolder = None
-                gpkgfilename = filename
-            self.repo.importGpkg(gpkgfilename)
+                self._importIntoRepo(filepath)
+
+    @waitcursor
+    def _exportToGpkgAndImportIntoRepo(self, filepath):
+        layer = QgsVectorLayer(filepath, "", "ogr")
+        if not layer.isValid():
             iface.messageBar().pushMessage(
-                "Import", "Layer correctly imported", level=Qgis.Info
+                "Import",
+                "The selected file is not a valid vector layer",
+                level=Qgis.Warning,
             )
-            if self.populated:
-                self.datasetsItem.refreshContent()
-            if tmpfolder is not None:
-                tmpfolder.cleanup()
-            self.setTitle()  # In case it's the first commit, update title to add branch name
+            return
+        tmpfolder = tempfile.TemporaryDirectory()
+        filename = os.path.splitext(os.path.basename(filepath))[0]
+        filenameToImport = os.path.join(tmpfolder.name, f"{filename}.gpkg")
+        ret = QgsVectorFileWriter.writeAsVectorFormat(
+            layer, filenameToImport, "utf-8", layer.crs()
+        )
+        if ret[0] != QgsVectorFileWriter.NoError:
+            iface.messageBar().pushMessage(
+                "Import",
+                "Could not convert the selected layer to a gpkg file",
+                level=Qgis.Warning,
+            )
+        else:
+            self._importIntoRepo(filenameToImport)
+            tmpfolder.cleanup()
+
+    @executeskart
+    def _importIntoRepo(self, source):
+        self.repo.importIntoRepo(source)
+        iface.messageBar().pushMessage(
+            "Import", "Layer correctly imported", level=Qgis.Info
+        )
+        if self.populated:
+            self.datasetsItem.refreshContent()
+        self.setTitle()  # In case it's the first commit, update title to add branch name
 
     @executeskart
     def commitChanges(self):

@@ -398,8 +398,8 @@ class Repository:
         else:
             self.executeKart(["init"])
 
-    def importGpkg(self, path):
-        self.executeKart(["import", f"GPKG:{path}"])
+    def importIntoRepo(self, source):
+        self.executeKart(["import", source])
 
     def checkUserConfigured(self):
         configDict = self._config()
