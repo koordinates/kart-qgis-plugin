@@ -321,6 +321,27 @@ class Repository:
         return executeKart(commands, self.path, jsonoutput)
 
     @staticmethod
+    def supportedDbTypes():
+        formats = {
+            "PostgreSQL": "postgresql://",
+            "SQL Server": "mssql://",
+            "MySQL": "mysql://",
+        }
+        ret = executeKart(["import", "--list-formats"])
+        supportedFormats = {}
+        for name, protocol in formats.items():
+            if protocol in ret:
+                supportedFormats[name] = protocol
+
+        return supportedFormats
+
+    @staticmethod
+    def tablesToImport(source):
+        ret = executeKart(["import", "--list", source], jsonoutput=True)
+        print(ret)
+        return list(list(ret.values())[0].keys())
+
+    @staticmethod
     def clone(src, dst, location=None, extent=None):
         src = os.path.expanduser(src)
         dst = os.path.expanduser(dst)

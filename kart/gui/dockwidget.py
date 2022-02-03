@@ -44,7 +44,7 @@ from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
 from kart.gui.switchdialog import SwitchDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
-from kart.gui.postgisconnectiondialog import PostgisConnectionDialog
+from kart.gui.dbconnectiondialog import DbConnectionDialog
 from kart.utils import (
     layerFromSource,
     confirm,
@@ -345,8 +345,8 @@ class RepoItem(RefreshableItem):
                         importIcon,
                     ),
                     (
-                        "Import layer from PostGIS database into repo...",
-                        self.importLayerFromPostgis,
+                        "Import layer from database into repo...",
+                        self.importLayerFromDatabase,
                         importIcon,
                     ),
                     ("Apply patch...", self.applyPatch, patchIcon),
@@ -381,11 +381,11 @@ class RepoItem(RefreshableItem):
         dialog.exec()
         self.refreshContent()
 
-    def importLayerFromPostgis(self):
-        dlg = PostgisConnectionDialog()
+    def importLayerFromDatabase(self):
+        dlg = DbConnectionDialog()
         ret = dlg.exec()
         if ret == dlg.Accepted:
-            self.importIntoRepo(dlg.url)
+            self._importIntoRepo(dlg.url)
 
     def importLayerFromFile(self):
         filepath, _ = QFileDialog.getOpenFileName(
