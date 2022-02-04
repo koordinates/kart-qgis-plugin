@@ -89,7 +89,7 @@ class TestKartapi(unittest.TestCase):
             gkpgPath = os.path.join(
                 os.path.dirname(__file__), "data", "layers", "testlayer.gpkg"
             )
-            repo.importGpkg(gkpgPath)
+            repo.importIntoRepo(gkpgPath)
             vectorLayers, tables = repo.datasets()
             assert vectorLayers == ["testlayer"]
 
