@@ -340,12 +340,12 @@ class RepoItem(RefreshableItem):
                     ("Push...", self.push, pushIcon),
                     ("divider", None, None),
                     (
-                        "Import layer from file into repo...",
+                        "Import dataset from file...",
                         self.importLayerFromFile,
                         importIcon,
                     ),
                     (
-                        "Import layer from database into repo...",
+                        "Import dataset from database...",
                         self.importLayerFromDatabase,
                         importIcon,
                     ),

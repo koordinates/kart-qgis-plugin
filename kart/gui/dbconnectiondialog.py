@@ -31,6 +31,7 @@ class DbConnectionDialog(BASE, WIDGET):
         self.layout().addWidget(self.bar, 10, 0, 1, 3)
 
         self.authWidget = QgsAuthSettingsWidget()
+        self.authWidget.setWarningText("These credentials are not saved")
         self.layout().addWidget(self.authWidget, 7, 1, 1, 2)
 
         self.btnLoadTables.clicked.connect(self.loadTables)
