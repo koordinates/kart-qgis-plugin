@@ -110,8 +110,7 @@ def checkKartInstalled(showMessage=True):
         major, minor, patch = version.split(".")[:3]
         versionOk = (
             major == supported_major
-            and minor == supported_minor
-            and patch >= supported_patch
+            and f"{minor}.{patch}" >= f"{supported_minor}.{supported_patch}"
         )
         if not versionOk:
             msg = (
