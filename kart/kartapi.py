@@ -341,9 +341,13 @@ class Repository:
         return list(list(ret.values())[0].keys())
 
     @staticmethod
-    def clone(src, dst, location=None, extent=None):
+    def clone(src, dst, location=None, extent=None, username=None, password=None):
         src = os.path.expanduser(src)
         dst = os.path.expanduser(dst)
+        if username and password:
+            tokens = src.split("://")
+            if len(tokens) == 2:
+                src = f"{tokens[1]}://{username}:{password}@{tokens[2]}"
         commands = ["-vv", "clone", src, dst, "--progress"]
         if location is not None:
             commands.extend(["--workingcopy", location])

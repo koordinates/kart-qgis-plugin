@@ -38,6 +38,13 @@ class CloneDialog(BASE, WIDGET):
         self.locationPanel = LocationSelectionPanel()
         self.grpLocation.layout().addWidget(self.locationPanel, 1, 0)
 
+    def setCredentials(self, username, password):
+        self.txtUsername.setText(username)
+        self.txtPassword.setText(password)
+
+    def setSrc(self, src):
+        self.txtSrc.setText(src)
+
     def browse(self, textbox):
         folder = QFileDialog.getExistingDirectory(
             iface.mainWindow(), "Select Folder", ""
@@ -62,6 +69,10 @@ class CloneDialog(BASE, WIDGET):
                 return
         else:
             self.extent = None
+
+        self.username = self.txtUsername.text()
+        self.password = self.txtPassword.text()
+
         if self.src and self.dst:
             self.accept()
         else:

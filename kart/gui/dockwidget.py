@@ -266,7 +266,12 @@ class ReposItem(RefreshableItem):
         ret = dialog.exec_()
         if ret == dialog.Accepted:
             repo = Repository.clone(
-                dialog.src, dialog.dst, dialog.location, dialog.extent
+                dialog.src,
+                dialog.dst,
+                dialog.location,
+                dialog.extent,
+                dialog.username,
+                dialog.password,
             )
             addRepo(repo)
             item = RepoItem(repo)
