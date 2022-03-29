@@ -347,7 +347,7 @@ class Repository:
         if username and password:
             tokens = src.split("://")
             if len(tokens) == 2:
-                src = f"{tokens[1]}://{username}:{password}@{tokens[2]}"
+                src = f"{tokens[0]}://{username}:{password}@{tokens[1]}"
         commands = ["-vv", "clone", src, dst, "--progress"]
         if location is not None:
             commands.extend(["--workingcopy", location])
