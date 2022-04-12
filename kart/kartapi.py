@@ -696,7 +696,7 @@ class Repository:
         return remotes
 
     def addRemote(self, name, url):
-        self.executeKart(["remote", "add", name, "url"])
+        self.executeKart(["remote", "add", name, url])
 
     def removeRemote(self, name):
         self.executeKart(["remote", "remove", name])
