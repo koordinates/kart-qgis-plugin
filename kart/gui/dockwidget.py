@@ -572,6 +572,16 @@ class RepoItem(RefreshableItem):
         dialog = PushDialog(self.repo)
         if dialog.exec() == dialog.Accepted:
             self.repo.push(dialog.remote, dialog.branch, dialog.pushAll)
+            iface.messageBar().pushMessage(
+                "Push",
+                "Repo changes have been pushed to "
+                + (
+                    f"all branches at {dialog.remote}"
+                    if dialog.pushAll
+                    else f"{dialog.remote}/{dialog.branch}"
+                ),
+                level=Qgis.Info,
+            )
 
     @executeskart
     def pull(self):
