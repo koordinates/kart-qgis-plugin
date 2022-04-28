@@ -427,9 +427,9 @@ class Repository:
 
     def checkUserConfigured(self):
         configDict = self._config()
-        if "user.name" in configDict and "user.email" in configDict:
+        if all(configDict.get(configKey) for configKey in ('user.name', 'user.email')):
             return True
-        dlg = UserConfigDialog()
+        dlg = UserConfigDialog(configDict)
         if dlg.exec() == dlg.Accepted:
             self.configureUser(dlg.username, dlg.email)
             return True
