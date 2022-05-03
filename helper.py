@@ -114,7 +114,7 @@ if len(sys.argv) == 2 and sys.argv[1] == "install":
     install()
 elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
     package(*sys.argv[2:])
-if len(sys.argv) == 3 and sys.argv[1] == "publish":
+elif len(sys.argv) == 3 and sys.argv[1] == "publish":
     publish(sys.argv[2])
 else:
     usage()
