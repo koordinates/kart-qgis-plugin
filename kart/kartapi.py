@@ -427,6 +427,7 @@ class Repository:
 
     def checkUserConfigured(self):
         configDict = self._config()
+        # check user name/email are set and non-empty
         if all(configDict.get(configKey) for configKey in ('user.name', 'user.email')):
             return True
         dlg = UserConfigDialog(configDict)
