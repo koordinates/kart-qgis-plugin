@@ -117,6 +117,8 @@ class DiffViewerWidget(WIDGET, BASE):
         self.workingCopyLayersIdFields = {}
         self.workingCopyLayerCrs = {}
 
+        self.mostRecentTabIndex = None
+
         self.setupUi(self)
 
         self.setWindowFlags(self.windowFlags() | Qt.WindowSystemMenuHint)
@@ -128,7 +130,9 @@ class DiffViewerWidget(WIDGET, BASE):
         tabLayout.setMargin(0)
         tabLayout.addWidget(self.canvas)
         self.canvasWidget.setLayout(tabLayout)
-
+        self.tabWidget.tabBarClicked.connect(
+            lambda index: setattr(self, "mostRecentTabIndex", index)
+        )
         self.sliderTransparency.setValue(50)
 
         self.sliderTransparency.valueChanged.connect(self.setTransparency)
@@ -170,7 +174,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.widgetDiffConfig.setVisible(True)
         self.tabWidget.setTabEnabled(TAB_GEOMETRY, True)
         self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, True)
-        self.tabWidget.setCurrentIndex(TAB_ATTRIBUTES)
+        self.tabWidget.setCurrentIndex(self.mostRecentTabIndex or TAB_ATTRIBUTES)
         if isinstance(current, FeatureItem):
             self.currentFeatureItem = current
             self.currentDatasetItem = None
