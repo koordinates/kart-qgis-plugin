@@ -554,7 +554,7 @@ class DiffViewerWidget(WIDGET, BASE):
         for coords in data:
             coord = coords[0] or coords[1]
             feat = QgsFeature()
-            x, y = coord.strip().split(" ")
+            x, y = coord.strip().split(" ")[:2]
             pt = QgsGeometry.fromPointXY(QgsPointXY(float(x), float(y)))
             feat.setGeometry(pt)
             if coords[0] is None:
