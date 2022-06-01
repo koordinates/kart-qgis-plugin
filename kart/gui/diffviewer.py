@@ -323,7 +323,11 @@ class DiffViewerWidget(WIDGET, BASE):
             changes = {feat["id"]: feat for feat in changes}
             usedids = []
             for feat in changes.values():
-                changetype, featid = feat["id"].split("::")
+                try:
+                    changetype, featid = feat["id"].split("::")
+                    elementtype = None
+                except ValueError:
+                    _, elementtype, featid, changetype = feat["id"].split(":")
                 changetype = changetype[0]
                 if featid not in usedids:
                     if changetype == "I":
@@ -333,8 +337,12 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = feat
                         new = {}
                     else:
-                        old = changes[f"U-::{featid}"]
-                        new = changes[f"U+::{featid}"]
+                        if elementtype:
+                            old = changes[f"{dataset}:{elementtype}:{featid}:U-"]
+                            new = changes[f"{dataset}:{elementtype}:{featid}:U+"]
+                        else:
+                            old = changes[f"U-::{featid}"]
+                            new = changes[f"U+::{featid}"]
                     usedids.append(featid)
                     item = FeatureItem(featid, old, new, dataset)
                     subItems[changetype].addChild(item)
