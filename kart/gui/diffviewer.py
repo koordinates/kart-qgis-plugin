@@ -332,11 +332,13 @@ class DiffViewerWidget(WIDGET, BASE):
                 # 'nz_pipelines:feature:49:U-'
                 # TODO - remove support for 'old' format, requires users to have upgraded
                 #  this plugin first
+                is_new_id_format = False
+                elementtype = None
                 try:
                     changetype, featid = feat["id"].split("::")
-                    elementtype = None
                 except ValueError:
                     _, elementtype, featid, changetype = feat["id"].split(":")
+                    is_new_id_format = True
                 changetype = changetype[0]
                 if featid not in usedids:
                     if changetype == "I":
@@ -346,10 +348,7 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = feat
                         new = {}
                     else:
-                        # switch on the type of format string that was found
-                        # TODO - remove support for 'old' format, requires users to have upgraded
-                        #  this plugin first
-                        if elementtype:
+                        if is_new_id_format:
                             old = changes[f"{dataset}:{elementtype}:{featid}:U-"]
                             new = changes[f"{dataset}:{elementtype}:{featid}:U+"]
                         else:
