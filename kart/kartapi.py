@@ -427,9 +427,10 @@ class Repository:
 
     def checkUserConfigured(self):
         configDict = self._config()
-        if "user.name" in configDict and "user.email" in configDict:
+        # check user name/email are set and non-empty
+        if all(configDict.get(configKey) for configKey in ('user.name', 'user.email')):
             return True
-        dlg = UserConfigDialog()
+        dlg = UserConfigDialog(configDict)
         if dlg.exec() == dlg.Accepted:
             self.configureUser(dlg.username, dlg.email)
             return True
@@ -738,8 +739,10 @@ class Repository:
             host = parse.hostname or "localhost"
             port = parse.port or "5432"
             database, schema = parse.path.strip("/").split("/", 1)
+            username = parse.username
+            password = parse.password
             uri = QgsDataSourceUri()
-            uri.setConnection(host, port, database)
+            uri.setConnection(host, port, database, username, password)
             uri.setDataSource(schema, dataset, "geom")
             layer = QgsVectorLayer(uri.uri(), dataset, "postgres")
             return layer

@@ -16,7 +16,7 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class UserConfigDialog(BASE, WIDGET):
-    def __init__(self):
+    def __init__(self, existingConfigDict):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
@@ -26,6 +26,8 @@ class UserConfigDialog(BASE, WIDGET):
 
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
+        self.txtUsername.setText(existingConfigDict.get('user.name'))
+        self.txtEmail.setText(existingConfigDict.get('user.email'))
 
     def okClicked(self):
         self.username = self.txtUsername.text().strip()
