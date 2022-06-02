@@ -323,6 +323,14 @@ class DiffViewerWidget(WIDGET, BASE):
             changes = {feat["id"]: feat for feat in changes}
             usedids = []
             for feat in changes.values():
+                # Try to parse the feature id string in the old format first
+                # and if that fails try the new format. The old format is
+                # the change type and numeric id, eg.
+                # 'U-::49'
+                # whereas the new format additionally includes the dataset name
+                # and element type eg.
+                # 'nz_pipelines:feature:49:U-'
+                # TODO - remove support for 'old' format
                 try:
                     changetype, featid = feat["id"].split("::")
                     elementtype = None
@@ -337,6 +345,8 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = feat
                         new = {}
                     else:
+                        # switch on the type of format string that was found
+                        # TODO - remove support for 'old' format
                         if elementtype:
                             old = changes[f"{dataset}:{elementtype}:{featid}:U-"]
                             new = changes[f"{dataset}:{elementtype}:{featid}:U+"]
