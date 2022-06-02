@@ -330,7 +330,8 @@ class DiffViewerWidget(WIDGET, BASE):
                 # whereas the new format additionally includes the dataset name
                 # and element type eg.
                 # 'nz_pipelines:feature:49:U-'
-                # TODO - remove support for 'old' format
+                # TODO - remove support for 'old' format, requires users to have upgraded
+                #  this plugin first
                 try:
                     changetype, featid = feat["id"].split("::")
                     elementtype = None
@@ -346,7 +347,8 @@ class DiffViewerWidget(WIDGET, BASE):
                         new = {}
                     else:
                         # switch on the type of format string that was found
-                        # TODO - remove support for 'old' format
+                        # TODO - remove support for 'old' format, requires users to have upgraded
+                        #  this plugin first
                         if elementtype:
                             old = changes[f"{dataset}:{elementtype}:{featid}:U-"]
                             new = changes[f"{dataset}:{elementtype}:{featid}:U+"]
