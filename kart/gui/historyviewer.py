@@ -321,8 +321,9 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def restoreDatasets(self, item):
         ALL_DATASETS = "Restore all datasets"
-        vectorLayers, tables = self.repo.datasets()
+        vectorLayers, tables, pointclouds = self.repo.datasets()
         datasets = [ALL_DATASETS]
+        datasets.extend(pointclouds)
         datasets.extend(vectorLayers)
         datasets.extend(tables)
         dataset, ok = QInputDialog.getItem(

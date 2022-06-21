@@ -21,14 +21,14 @@ from qgis.core import (
     Qgis,
     QgsVectorLayer,
     QgsVectorFileWriter,
+    QgsPointCloudLayer,
     QgsProject,
     QgsMimeDataUtils,
+    QgsIconUtils,
 )
 
 from kart.kartapi import (
-    repos,
-    addRepo,
-    removeRepo,
+    repo_manager,
     Repository,
     executeskart,
     KartException,
@@ -73,6 +73,7 @@ discardIcon = icon("reset.png")
 datasetIcon = icon("dataset.png")
 vectorDatasetIcon = icon("vector-polyline.png")
 tableIcon = icon("table.png")
+pcDatasetIcon = QgsIconUtils.iconPointCloud()
 mergeIcon = icon("merge.png")
 addtoQgisIcon = icon("openinqgis.png")
 diffIcon = icon("changes.png")
@@ -196,7 +197,7 @@ class ReposItem(RefreshableItem):
         self.populate()
 
     def populate(self):
-        for repo in repos():
+        for repo in repo_manager.repos:
             item = RepoItem(repo)
             self.addChild(item)
 
@@ -271,7 +272,7 @@ class ReposItem(RefreshableItem):
             self.addRepoToUI(repo)
 
     def addRepoToUI(self, repo):
-        addRepo(repo)
+        repo_manager.add(repo)
         item = RepoItem(repo)
         self.addChild(item)
         item.setExpanded(True)
@@ -376,7 +377,7 @@ class RepoItem(RefreshableItem):
     def removeRepository(self):
         if confirm("Are you sure you want to remove this repository?"):
             self.parent().takeChild(self.parent().indexOfChild(self))
-            removeRepo(self.repo)
+            repo_manager.remove(self.repo)
 
     @executeskart
     def showLog(self):
@@ -402,6 +403,11 @@ class RepoItem(RefreshableItem):
 
     @waitcursor
     def _exportToGpkgAndImportIntoRepo(self, filepath):
+        pcLayer = QgsPointCloudLayer(filepath, "", "pdal")
+        if pcLayer.isValid():
+            self._importPCIntoRepo(filepath)
+            return
+
         layer = QgsVectorLayer(filepath, "", "ogr")
         if not layer.isValid():
             iface.messageBar().pushMessage(
@@ -429,6 +435,16 @@ class RepoItem(RefreshableItem):
     @executeskart
     def _importIntoRepo(self, source):
         self.repo.importIntoRepo(source)
+        iface.messageBar().pushMessage(
+            "Import", "Layer correctly imported", level=Qgis.Info
+        )
+        if self.populated:
+            self.datasetsItem.refreshContent()
+        self.setTitle()  # In case it's the first commit, update title to add branch name
+
+    @executeskart
+    def _importPCIntoRepo(self, source):
+        self.repo.importPCIntoRepo(source)
         iface.messageBar().pushMessage(
             "Import", "Layer correctly imported", level=Qgis.Info
         )
@@ -631,12 +647,15 @@ class DatasetsItem(RefreshableItem):
 
     @executeskart
     def populate(self):
-        vectorDatasets, tables = self.repo.datasets()
+        vectorDatasets, tables, pointclouds = self.repo.datasets()
+        for pointcloud in pointclouds:
+            item = DatasetItem(pointcloud, self.repo, DatasetItem.TYPE_POINTCLOUD)
+            self.addChild(item)
         for dataset in vectorDatasets:
-            item = DatasetItem(dataset, self.repo, False)
+            item = DatasetItem(dataset, self.repo, DatasetItem.TYPE_VECTOR)
             self.addChild(item)
         for table in tables:
-            item = DatasetItem(table, self.repo, True)
+            item = DatasetItem(table, self.repo, DatasetItem.TYPE_TABLE)
             self.addChild(item)
 
     def _actions(self):
@@ -644,14 +663,23 @@ class DatasetsItem(RefreshableItem):
 
 
 class DatasetItem(QTreeWidgetItem):
-    def __init__(self, name, repo, isTable):
+    TYPE_VECTOR = "layer"
+    TYPE_TABLE = "table"
+    TYPE_POINTCLOUD = "pointcloud"
+
+    def __init__(self, name, repo, datatype):
         QTreeWidgetItem.__init__(self)
         self.name = name
         self.repo = repo
-        self.isTable = isTable
+        self.datatype = datatype
 
         self.setText(0, name)
-        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
+        if self.datatype == self.TYPE_VECTOR:
+            self.setIcon(0, vectorDatasetIcon)
+        elif self.datatype == self.TYPE_TABLE:
+            self.setIcon(0, tableIcon)
+        elif self.datatype == self.TYPE_POINTCLOUD:
+            self.setIcon(0, pcDatasetIcon)
 
     def actions(self):
         actions = [("Add to QGIS project", self.addToProject, addtoQgisIcon)]

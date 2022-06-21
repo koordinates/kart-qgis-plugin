@@ -26,7 +26,7 @@ from qgis.PyQt.QtWidgets import QAction, QInputDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
-from kart.kartapi import repoForLayer, executeskart
+from kart.kartapi import repo_manager, executeskart
 from kart.utils import setting, AUTOCOMMIT
 
 pluginPath = os.path.dirname(__file__)
@@ -121,7 +121,7 @@ class LayerTracker:
     def _kartActiveLayerAndRepo(self):
         layers = []
         for layer in iface.layerTreeView().selectedLayers():
-            repo = repoForLayer(layer)
+            repo = repo_manager.forLayer(layer)
             if repo is not None:
                 layers.append((layer, repo))
         if len(layers) > 1:
@@ -136,7 +136,7 @@ class LayerTracker:
 
     def layerAdded(self, layer):
         if isinstance(layer, QgsVectorLayer):
-            repo = repoForLayer(layer)
+            repo = repo_manager.forLayer(layer)
             if repo is not None:
                 func = _f(partial(self.commitLayerChanges, layer))
                 layer.afterCommitChanges.connect(func)
@@ -191,7 +191,7 @@ class LayerTracker:
         self.clearRubberBands()
         usedRepos = []
         for layer in QgsProject.instance().mapLayers().values():
-            repo = repoForLayer(layer)
+            repo = repo_manager.forLayer(layer)
             if repo is not None and repo not in usedRepos:
                 usedRepos.append(repo)
                 rect = repo.spatialFilter()
@@ -344,7 +344,7 @@ class LayerTracker:
 
     @executeskart
     def commitLayerChanges(self, layer):
-        repo = repoForLayer(layer)
+        repo = repo_manager.forLayer(layer)
         if repo is not None:
             auto = setting(AUTOCOMMIT)
             if auto:

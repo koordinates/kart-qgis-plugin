@@ -1,3 +1,4 @@
+import typing
 import json
 import locale
 import math
@@ -6,16 +7,15 @@ import re
 import subprocess
 import sys
 import tempfile
+import glob
 
-from functools import partial
+from functools import partial, cache
 
 from urllib.parse import urlparse
 
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
-from qgis.PyQt.QtWidgets import (
-    QApplication,
-)
+from qgis.PyQt.QtWidgets import QApplication
 
 from qgis.core import (
     QgsDataSourceUri,
@@ -25,6 +25,7 @@ from qgis.core import (
     QgsRectangle,
     QgsReferencedRectangle,
     QgsVectorLayer,
+    QgsPointCloudLayer,
     Qgis,
 )
 from qgis.utils import iface
@@ -42,11 +43,22 @@ class KartException(Exception):
     pass
 
 
-class KartNotSupportedOperationException(Exception):
+class KartNotConfigured(KartException):
     pass
 
 
-def executeskart(f):
+class KartNotSupportedOperationException(KartException):
+    pass
+
+
+def executeskart(f: typing.Callable) -> typing.Callable:
+    """
+    Decorator that wraps functions that invoke kart, checking
+    that kart is installed and raising an appropriate user error
+    if it is not present. Also provides some common response
+    messages from kart errors.
+    """
+
     def inner(*args):
         try:
             if checkKartInstalled():
@@ -79,7 +91,12 @@ def executeskart(f):
     return inner
 
 
-def kartExecutable():
+@cache
+def kartExecutable() -> str:
+    """
+    Returns the path to the installed kart executable or raises
+    KartNotConfigured
+    """
     if os.name == "nt":
         defaultFolder = os.path.join(os.environ["PROGRAMFILES"], "Kart")
     elif sys.platform == "darwin":
@@ -91,13 +108,20 @@ def kartExecutable():
         path = os.path.join(folder, exe_name)
         if os.path.isfile(path):
             return path
-    return path
+
+    raise KartNotConfigured()
 
 
-def checkKartInstalled(showMessage=True):
+def checkKartInstalled(showMessage: bool = True) -> bool:
+    """
+    Checks that Kart is installed and comaptible with the required
+    version for this plugin. Returns an appropriate message if
+    `showMessage` is true
+    """
     version = installedVersion()
     supported_major, supported_minor, supported_patch = SUPPORTED_VERSION.split(".")
     msg = ""
+    installed = True
     if version is None:
         msg = (
             "<p><b>Kart is not installed or your Kart installation "
@@ -106,6 +130,7 @@ def checkKartInstalled(showMessage=True):
             "You can also download releases from <a href='https://kartproject.org'>"
             "https://kartproject.org</a>.</p>"
         )
+        installed = False
     else:
         major, minor, patch = version.split(".")[:3]
         versionOk = major == supported_major and (
@@ -120,76 +145,57 @@ def checkKartInstalled(showMessage=True):
                 "You can also download releases from <a href='https://kartproject.org'>"
                 "https://kartproject.org</a>.</p>"
             )
-    if msg:
-        if showMessage:
-            dlg = InstallationWarningDialog(msg, SUPPORTED_VERSION)
-            dlg.exec()
-            installed = checkKartInstalled(False)
-            if installed:
-                setSetting(KARTPATH, "")
-                iface.messageBar().pushMessage(
-                    "Install",
-                    "Kart has been correctly installed",
-                    level=Qgis.Success,
-                )
-                return True
-            else:
-                iface.messageBar().pushMessage(
-                    "Install",
-                    "Kart was not installed. Please install it manually.",
-                    level=Qgis.Warning,
-                )
-        return False
-    else:
-        return True
+            installed = False
 
-
-# Cached values, to avoid calling kart unless path is changed in settings
-
-kartVersion = None
-kartPath = None
-
-
-def installedVersion():
-    global kartVersion
-    global kartPath
-    path = setting(KARTPATH)
-    if path is not None and path == kartPath:
-        return kartVersion
-    else:
-        try:
-            version = executeKart(["--version"], os.path.dirname(__file__))
-            if not version.startswith("Kart v"):
-                raise Exception()
-            else:
-                versionnum = "".join(
-                    [c for c in version.split(" ")[1] if c.isdigit() or c == "."]
-                )
-                kartVersion = versionnum
-                kartPath = path
-                return versionnum
-        except Exception:
-            kartVersion = None
-            kartPath = None
-            return None
-
-
-def kartVersionDetails():
-    path = setting(KARTPATH)
-    errtxt = (
-        f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
-    )
-    try:
-        version = executeKart(["--version"], os.path.dirname(__file__))
-        if not version.startswith("Kart v"):
-            return errtxt
+    if msg and showMessage:
+        dlg = InstallationWarningDialog(msg, SUPPORTED_VERSION)
+        dlg.exec()
+        if installed:
+            iface.messageBar().pushMessage(
+                "Install",
+                "Kart has been correctly installed",
+                level=Qgis.Success,
+            )
         else:
-            return version
-    except Exception:
-        return errtxt
+            iface.messageBar().pushMessage(
+                "Install",
+                "Kart was not installed. Please install it manually.",
+                level=Qgis.Warning,
+            )
+
+    return installed
 
 
-def executeKart(commands, path=None, jsonoutput=False, feedback=None):
+def installedVersion() -> typing.Optional[str]:
+    """
+    Returns the version reported by Kart
+    """
+    VERSION_MATCH = r"Kart v(?P<version>\d+\.\d+\.\d+).*"
+    try:
+        match = re.match(VERSION_MATCH, kartVersionDetails())
+        if match:
+            return match["version"]
+
+    except KartException:
+        return None
+
+
+def kartVersionDetails() -> str:
+    """
+    Gets the Kart version information as returned by `kart --version`
+    """
+    return executeKart(["--version"], os.path.dirname(__file__))
+
+
+def executeKart(
+    commands: typing.List[str],
+    path: typing.Optional[str] = None,
+    jsonoutput: bool = False,
+    feedback: typing.Optional[typing.Callable] = None,
+) -> typing.Any:
+    """
+    Executes kart commands given arguments `commands`.
+    """
     commands.insert(0, kartExecutable())
     if jsonoutput:
         commands.append("-ojson")
@@ -199,6 +205,9 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         executeKart.env = os.environ.copy()
         if "PYTHONHOME" in executeKart.env:
             executeKart.env.pop("PYTHONHOME")
+
+        # Add in some demo things
+        executeKart.env["X_KART_POINT_CLOUDS"] = "1"
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
@@ -219,11 +228,13 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             if feedback is not None:
                 output = []
                 err = []
-                for line in proc.stderr:
-                    feedback(line)
-                    err.append(line)
-                for line in proc.stdout:
-                    output.append(line)
+                if proc.stderr:
+                    for line in proc.stderr:
+                        feedback(line)
+                        err.append(line)
+                if proc.stdout:
+                    for line in proc.stdout:
+                        output.append(line)
                 stdout = "".join(output)
                 stderr = "".join(err)
             else:
@@ -240,57 +251,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         raise KartException(str(e))
     finally:
         QApplication.restoreOverrideCursor()
-
-
-_repos = None
-
-
-def repos():
-    if _repos is None:
-        readReposFromSettings()
-    return _repos
-
-
-def readReposFromSettings():
-    global _repos
-    s = setting("repos")
-    if s is None:
-        _repos = []
-    else:
-        _repos = []
-        paths = s.split("|")
-        for path in paths:
-            repo = Repository(path)
-            if repo.isInitialized():
-                _repos.append(repo)
-
-
-def addRepo(repo):
-    repos()
-    _repos.append(repo)
-    saveRepos()
-
-
-def removeRepo(repo):
-    for r in _repos:
-        if r.path == repo.path:
-            _repos.remove(r)
-            break
-    saveRepos()
-
-
-def saveRepos():
-    s = "|".join([repo.path for repo in repos()])
-    setSetting("repos", s)
-
-
-def repoForLayer(layer):
-    try:
-        for repo in repos():
-            if repo.layerBelongsToRepo(layer):
-                return repo
-    except KartException:
-        return None
 
 
 def _processProgressLine(bar, line):
@@ -425,6 +385,12 @@ class Repository:
     def importIntoRepo(self, source):
         self.executeKart(["import", source])
 
+    def importPCIntoRepo(self, source):
+        title = os.path.basename(source).split(".")[0]
+        self.executeKart(["point-cloud-import", source, "--dataset-path", title])
+        # HACKFIX: recreate the geopackage to fix HEAD
+        self.executeKart(["create-workingcopy", "--delete-existing"])
+
     def checkUserConfigured(self):
         configDict = self._config()
         if "user.name" in configDict and "user.email" in configDict:
@@ -507,14 +473,18 @@ class Repository:
     def datasets(self):
         vectorLayers = []
         tables = []
+        pointclouds = []
         meta = self.executeKart(["meta", "get"], True)
         for name, dataset in meta.items():
             crsProps = [k for k in dataset.keys() if k.startswith("crs/")]
-            if crsProps:
+            propNames = [p["name"] for p in dataset["schema.json"]]
+            if "NumberOfReturns" in propNames:
+                pointclouds.append(name)
+            elif crsProps:
                 vectorLayers.append(name)
             else:
                 tables.append(name)
-        return vectorLayers, tables
+        return vectorLayers, tables, pointclouds
 
     def branches(self):
         branches = list(self.executeKart(["branch"], True).values())[0]["branches"]
@@ -730,9 +700,20 @@ class Repository:
     def workingCopyLayer(self, dataset):
         location = self.workingCopyLocation()
         path = os.path.join(self.path, location)
+
+        pc_paths = glob.glob(os.path.join(self.path, dataset, "*.laz"))
+        if pc_paths:
+            layer = QgsPointCloudLayer(
+                pc_paths[0],
+                dataset,
+                "copc"
+            )
+            return layer
+
         if os.path.exists(path):
             layer = QgsVectorLayer(f"{path}|layername={dataset}", dataset)
             return layer
+
         elif location.lower().startswith("postgres"):
             parse = urlparse(location)
             host = parse.hostname or "localhost"
@@ -779,3 +760,61 @@ class Repository:
         for layer in QgsProject.instance().mapLayers().values():
             if self.layerBelongsToRepo(layer):
                 layer.triggerRepaint()
+
+
+class RepoManager:
+
+    _repos: typing.List["Repository"] = []
+
+    def __init__(self):
+        self.load()
+
+    @property
+    def repos(self) -> typing.List["Repository"]:
+        return self._repos
+
+    def load(self):
+        """
+        Loads the stored repositories from settings
+        """
+        stored = setting("repos")
+        if stored is None:
+            return
+
+        paths = str(stored).split("|")
+        for path in paths:
+            repo = Repository(path)
+            if repo.isInitialized():
+                self._repos.append(repo)
+
+    def save(self):
+        """
+        Saves the current list of repositories
+        """
+        s = "|".join([repo.path for repo in self._repos])
+        setSetting("repos", s)
+
+    def add(self, repo: "Repository"):
+        """
+        Add a new Repository to the manager
+        """
+        self._repos.append(repo)
+        self.save()
+
+    def remove(self, repo: "Repository"):
+        """
+        Removes a Repository from the manager by path
+        """
+        for r in self._repos:
+            if r.path == repo.path:
+                self._repos.remove(r)
+                self.save()
+                break
+
+    def forLayer(self, layer) -> typing.Optional["Repository"]:
+        for repo in self._repos:
+            if repo.layerBelongsToRepo(layer):
+                return repo
+
+
+repo_manager = RepoManager()

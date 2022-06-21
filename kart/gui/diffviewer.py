@@ -29,6 +29,7 @@ from qgis.core import (
     QgsGeometry,
     QgsPointXY,
     QgsWkbTypes,
+    QgsIconUtils,
 )
 
 from qgis.utils import iface
@@ -59,6 +60,7 @@ def icon(f):
 
 vectorDatasetIcon = icon("vector-polyline.png")
 tableIcon = icon("table.png")
+pcDatasetIcon = QgsIconUtils.iconPointCloud()
 featureIcon = icon("geometry.png")
 addedIcon = icon("add.png")
 removedIcon = icon("remove.png")
@@ -304,7 +306,10 @@ class DiffViewerWidget(WIDGET, BASE):
                     dataset
                 )
             crs = self.workingCopyLayerCrs[dataset]
-            datasetItem = DatasetItem(dataset, crs is None)
+            datasetItem = DatasetItem(
+                dataset,
+                DatasetItem.TYPE_TABLE if crs is None else DatasetItem.TYPE_VECTOR,
+            )
             addedItem = QTreeWidgetItem()
             addedItem.setText(0, "Added")
             addedItem.setIcon(0, addedIcon)
@@ -613,11 +618,22 @@ class FeatureItem(QTreeWidgetItem):
 
 
 class DatasetItem(QTreeWidgetItem):
-    def __init__(self, dataset, isTable):
+    TYPE_VECTOR = "layer"
+    TYPE_TABLE = "table"
+    TYPE_POINTCLOUD = "pointcloud"
+
+    def __init__(self, dataset, datatype):
         QTreeWidgetItem.__init__(self)
         self.dataset = dataset
-        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
+        self.datatype = datatype
+
         self.setText(0, dataset)
+        if self.datatype == self.TYPE_VECTOR:
+            self.setIcon(0, vectorDatasetIcon)
+        elif self.datatype == self.TYPE_TABLE:
+            self.setIcon(0, tableIcon)
+        elif self.datatype == self.TYPE_POINTCLOUD:
+            self.setIcon(0, pcDatasetIcon)
 
 
 class DiffItem(QTableWidgetItem):

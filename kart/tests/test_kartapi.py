@@ -90,11 +90,11 @@ class TestKartapi(unittest.TestCase):
                 os.path.dirname(__file__), "data", "layers", "testlayer.gpkg"
             )
             repo.importIntoRepo(gkpgPath)
-            vectorLayers, tables = repo.datasets()
+            vectorLayers, tables, pointclouds = repo.datasets()
             assert vectorLayers == ["testlayer"]
 
     def testDatasets(self):
-        vectorLayers, tables = self.testRepo.datasets()
+        vectorLayers, tables, pointclouds = self.testRepo.datasets()
         assert vectorLayers == ["testlayer"]
         assert tables == []
 
