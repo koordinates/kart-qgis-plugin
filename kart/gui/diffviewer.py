@@ -323,7 +323,22 @@ class DiffViewerWidget(WIDGET, BASE):
             changes = {feat["id"]: feat for feat in changes}
             usedids = []
             for feat in changes.values():
-                changetype, featid = feat["id"].split("::")
+                # Try to parse the feature id string in the old format first
+                # and if that fails try the new format. The old format is
+                # the change type and numeric id, eg.
+                # 'U-::49'
+                # whereas the new format additionally includes the dataset name
+                # and element type eg.
+                # 'nz_pipelines:feature:49:U-'
+                # TODO - remove support for 'old' format, requires users to have upgraded
+                #  this plugin first
+                is_new_id_format = False
+                elementtype = None
+                try:
+                    changetype, featid = feat["id"].split("::")
+                except ValueError:
+                    _, elementtype, featid, changetype = feat["id"].split(":")
+                    is_new_id_format = True
                 changetype = changetype[0]
                 if featid not in usedids:
                     if changetype == "I":
@@ -333,8 +348,12 @@ class DiffViewerWidget(WIDGET, BASE):
                         old = feat
                         new = {}
                     else:
-                        old = changes[f"U-::{featid}"]
-                        new = changes[f"U+::{featid}"]
+                        if is_new_id_format:
+                            old = changes[f"{dataset}:{elementtype}:{featid}:U-"]
+                            new = changes[f"{dataset}:{elementtype}:{featid}:U+"]
+                        else:
+                            old = changes[f"U-::{featid}"]
+                            new = changes[f"U+::{featid}"]
                     usedids.append(featid)
                     item = FeatureItem(featid, old, new, dataset)
                     subItems[changetype].addChild(item)
