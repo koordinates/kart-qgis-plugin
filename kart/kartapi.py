@@ -200,6 +200,9 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         if "PYTHONHOME" in executeKart.env:
             executeKart.env.pop("PYTHONHOME")
 
+    # run in kart in helper mode if available
+    executeKart.env['KART_USE_HELPER'] = '1'
+
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
