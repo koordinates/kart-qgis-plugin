@@ -288,10 +288,10 @@ class LayerTracker:
                     level=Qgis.Warning,
                 )
                 return
-            changes = repo.diff(dataset=dataset)
-            if changes.get(dataset):
+            diff = repo.diff(dataset=dataset)
+            if diff.get(dataset):
                 dialog = DiffViewerDialog(
-                    iface.mainWindow(), changes, repo, showRecoverNewButton=False
+                    iface.mainWindow(), diff, repo, showRecoverNewButton=False
                 )
                 dialog.exec()
             else:

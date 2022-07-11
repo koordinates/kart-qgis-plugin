@@ -466,11 +466,11 @@ class RepoItem(RefreshableItem):
                 level=Qgis.Warning,
             )
             return
-        changes = self.repo.diff()
-        hasChanges = any([bool(c) for c in changes.values()])
+        diff = self.repo.diff()
+        hasChanges = any([bool(c) for c in diff.values()])
         if hasChanges:
             dialog = DiffViewerDialog(
-                iface.mainWindow(), changes, self.repo, showRecoverNewButton=False
+                iface.mainWindow(), diff, self.repo, showRecoverNewButton=False
             )
             dialog.exec()
         else:
@@ -684,7 +684,7 @@ class DatasetItem(QTreeWidgetItem):
 
     @executeskart
     def commitChanges(self):
-        changes = changes = self.repo.changes().get(self.name)
+        changes = self.repo.changes().get(self.name)
         if changes is None:
             iface.messageBar().pushMessage(
                 "Commit", "Nothing to commit", level=Qgis.Warning
@@ -713,10 +713,10 @@ class DatasetItem(QTreeWidgetItem):
                 level=Qgis.Warning,
             )
             return
-        changes = self.repo.diff(dataset=self.name)
-        if changes.get(self.name):
+        diff = self.repo.diff(dataset=self.name)
+        if diff.get(self.name):
             dialog = DiffViewerDialog(
-                iface.mainWindow(), changes, self.repo, showRecoverNewButton=False
+                iface.mainWindow(), diff, self.repo, showRecoverNewButton=False
             )
             dialog.exec()
         else:
