@@ -74,7 +74,7 @@ WIDGET, BASE = uic.loadUiType(
 
 
 class DiffViewerDialog(QDialog):
-    def __init__(self, parent, changes, repo, showRecoverNewButton=True):
+    def __init__(self, parent, diff, repo, showRecoverNewButton=True):
         super(QDialog, self).__init__(parent)
         self.setWindowFlags(Qt.Window)
         layout = QVBoxLayout()
@@ -82,7 +82,7 @@ class DiffViewerDialog(QDialog):
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         layout.addWidget(self.bar)
-        self.history = DiffViewerWidget(changes, repo, showRecoverNewButton)
+        self.history = DiffViewerWidget(diff, repo, showRecoverNewButton)
         self.history.workingLayerChanged.connect(self.workingLayerChanged)
         layout.addWidget(self.history)
         self.setLayout(layout)
@@ -101,9 +101,9 @@ class DiffViewerWidget(WIDGET, BASE):
 
     workingLayerChanged = pyqtSignal()
 
-    def __init__(self, changes, repo, showRecoverNewButton):
+    def __init__(self, diff, repo, showRecoverNewButton):
         super(DiffViewerWidget, self).__init__()
-        self.changes = changes
+        self.diff = diff
         self.repo = repo
         self.oldLayer = None
         self.newLayer = None
@@ -302,7 +302,7 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def fillTree(self):
         self.featuresTree.clear()
-        for dataset, changes in self.changes.items():
+        for dataset, changes in self.diff.items():
             if dataset not in self.workingCopyLayerCrs:
                 self.workingCopyLayerCrs[dataset] = self.repo.workingCopyLayerCrs(
                     dataset
