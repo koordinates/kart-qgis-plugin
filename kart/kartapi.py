@@ -87,7 +87,7 @@ def kartExecutable():
     else:
         defaultFolder = "/opt/kart"
     folder = setting(KARTPATH) or defaultFolder
-    for exe_name in ("kart.exe", "kart_cli", "kart"):
+    for exe_name in ("kart.exe", "kart_cli_helper", "kart_cli", "kart"):
         path = os.path.join(folder, exe_name)
         if os.path.isfile(path):
             return path
