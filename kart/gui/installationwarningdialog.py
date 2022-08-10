@@ -48,10 +48,10 @@ class DownloadAndInstallThread(QThread):
                     r"system32\WindowsPowerShell\v1.0\powershell.exe",
                 )
                 command = (
-                    fr"""{powershell} -Command "& {{ Start-Process 'msiexec' """
-                    fr"""-ArgumentList @('/a', '{msipath}', '/qb', """
+                    rf"""{powershell} -Command "& {{ Start-Process 'msiexec' """
+                    rf"""-ArgumentList @('/a', '{msipath}', '/qb', """
                     r"""'TARGETDIR=\"%ProgramFiles%\"')"""
-                    fr""" -Verb RunAs -Wait}}" """
+                    rf""" -Verb RunAs -Wait}}" """
                 )
                 if msipath is not None:
                     subprocess.call(command, shell=True)

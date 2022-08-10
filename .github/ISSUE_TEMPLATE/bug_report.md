@@ -24,7 +24,7 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Version info (this is important!):**
- - Operating System (e.g. Windows 10, macOS): 
+ - Operating System (e.g. Windows 10, macOS):
  - QGIS, Kart & Plugin details:
   ```
 Paste the contents from "Plugins...Kart...About Kart" into here
