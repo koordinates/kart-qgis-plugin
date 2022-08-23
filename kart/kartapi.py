@@ -590,7 +590,7 @@ class Repository:
     def diff(self, refa=None, refb=None, dataset=None, featureid=None):
         changes = {}
         try:
-            commands = ["diff", "-ogeojson:extracompact"]
+            commands = ["diff", "--output-format=geojson:extracompact"]
             if refa and refb:
                 commands.append(f"{refb}...{refa}")
             elif refa:
@@ -657,7 +657,7 @@ class Repository:
         return False
 
     def conflicts(self):
-        commands = ["conflicts", "-ogeojson:extracompact"]
+        commands = ["conflicts", "--output-format=geojson:extracompact"]
         features = json.loads(self.executeKart(commands)).get("features", [])
         conflicts = {}
         for feature in features:
