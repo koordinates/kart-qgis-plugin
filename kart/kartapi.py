@@ -35,7 +35,7 @@ from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.utils import progressBar, setting, setSetting, KARTPATH
 from kart import logging
 
-SUPPORTED_VERSION = "0.10.8"
+SUPPORTED_VERSION = "0.11.0"
 
 
 class KartException(Exception):
@@ -590,7 +590,7 @@ class Repository:
     def diff(self, refa=None, refb=None, dataset=None, featureid=None):
         changes = {}
         try:
-            commands = ["diff", "-ogeojson", "--json-style", "extracompact"]
+            commands = ["diff", "--output-format=geojson:extracompact"]
             if refa and refb:
                 commands.append(f"{refb}...{refa}")
             elif refa:
@@ -657,7 +657,7 @@ class Repository:
         return False
 
     def conflicts(self):
-        commands = ["conflicts", "-ogeojson", "--json-style", "extracompact"]
+        commands = ["conflicts", "--output-format=geojson:extracompact"]
         features = json.loads(self.executeKart(commands)).get("features", [])
         conflicts = {}
         for feature in features:
