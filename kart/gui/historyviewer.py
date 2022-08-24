@@ -256,8 +256,8 @@ class HistoryTree(QTreeWidget):
                 Qgis.Warning,
             )
             return
-        changes = self.repo.diff(refa, parent)
-        dialog = DiffViewerDialog(self, changes, self.repo)
+        diff = self.repo.diff(refa, parent)
+        dialog = DiffViewerDialog(self, diff, self.repo)
         dialog.exec()
 
     @executeskart
@@ -270,8 +270,8 @@ class HistoryTree(QTreeWidget):
                 Qgis.Warning,
             )
             return
-        changes = self.repo.diff(refa, refb)
-        dialog = DiffViewerDialog(self, changes, self.repo)
+        diff = self.repo.diff(refa, refb)
+        dialog = DiffViewerDialog(self, diff, self.repo)
         dialog.exec()
 
     @executeskart
@@ -294,9 +294,9 @@ class HistoryTree(QTreeWidget):
                 Qgis.Warning,
             )
             return
-        changes = self.repo.diff(refb, refa)
-        for dataset in changes:
-            geojson = {"type": "FeatureCollection", "features": changes[dataset]}
+        diff = self.repo.diff(refb, refa)
+        for dataset in diff:
+            geojson = {"type": "FeatureCollection", "features": diff[dataset]}
             layer = QgsVectorLayer(
                 json.dumps(geojson), f"{dataset}_diff_{refa[:7]}", "ogr"
             )

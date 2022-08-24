@@ -16,7 +16,7 @@ $ git clone https://github.com/koordinates/kart-qgis-plugin.git
 - Create a link between the repository folder and the QGIS 3 plugins folder.
 
 ```console
-$ cd kart-qgis-plugn
+$ cd kart-qgis-plugin
 $ python helper.py install
 ```
 
