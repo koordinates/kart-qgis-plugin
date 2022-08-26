@@ -20,8 +20,9 @@ from kart.kartapi import (
     Repository,
     readReposFromSettings,
     installedVersion,
+    executeKart,
 )
-from kart.utils import setSetting, KARTPATH
+from kart.utils import HELPERMODE, setSetting, KARTPATH
 from kart.tests.utils import patch_iface
 
 start_app()
@@ -57,6 +58,23 @@ class TestKartapi(unittest.TestCase):
         setSetting(KARTPATH, "wrongpath")
         ret = kartVersionDetails()
         assert "Kart is not correctly configured" in ret
+
+    def testEnableUseHelper(self):
+        setSetting(HELPERMODE, True)
+        ret = kartVersionDetails()  # called to set up environment var
+        assert executeKart.env['KART_USE_HELPER'] == '1', "Helper mode was not enabled"
+
+    def testChangeHelperMode(self):
+        """
+        KART_USE_HELPER should be set each time executeKart is called so 
+        a change of setting is applied appropriately
+        """
+        setSetting(HELPERMODE, True)
+        ret = kartVersionDetails()  # called to set up environment var
+        setSetting(HELPERMODE, False)
+        ret = kartVersionDetails()  # called to set up environment var
+        assert executeKart.env['KART_USE_HELPER'] == '', "Helper mode was not disabled"
+
 
     def testKartVersion(self):
         version = installedVersion()
