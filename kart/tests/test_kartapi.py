@@ -61,12 +61,12 @@ class TestKartapi(unittest.TestCase):
 
     def testEnableUseHelper(self):
         setSetting(HELPERMODE, True)
-        ret = kartVersionDetails()  # called to set up environment var
+        kartVersionDetails()  # called to set up environment var
         assert executeKart.env['KART_USE_HELPER'] == '1', "Helper mode was not enabled"
 
     def testChangeHelperMode(self):
         """
-        KART_USE_HELPER should be set each time executeKart is called so 
+        KART_USE_HELPER should be set each time executeKart is called so
         a change of setting is applied appropriately
         """
         setSetting(HELPERMODE, True)
@@ -74,7 +74,6 @@ class TestKartapi(unittest.TestCase):
         setSetting(HELPERMODE, False)
         kartVersionDetails()  # called to set up environment var
         assert executeKart.env['KART_USE_HELPER'] == '', "Helper mode was not disabled"
-
 
     def testKartVersion(self):
         version = installedVersion()
