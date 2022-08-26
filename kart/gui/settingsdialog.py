@@ -6,7 +6,7 @@ from qgis.gui import QgsMessageBar
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
-from kart.utils import setting, setSetting, KARTPATH, AUTOCOMMIT, DIFFSTYLES
+from kart.utils import setting, setSetting, KARTPATH, HELPERMODE, AUTOCOMMIT, DIFFSTYLES
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "settingsdialog.ui")
@@ -35,6 +35,7 @@ class SettingsDialog(BASE, WIDGET):
 
     def setValues(self):
         self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))
+        self.chkHelperMode.setChecked(setting(HELPERMODE))
         self.chkAutoCommit.setChecked(setting(AUTOCOMMIT))
         self.txtKartPath.setText(setting(KARTPATH))
 
@@ -47,6 +48,7 @@ class SettingsDialog(BASE, WIDGET):
 
     def okClicked(self):
         setSetting(KARTPATH, self.txtKartPath.text())
+        setSetting(HELPERMODE, self.chkHelperMode.isChecked())
         setSetting(AUTOCOMMIT, self.chkAutoCommit.isChecked())
         setSetting(DIFFSTYLES, self.comboDiffStyles.currentText())
         self.accept()

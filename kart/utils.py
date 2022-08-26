@@ -80,11 +80,12 @@ def layerFromSource(path):
 
 NAMESPACE = "kart"
 KARTPATH = "KartPath"
+HELPERMODE = "HelperMode"
 AUTOCOMMIT = "AutoCommit"
 DIFFSTYLES = "DiffStyles"
 LASTREPO = "LastRepo"
 
-setting_types = {AUTOCOMMIT: bool}
+setting_types = {HELPERMODE: bool, AUTOCOMMIT: bool}
 
 
 def setSetting(name, value):
