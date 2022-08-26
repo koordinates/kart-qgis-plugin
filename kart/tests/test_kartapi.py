@@ -70,9 +70,9 @@ class TestKartapi(unittest.TestCase):
         a change of setting is applied appropriately
         """
         setSetting(HELPERMODE, True)
-        ret = kartVersionDetails()  # called to set up environment var
+        kartVersionDetails()  # called to set up environment var
         setSetting(HELPERMODE, False)
-        ret = kartVersionDetails()  # called to set up environment var
+        kartVersionDetails()  # called to set up environment var
         assert executeKart.env['KART_USE_HELPER'] == '', "Helper mode was not disabled"
 
 
