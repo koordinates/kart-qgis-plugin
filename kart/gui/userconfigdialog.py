@@ -26,8 +26,8 @@ class UserConfigDialog(BASE, WIDGET):
 
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
-        self.txtUsername.setText(existingConfigDict.get('user.name'))
-        self.txtEmail.setText(existingConfigDict.get('user.email'))
+        self.txtUsername.setText(existingConfigDict.get("user.name"))
+        self.txtEmail.setText(existingConfigDict.get("user.email"))
 
     def okClicked(self):
         self.username = self.txtUsername.text().strip()

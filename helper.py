@@ -31,7 +31,7 @@ def package(version=None):
         cfg.read(os.path.join(src_dir, "metadata.txt"))
 
         if version:
-            cfg.set("general", "version", re.sub(r'^v', '', version))
+            cfg.set("general", "version", re.sub(r"^v", "", version))
 
         buf = StringIO()
         cfg.write(buf)
@@ -102,11 +102,14 @@ def publish(archive):
 
 
 def usage():
-    print((
-        "Usage:\n"
-        f"  {sys.argv[0]} package [VERSION]    Build a QGIS plugin zip file\n"
-        f"  {sys.argv[0]} install              Install in your local QGIS (for development)\n"
-    ), file=sys.stderr)
+    print(
+        (
+            "Usage:\n"
+            f"  {sys.argv[0]} package [VERSION]    Build a QGIS plugin zip file\n"
+            f"  {sys.argv[0]} install              Install in your local QGIS (for development)\n"
+        ),
+        file=sys.stderr,
+    )
     sys.exit(2)
 
 

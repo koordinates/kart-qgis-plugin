@@ -60,7 +60,7 @@ class TestKartapi(unittest.TestCase):
 
     def testKartVersion(self):
         version = installedVersion()
-        assert version == "0.10.7"
+        assert version == "0.11.5"
 
     def testStoreReposInSettings(self):
         repositories = repos()
@@ -132,7 +132,7 @@ class TestKartapi(unittest.TestCase):
         assert "testlayer" in diff
         features = diff["testlayer"]
         assert len(features) == 1
-        assert features[0]["id"].startswith("D::")
+        assert features[0]["id"].endswith(":D")
 
         diff = self.testRepo.diff("HEAD~1", "HEAD~2")
         assert "testlayer" in diff
@@ -185,7 +185,7 @@ class TestKartapi(unittest.TestCase):
         assert "testlayer" in diff
         features = diff["testlayer"]
         assert len(features) == 1
-        assert features[0]["id"].startswith("D::")
+        assert features[0]["id"].endswith(":D")
         folder.cleanup()
 
     def testSetSpatialFilter(self):
