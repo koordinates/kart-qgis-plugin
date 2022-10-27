@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        qgis_version: [release-3_16, 'final-3_22_12', latest]
+        qgis_version: [release-3_16, latest]
       fail-fast: false
 
     env:
