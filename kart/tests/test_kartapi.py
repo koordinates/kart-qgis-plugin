@@ -20,6 +20,7 @@ from kart.kartapi import (
     Repository,
     readReposFromSettings,
     installedVersion,
+    KartException,
 )
 from kart.utils import setSetting, KARTPATH
 from kart.tests.utils import patch_iface
@@ -271,3 +272,12 @@ class TestKartapi(unittest.TestCase):
         repo.deleteTag("mytag")
         assert repo.tags() == []
         folder.cleanup()
+
+    def testCloneAuthFailed(self):
+        with tempfile.TemporaryDirectory() as folder:
+            with self.assertRaises(KartException):
+                Repository.clone(
+                    "https://kart:abcdefghijklmnop@data.koordinates.com/"
+                    "land-information-new-zealand/layer-50804",
+                    folder,
+                )
