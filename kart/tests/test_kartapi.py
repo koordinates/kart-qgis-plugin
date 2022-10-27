@@ -1,7 +1,6 @@
 import os
 import tempfile
 import shutil
-from contextlib import contextmanager
 
 from qgis.core import (
     edit,
@@ -278,6 +277,7 @@ class TestKartapi(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             with self.assertRaises(KartException):
                 Repository.clone(
-                    "https://kart:abcdefghijklmnop@data.koordinates.com/land-information-new-zealand/layer-50804",
+                    "https://kart:abcdefghijklmnop@data.koordinates.com/"
+                    "land-information-new-zealand/layer-50804",
                     folder,
                 )
