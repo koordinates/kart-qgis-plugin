@@ -57,7 +57,7 @@ def executeskart(f):
             lines = str(ex).splitlines()
             msglines = []
             for line in lines:
-                if line.startswith("ERROR 1: Can't load"):
+                if line.startswith("ERROR 1: Can't load") or '.dylib' in line:
                     continue
                 if "The specified procedure could not be found" in line:
                     continue
@@ -201,7 +201,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             executeKart.env.pop("PYTHONHOME")
 
     # run in kart in helper mode if available
-    executeKart.env['KART_USE_HELPER'] = '1'
+    executeKart.env["KART_USE_HELPER"] = "1"
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
@@ -229,11 +229,12 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
                     output.append(line)
                 stdout = "".join(output)
                 stderr = "".join(err)
+                proc.communicate()  # need to get the returncode
             else:
                 stdout, stderr = proc.communicate()
             logging.debug(f"Command output: {stdout}")
             if proc.returncode:
-                raise Exception(stderr)
+                raise KartException(stderr)
             if jsonoutput:
                 return json.loads(stdout)
             else:
