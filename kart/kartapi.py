@@ -32,7 +32,7 @@ from qgis.utils import iface
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 
-from kart.utils import progressBar, setting, setSetting, KARTPATH
+from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
 SUPPORTED_VERSION = "0.11.5"
@@ -87,7 +87,7 @@ def kartExecutable():
     else:
         defaultFolder = "/opt/kart"
     folder = setting(KARTPATH) or defaultFolder
-    for exe_name in ("kart.exe", "kart_cli", "kart"):
+    for exe_name in ("kart.exe", "kart_cli_helper", "kart_cli", "kart"):
         path = os.path.join(folder, exe_name)
         if os.path.isfile(path):
             return path
@@ -200,8 +200,8 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         if "PYTHONHOME" in executeKart.env:
             executeKart.env.pop("PYTHONHOME")
 
-    # run in kart in helper mode if available
-    executeKart.env['KART_USE_HELPER'] = '1'
+    # always set the use helper env var as it is long lived and the setting may have changed
+    executeKart.env['KART_USE_HELPER'] = '1' if setting(HELPERMODE) else ''
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
