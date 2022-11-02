@@ -57,7 +57,8 @@ def executeskart(f):
             lines = str(ex).splitlines()
             msglines = []
             for line in lines:
-                if line.startswith("ERROR 1: Can't load"):
+                # skip lines that refer to missing loads of shared libraries
+                if line.startswith("ERROR 1: Can't load") or '.dylib' in line:
                     continue
                 if "The specified procedure could not be found" in line:
                     continue
@@ -207,7 +208,9 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
-
+        # TODO - all of this should be replaced by useage of QgsTask which
+        #  will execute on a background thread. There are a number of
+        #  ways in which this can deadlock
         with subprocess.Popen(
             commands,
             shell=os.name == "nt",
@@ -229,11 +232,12 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
                     output.append(line)
                 stdout = "".join(output)
                 stderr = "".join(err)
+                proc.communicate()  # need to get the returncode
             else:
                 stdout, stderr = proc.communicate()
             logging.debug(f"Command output: {stdout}")
             if proc.returncode:
-                raise Exception(stderr)
+                raise KartException(stderr)
             if jsonoutput:
                 return json.loads(stdout)
             else:
