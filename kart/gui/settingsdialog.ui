@@ -19,27 +19,39 @@
      <property name="title">
       <string>Kart executable</string>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+
+     <layout class="QVBoxLayout" name="verticalLayout1">
       <item>
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Path to Kart executable</string>
-        </property>
-       </widget>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+          <widget class="QLabel" name="label_2">
+            <property name="text">
+            <string>Path to Kart executable</string>
+            </property>
+          </widget>
+          </item>
+          <item>
+          <widget class="QLineEdit" name="txtKartPath">
+            <property name="placeholderText">
+            <string>[Leave empty to use default Kart installation path]</string>
+            </property>
+          </widget>
+          </item>
+          <item>
+          <widget class="QToolButton" name="btnBrowsePath">
+            <property name="text">
+            <string>...</string>
+            </property>
+          </widget>
+          </item>
+        </layout>
       </item>
       <item>
-       <widget class="QLineEdit" name="txtKartPath">
-        <property name="placeholderText">
-         <string>[Leave empty to use default Kart installation path]</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="btnBrowsePath">
-        <property name="text">
-         <string>...</string>
-        </property>
-       </widget>
+        <widget class="QCheckBox" name="chkHelperMode">
+          <property name="text">
+          <string>Use helper mode</string>
+          </property>
+        </widget>
       </item>
      </layout>
     </widget>
