@@ -744,7 +744,7 @@ class Repository:
         elif location.lower().startswith("postgres"):
             parse = urlparse(location)
             host = parse.hostname or "localhost"
-            port = parse.port or "5432"
+            port = str(parse.port) or "5432"
             database, schema = parse.path.strip("/").split("/", 1)
             username = parse.username
             password = parse.password
