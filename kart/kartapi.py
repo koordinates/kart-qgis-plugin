@@ -469,7 +469,7 @@ class Repository:
             else:
                 filt = dataset
 
-            commands = ["log", "-ojson", ref, "--", "--", filt]
+            commands = ["log", "-ojson", ref, "--", filt]
         else:
             commands = ["log", "-ojson", ref]
         ret = self.executeKart(commands)
@@ -480,13 +480,12 @@ class Repository:
                 "log",
                 ref,
                 "--graph",
-                "--format=format:%H%n ",
-                "--",
+                "-otext:%H%n",
                 "--",
                 filt,
             ]
         else:
-            commands = ["log", ref, "--graph", "--format=format:%H%n "]
+            commands = ["log", ref, "--graph", "-otext:%H%n"]
         logb = self.executeKart(commands)
         lines = logb.splitlines()
         lines.insert(0, "")
