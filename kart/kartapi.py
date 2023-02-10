@@ -35,7 +35,7 @@ from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
-SUPPORTED_VERSION = "0.11.5"
+SUPPORTED_VERSION = "0.12.1"
 
 
 class KartException(Exception):
@@ -469,7 +469,7 @@ class Repository:
             else:
                 filt = dataset
 
-            commands = ["log", "-ojson", ref, "--", "--", filt]
+            commands = ["log", "-ojson", ref, "--", filt]
         else:
             commands = ["log", "-ojson", ref]
         ret = self.executeKart(commands)
@@ -480,13 +480,12 @@ class Repository:
                 "log",
                 ref,
                 "--graph",
-                "--format=format:%H%n ",
-                "--",
+                "-otext:%H%n",
                 "--",
                 filt,
             ]
         else:
-            commands = ["log", ref, "--graph", "--format=format:%H%n "]
+            commands = ["log", ref, "--graph", "-otext:%H%n"]
         logb = self.executeKart(commands)
         lines = logb.splitlines()
         lines.insert(0, "")
