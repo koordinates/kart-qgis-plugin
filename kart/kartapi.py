@@ -35,7 +35,7 @@ from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
-SUPPORTED_VERSION = "0.12.1"
+SUPPORTED_VERSION = "0.12.2"
 
 
 class KartException(Exception):
@@ -450,7 +450,7 @@ class Repository:
 
     def commit(self, msg, dataset=None):
         if self.checkUserConfigured():
-            commands = ["commit", "-m", msg]
+            commands = ["commit", "-m", msg, "--no-editor"]
             if dataset is not None:
                 commands.append(dataset)
             self.executeKart(commands)
@@ -546,10 +546,9 @@ class Repository:
         return self.executeKart(["branch", "-d", branch])
 
     def mergeBranch(self, branch, msg="", noff=False, ffonly=False):
-        commands = ["merge", branch]
-        if not msg:
-            msg = f"Merge branch '{branch}' into {self.currentBranch()}"
-        commands.extend(["--message", msg])
+        commands = ["merge", branch, "--no-editor"]
+        if msg:
+            commands.extend(["--message", msg])
         if noff:
             commands.append("--no-ff")
         if ffonly:
@@ -715,7 +714,7 @@ class Repository:
             self.executeKart(["push", remote, branch])
 
     def pull(self, remote, branch):
-        ret = self.executeKart(["pull", remote, branch])
+        ret = self.executeKart(["pull", remote, branch, "--no-editor"])
         self.updateCanvas()
         return "kart conflicts" not in ret
 

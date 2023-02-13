@@ -78,7 +78,7 @@ class TestKartapi(unittest.TestCase):
 
     def testKartVersion(self):
         version = installedVersion()
-        assert version == "0.12.1"
+        assert version == "0.12.2"
 
     def testStoreReposInSettings(self):
         repositories = repos()
