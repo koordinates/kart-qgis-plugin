@@ -16,11 +16,11 @@ jobs:
         with:
           owner: koordinates
           repo: kart-qgis-plugin
-          tag: ${{ env.GITHUB_REF_NAME }}
-          file: "kart-${{ env.GITHUB_REF_NAME }}.zip"
+          tag: ${{ github.ref_name }}
+          file: "kart-${{ github.ref_name }}.zip"
 
       - name: Publish to QGIS
         env:
           QGIS_CREDENTIALS: ${{ secrets.QGIS_CREDENTIALS }}
         run: |
-          ./helper.py publish kart-${{ env.GITHUB_REF_NAME }}.zip
+          ./helper.py publish kart-${{ github.ref_name }}.zip
