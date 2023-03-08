@@ -95,8 +95,8 @@ def kartExecutable():
     return path
 
 
-def checkKartInstalled(showMessage=True):
-    version = installedVersion()
+def checkKartInstalled(showMessage=True, useCache=True):
+    version = installedVersion(useCache)
     supported_major, supported_minor, supported_patch = SUPPORTED_VERSION.split(".")
     msg = ""
     if version is None:
@@ -125,7 +125,7 @@ def checkKartInstalled(showMessage=True):
         if showMessage:
             dlg = InstallationWarningDialog(msg, SUPPORTED_VERSION)
             dlg.exec()
-            installed = checkKartInstalled(False)
+            installed = checkKartInstalled(showMessage=False, useCache=False)
             if installed:
                 setSetting(KARTPATH, "")
                 iface.messageBar().pushMessage(
@@ -151,11 +151,11 @@ kartVersion = None
 kartPath = None
 
 
-def installedVersion():
+def installedVersion(useCache=True):
     global kartVersion
     global kartPath
     path = setting(KARTPATH)
-    if path is not None and path == kartPath:
+    if useCache and path is not None and path == kartPath:
         return kartVersion
     else:
         try:
