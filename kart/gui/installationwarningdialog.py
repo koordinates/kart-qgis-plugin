@@ -23,8 +23,8 @@ WIDGET, BASE = uic.loadUiType(
 DOWNLOAD_URL = "https://github.com/koordinates/kart/releases/download/v{version}"
 RELEASE_URL = "https://github.com/koordinates/kart/releases/tag/v{version}"
 
-WINDOWS_FILE = "Kart-{version}.msi"
-OSX_FILE = "Kart-{version}.pkg"
+WINDOWS_FILE = "Kart-{version}-win64.msi"
+OSX_FILE = "Kart-{version}-macOS-x86_64.pkg"
 
 
 class DownloadAndInstallThread(QThread):
