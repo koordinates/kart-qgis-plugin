@@ -7,7 +7,11 @@ import subprocess
 import sys
 import tempfile
 
-from typing import Optional
+from typing import (
+    Optional,
+    Tuple,
+    List
+)
 from functools import partial
 
 from urllib.parse import urlparse
@@ -81,7 +85,10 @@ def executeskart(f):
     return inner
 
 
-def kartExecutable():
+def kartExecutable() -> str:
+    """
+    Returns the path to the kart executable
+    """
     if os.name == "nt":
         defaultFolder = os.path.join(os.environ["PROGRAMFILES"], "Kart")
     elif sys.platform == "darwin":
@@ -349,12 +356,18 @@ class Repository:
         return list(list(ret.values())[0].keys())
 
     @staticmethod
-    def clone(src: str,
-              dst: str,
-              location: Optional[str] = None,
-              extent: Optional[QgsReferencedRectangle] = None,
-              username: Optional[str] = None,
-              password: Optional[str] = None):
+    def generate_clone_arguments(
+            src: str,
+            dst: str,
+            location: Optional[str] = None,
+            extent: Optional[QgsReferencedRectangle] = None,
+            username: Optional[str] = None,
+            password: Optional[str] = None) -> List[str]:
+        """
+        Generates the clone command.
+
+        Returns the list of kart executable arguments to perform the clone
+        """
         src = os.path.expanduser(src)
         dst = os.path.expanduser(dst)
         if username and password:
@@ -365,8 +378,24 @@ class Repository:
         if location is not None:
             commands.extend(["--workingcopy", location])
         if extent is not None:
-            kartExtent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
-            commands.extend(["--spatial-filter", kartExtent])
+            kart_extent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
+            commands.extend(["--spatial-filter", kart_extent])
+
+        return commands
+
+    @staticmethod
+    def clone(src: str,
+              dst: str,
+              location: Optional[str] = None,
+              extent: Optional[QgsReferencedRectangle] = None,
+              username: Optional[str] = None,
+              password: Optional[str] = None) -> 'Repository':
+        """
+        Performs a (blocking, main thread only) clone operation
+        """
+        commands = Repository.generate_clone_arguments(
+            src, dst, location, extent, username, password
+        )
 
         with progressBar("Clone") as bar:
             bar.setText("Cloning repository")
