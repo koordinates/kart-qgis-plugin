@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 
+from typing import Optional
 from functools import partial
 
 from urllib.parse import urlparse
@@ -348,7 +349,12 @@ class Repository:
         return list(list(ret.values())[0].keys())
 
     @staticmethod
-    def clone(src, dst, location=None, extent=None, username=None, password=None):
+    def clone(src: str,
+              dst: str,
+              location: Optional[str] = None,
+              extent: Optional[QgsReferencedRectangle] = None,
+              username: Optional[str] = None,
+              password: Optional[str] = None):
         src = os.path.expanduser(src)
         dst = os.path.expanduser(dst)
         if username and password:
