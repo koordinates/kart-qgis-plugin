@@ -13,16 +13,17 @@ from qgis.core import (
 )
 from qgis.testing import unittest, start_app
 
+from qgis.PyQt.QtTest import QSignalSpy
+
 from kart.kartapi import (
     kartVersionDetails,
-    repos,
-    addRepo,
     Repository,
-    readReposFromSettings,
     installedVersion,
     KartException,
     executeKart,
 )
+from kart.core import RepoManager
+
 from kart.utils import HELPERMODE, setSetting, KARTPATH
 from kart.tests.utils import patch_iface
 
@@ -81,15 +82,30 @@ class TestKartapi(unittest.TestCase):
         assert version == "0.12.2"
 
     def testStoreReposInSettings(self):
-        repositories = repos()
-        assert not bool(repositories)
-        addRepo(self.testRepo)
+        manager = RepoManager()
+        assert not manager.repos()
+
+        spy = QSignalSpy(manager.repo_added)
+        manager.add_repo(self.testRepo)
+
+        self.assertEqual(len(spy), 1)
+        self.assertEqual(spy[-1][0], self.testRepo)
+
         invalidRepo = Repository("wrongpath")
-        addRepo(invalidRepo)
-        readReposFromSettings()
-        repositories = repos()
-        assert len(repositories) == 1
-        assert repositories[0].path == self.testRepo.path
+        manager.add_repo(invalidRepo)
+
+        manager2 = RepoManager()
+        assert len(manager2.repos()) == 1
+        assert manager2.repos()[0].path == self.testRepo.path
+
+        remove_spy = QSignalSpy(manager2.repo_removed)
+        manager2.remove_repo(self.testRepo)
+        self.assertEqual(len(remove_spy), 1)
+        self.assertEqual(remove_spy[-1][0], self.testRepo)
+        assert not manager2.repos()
+
+        manager3 = RepoManager()
+        self.assertEqual(len(manager3.repos()), 0)
 
     def testInit(self):
         with tempfile.TemporaryDirectory() as folder:

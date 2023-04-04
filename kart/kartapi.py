@@ -9,7 +9,6 @@ import tempfile
 
 from typing import (
     Optional,
-    Tuple,
     List
 )
 from functools import partial
@@ -255,57 +254,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         raise KartException(str(e))
     finally:
         QApplication.restoreOverrideCursor()
-
-
-_repos = None
-
-
-def repos():
-    if _repos is None:
-        readReposFromSettings()
-    return _repos
-
-
-def readReposFromSettings():
-    global _repos
-    s = setting("repos")
-    if s is None:
-        _repos = []
-    else:
-        _repos = []
-        paths = s.split("|")
-        for path in paths:
-            repo = Repository(path)
-            if repo.isInitialized():
-                _repos.append(repo)
-
-
-def addRepo(repo):
-    repos()
-    _repos.append(repo)
-    saveRepos()
-
-
-def removeRepo(repo):
-    for r in _repos:
-        if r.path == repo.path:
-            _repos.remove(r)
-            break
-    saveRepos()
-
-
-def saveRepos():
-    s = "|".join([repo.path for repo in repos()])
-    setSetting("repos", s)
-
-
-def repoForLayer(layer):
-    try:
-        for repo in repos():
-            if repo.layerBelongsToRepo(layer):
-                return repo
-    except KartException:
-        return None
 
 
 def _processProgressLine(bar, line):
