@@ -14,7 +14,7 @@ about=<div style="max-width:33em"><a href="https://kartproject.org">Kart</a> pro
     Provides repository working copies as GIS databases and files. Edit directly in QGIS and other common GIS software.</li></ul>
 
     The Kart QGIS plugin requires you to install Kart from <a href="https://kartproject.org">https://kartproject.org</a>.</div>
-version=1.0.0
+version=1.0.10
 author=Koordinates
 email=support@koordinates.com
 tags=versioning, data
