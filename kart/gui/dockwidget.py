@@ -25,10 +25,8 @@ from qgis.core import (
     QgsMimeDataUtils,
 )
 
+from kart.core import RepoManager
 from kart.kartapi import (
-    repos,
-    addRepo,
-    removeRepo,
     Repository,
     executeskart,
     KartException,
@@ -195,8 +193,10 @@ class ReposItem(RefreshableItem):
 
         self.populate()
 
+        RepoManager.instance().repo_added.connect(self.addRepoToUI)
+
     def populate(self):
-        for repo in repos():
+        for repo in RepoManager.instance().repos():
             item = RepoItem(repo)
             self.addChild(item)
 
@@ -216,7 +216,7 @@ class ReposItem(RefreshableItem):
         if folder:
             repo = Repository(folder)
             if repo.isInitialized():
-                self.addRepoToUI(repo)
+                RepoManager.instance().add_repo(repo)
             else:
                 iface.messageBar().pushMessage(
                     "Error",
@@ -248,7 +248,7 @@ class ReposItem(RefreshableItem):
             repo = Repository(dialog.folder)
             repo.init(dialog.location)
             if repo.isInitialized():
-                self.addRepoToUI(repo)
+                RepoManager.add_repo(repo)
             else:
                 iface.messageBar().pushMessage(
                     "Error", "Could not initialize repository", level=Qgis.Warning
@@ -268,10 +268,9 @@ class ReposItem(RefreshableItem):
                 dialog.username,
                 dialog.password,
             )
-            self.addRepoToUI(repo)
+            RepoManager.instance().add_repo(repo)
 
-    def addRepoToUI(self, repo):
-        addRepo(repo)
+    def addRepoToUI(self, repo: Repository):
         item = RepoItem(repo)
         self.addChild(item)
         item.setExpanded(True)
@@ -376,7 +375,7 @@ class RepoItem(RefreshableItem):
     def removeRepository(self):
         if confirm("Are you sure you want to remove this repository?"):
             self.parent().takeChild(self.parent().indexOfChild(self))
-            removeRepo(self.repo)
+            RepoManager.instance().remove_repo(self.repo)
 
     @executeskart
     def showLog(self):
