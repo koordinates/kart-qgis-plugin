@@ -122,7 +122,7 @@ class LayerTracker:
     def _kartActiveLayerAndRepo(self):
         layers = []
         for layer in iface.layerTreeView().selectedLayers():
-            repo = RepoManager.instance().repoForLayer(layer)
+            repo = RepoManager.instance().repo_for_layer(layer)
             if repo is not None:
                 layers.append((layer, repo))
         if len(layers) > 1:
@@ -137,7 +137,7 @@ class LayerTracker:
 
     def layerAdded(self, layer):
         if isinstance(layer, QgsVectorLayer):
-            repo = RepoManager.instance().repoForLayer(layer)
+            repo = RepoManager.instance().repo_for_layer(layer)
             if repo is not None:
                 func = _f(partial(self.commitLayerChanges, layer))
                 layer.afterCommitChanges.connect(func)
@@ -192,7 +192,7 @@ class LayerTracker:
         self.clearRubberBands()
         usedRepos = []
         for layer in QgsProject.instance().mapLayers().values():
-            repo = RepoManager.instance().repoForLayer(layer)
+            repo = RepoManager.instance().repo_for_layer(layer)
             if repo is not None and repo not in usedRepos:
                 usedRepos.append(repo)
                 rect = repo.spatialFilter()
@@ -345,7 +345,7 @@ class LayerTracker:
 
     @executeskart
     def commitLayerChanges(self, layer):
-        repo = RepoManager.instance().repoForLayer(layer)
+        repo = RepoManager.instance().repo_for_layer(layer)
         if repo is not None:
             auto = setting(AUTOCOMMIT)
             if auto:
