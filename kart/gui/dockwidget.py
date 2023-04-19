@@ -248,7 +248,7 @@ class ReposItem(RefreshableItem):
             repo = Repository(dialog.folder)
             repo.init(dialog.location)
             if repo.isInitialized():
-                RepoManager.add_repo(repo)
+                RepoManager.instance().add_repo(repo)
             else:
                 iface.messageBar().pushMessage(
                     "Error", "Could not initialize repository", level=Qgis.Warning
