@@ -5,6 +5,7 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
@@ -51,6 +52,11 @@ class CloneDialog(BASE, WIDGET):
         )
         if folder:
             textbox.setText(folder)
+
+        self.show()
+        self.raise_()
+        self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+        self.activateWindow()
 
     def okClicked(self):
         try:
