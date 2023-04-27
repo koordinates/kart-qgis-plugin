@@ -11,7 +11,7 @@ from typing import (
     Optional,
     List
 )
-from functools import partial
+from functools import partial, wraps
 
 from urllib.parse import urlparse
 
@@ -51,6 +51,7 @@ class KartNotSupportedOperationException(Exception):
 
 
 def executeskart(f):
+    @wraps(f)
     def inner(*args):
         try:
             if checkKartInstalled():
