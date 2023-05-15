@@ -1,6 +1,7 @@
 import os
-import tempfile
+import re
 import shutil
+import tempfile
 
 from qgis.core import (
     edit,
@@ -79,7 +80,7 @@ class TestKartapi(unittest.TestCase):
 
     def testKartVersion(self):
         version = installedVersion()
-        assert version == "0.12.2"
+        assert re.match(r'\d+\.\d+\.\d+', version)
 
     def testStoreReposInSettings(self):
         manager = RepoManager()

@@ -12,15 +12,16 @@ on:
 jobs:
   # Run unit tests
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        qgis_version: [release-3_16, latest]
+        qgis_version: [release-3_28, latest]
       fail-fast: false
 
     env:
       QGIS_TEST_VERSION: ${{ matrix.qgis_version }}
+      KART_VERSION: "0.12.3"
 
     steps:
       - name: Checkout
@@ -28,5 +29,5 @@ jobs:
 
       - name: Test on QGIS
         run: >
-          docker-compose -f .docker/docker-compose.gh.yml
-          run qgis /usr/src/.docker/run-docker-tests.sh
+          docker-compose -f .docker/docker-compose.gh.yml run --build --rm
+          qgis /usr/src/.docker/run-docker-tests.sh
