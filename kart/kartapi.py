@@ -39,7 +39,8 @@ from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
-SUPPORTED_VERSION = "0.12.2"
+
+SUPPORTED_VERSION = "0.12.3"
 
 
 class KartException(Exception):
