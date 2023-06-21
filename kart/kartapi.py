@@ -201,11 +201,13 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     if jsonoutput:
         commands.append("-ojson")
 
-    # The env PYTHONHOME from QGIS can interfere with Kart.
+    # The env PYTHONHOME/GDAL_DRIVER_PATH from QGIS can interfere with Kart.
     if not hasattr(executeKart, "env"):
         executeKart.env = os.environ.copy()
         if "PYTHONHOME" in executeKart.env:
             executeKart.env.pop("PYTHONHOME")
+        if "GDAL_DRIVER_PATH" in executeKart.env:
+            executeKart.env.pop("GDAL_DRIVER_PATH")
 
     # always set the use helper env var as it is long lived and the setting may have changed
     executeKart.env['KART_USE_HELPER'] = '1' if setting(HELPERMODE) else ''
