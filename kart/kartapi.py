@@ -7,10 +7,7 @@ import subprocess
 import sys
 import tempfile
 
-from typing import (
-    Optional,
-    List
-)
+from typing import Optional, List
 from functools import partial, wraps
 
 from urllib.parse import urlparse
@@ -40,7 +37,7 @@ from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
 
-SUPPORTED_VERSION = "0.12.3"
+SUPPORTED_VERSION = "0.14.0"
 
 
 class KartException(Exception):
@@ -307,12 +304,13 @@ class Repository:
 
     @staticmethod
     def generate_clone_arguments(
-            src: str,
-            dst: str,
-            location: Optional[str] = None,
-            extent: Optional[QgsReferencedRectangle] = None,
-            username: Optional[str] = None,
-            password: Optional[str] = None) -> List[str]:
+        src: str,
+        dst: str,
+        location: Optional[str] = None,
+        extent: Optional[QgsReferencedRectangle] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> List[str]:
         """
         Generates the clone command.
 
@@ -334,12 +332,14 @@ class Repository:
         return commands
 
     @staticmethod
-    def clone(src: str,
-              dst: str,
-              location: Optional[str] = None,
-              extent: Optional[QgsReferencedRectangle] = None,
-              username: Optional[str] = None,
-              password: Optional[str] = None) -> 'Repository':
+    def clone(
+        src: str,
+        dst: str,
+        location: Optional[str] = None,
+        extent: Optional[QgsReferencedRectangle] = None,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> 'Repository':
         """
         Performs a (blocking, main thread only) clone operation
         """
