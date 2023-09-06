@@ -37,7 +37,8 @@ from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
 
-SUPPORTED_VERSION = "0.14.0"
+MINIMUM_SUPPORTED_VERSION = "0.14.0"
+CURRENT_VERSION = "0.14.1"
 
 
 class KartException(Exception):
@@ -103,7 +104,8 @@ def kartExecutable() -> str:
 
 def checkKartInstalled(showMessage=True, useCache=True):
     version = installedVersion(useCache)
-    supported_major, supported_minor, supported_patch = SUPPORTED_VERSION.split(".")
+    supported_major, supported_minor, supported_patch = \
+        MINIMUM_SUPPORTED_VERSION.split(".")
     msg = ""
     if version is None:
         msg = (
@@ -121,15 +123,16 @@ def checkKartInstalled(showMessage=True, useCache=True):
         )
         if not versionOk:
             msg = (
-                f"<p><b>The installed Kart version ({version}) is different from the version"
-                f" supported by the plugin ({SUPPORTED_VERSION})<b><p>"
+                f"<p><b>The installed Kart version ({version}) is not"
+                " supported by the plugin. Only versions "
+                f"{MINIMUM_SUPPORTED_VERSION} and later are supported.<b><p>"
                 "<p>Click Install to download and install the latest Kart release. "
                 "You can also download releases from <a href='https://kartproject.org'>"
                 "https://kartproject.org</a>.</p>"
             )
     if msg:
         if showMessage:
-            dlg = InstallationWarningDialog(msg, SUPPORTED_VERSION)
+            dlg = InstallationWarningDialog(msg, CURRENT_VERSION)
             dlg.exec()
             installed = checkKartInstalled(showMessage=False, useCache=False)
             if installed:
