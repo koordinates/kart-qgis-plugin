@@ -33,15 +33,15 @@ class DownloadAndInstallThread(QThread):
     downloadFinished = pyqtSignal()
     finished = pyqtSignal()
 
-    def __init__(self, supportedVersion):
+    def __init__(self, version: str):
         QThread.__init__(self, iface.mainWindow())
-        self.supportedVersion = supportedVersion
+        self.version = version
 
     def run(self):
         try:
-            url = DOWNLOAD_URL.format(version=self.supportedVersion)
+            url = DOWNLOAD_URL.format(version=self.version)
             if os.name == "nt":
-                filename = WINDOWS_FILE.format(version=self.supportedVersion)
+                filename = WINDOWS_FILE.format(version=self.version)
                 msipath = self._download(url, filename)
                 powershell = os.path.join(
                     os.getenv("SystemRoot"),
@@ -57,14 +57,14 @@ class DownloadAndInstallThread(QThread):
                     subprocess.call(command, shell=True)
                     shutil.rmtree(os.path.dirname(msipath))
             elif sys.platform == "darwin":
-                filename = OSX_FILE.format(version=self.supportedVersion)
+                filename = OSX_FILE.format(version=self.version)
                 pkgpath = self._download(url, filename)
                 command = f"open -W {pkgpath}"
                 if pkgpath is not None:
                     subprocess.call(command, shell=True)
                     shutil.rmtree(os.path.dirname(pkgpath))
             else:
-                url = RELEASE_URL.format(version=self.supportedVersion)
+                url = RELEASE_URL.format(version=self.version)
                 webbrowser.open_new_tab(url)
         except Exception as e:
             logging.error(str(e))
@@ -92,10 +92,10 @@ class DownloadAndInstallThread(QThread):
 
 
 class InstallationWarningDialog(BASE, WIDGET):
-    def __init__(self, msg, supportedVersion):
+    def __init__(self, msg: str, version: str):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
-        self.supportedVersion = supportedVersion
+        self.version = version
         self.widgetDownload.setVisible(False)
         self.btnInstall.clicked.connect(self.install)
         self.btnOpenSettings.clicked.connect(self.openSettings)
@@ -114,7 +114,7 @@ class InstallationWarningDialog(BASE, WIDGET):
         self.btnClose.setEnabled(False)
         self.btnInstall.setEnabled(False)
         self.btnOpenSettings.setEnabled(False)
-        t = DownloadAndInstallThread(self.supportedVersion)
+        t = DownloadAndInstallThread(self.version)
         loop = QEventLoop()
         t.downloadProgressChanged.connect(self.progressBar.setValue)
         t.downloadFinished.connect(self.hide)
