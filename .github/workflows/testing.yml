@@ -21,7 +21,7 @@ jobs:
 
     env:
       QGIS_TEST_VERSION: ${{ matrix.qgis_version }}
-      KART_VERSION: "0.14.1"
+      KART_VERSION: "0.14.2"
 
     steps:
       - name: Checkout
