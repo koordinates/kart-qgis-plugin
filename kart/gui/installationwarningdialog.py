@@ -1,15 +1,14 @@
 import os
-import sys
-import subprocess
-import tempfile
 import requests
-import webbrowser
 import shutil
+import subprocess
+import sys
+import tempfile
+import webbrowser
 
 from qgis.PyQt.QtWidgets import QDialog
 from qgis.PyQt.QtCore import QThread, Qt, pyqtSignal, QEventLoop
 from qgis.PyQt import uic
-
 
 from qgis.utils import iface
 
@@ -24,7 +23,7 @@ DOWNLOAD_URL = "https://github.com/koordinates/kart/releases/download/v{version}
 RELEASE_URL = "https://github.com/koordinates/kart/releases/tag/v{version}"
 
 WINDOWS_FILE = "Kart-{version}-win64.msi"
-OSX_FILE = "Kart-{version}-macOS-x86_64.pkg"
+MACOS_FILE = "Kart-{version}-macOS-{arch}.pkg"
 
 
 class DownloadAndInstallThread(QThread):
@@ -57,7 +56,19 @@ class DownloadAndInstallThread(QThread):
                     subprocess.call(command, shell=True)
                     shutil.rmtree(os.path.dirname(msipath))
             elif sys.platform == "darwin":
-                filename = OSX_FILE.format(version=self.version)
+                arch = subprocess.check_output(["arch"], text=True).strip()
+                if arch != "arm64":
+                    # If QGIS is running under Rosetta2, then we get the wrong
+                    # arch back. So check that too.
+                    is_rosetta = subprocess.check_output(
+                        ["sysctl", "-in", "sysctl.proc_translated"], text=True
+                    ).strip()
+                    if is_rosetta == "1":
+                        arch = "arm64"
+                    else:
+                        arch = "x86_64"
+
+                filename = MACOS_FILE.format(version=self.version, arch=arch)
                 pkgpath = self._download(url, filename)
                 command = f"open -W {pkgpath}"
                 if pkgpath is not None:
@@ -73,6 +84,7 @@ class DownloadAndInstallThread(QThread):
 
     def _download(self, url, filename):
         fullurl = f"{url}/{filename}"
+        logging.info(f"Downloading Kart from: {fullurl}")
         dirname = tempfile.mkdtemp()
         downloadpath = os.path.join(dirname, filename)
         chunk_size = 1024
