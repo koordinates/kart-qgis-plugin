@@ -38,7 +38,7 @@ from kart import logging
 
 
 MINIMUM_SUPPORTED_VERSION = "0.14.0"
-CURRENT_VERSION = "0.14.2"
+CURRENT_VERSION = "0.15.0"
 
 
 class KartException(Exception):
@@ -104,8 +104,9 @@ def kartExecutable() -> str:
 
 def checkKartInstalled(showMessage=True, useCache=True):
     version = installedVersion(useCache)
-    supported_major, supported_minor, supported_patch = \
-        MINIMUM_SUPPORTED_VERSION.split(".")
+    supported_version_tuple = tuple(
+        int(p) for p in MINIMUM_SUPPORTED_VERSION.split(".")[:3]
+    )
     msg = ""
     if version is None:
         msg = (
@@ -116,11 +117,8 @@ def checkKartInstalled(showMessage=True, useCache=True):
             "https://kartproject.org</a>.</p>"
         )
     else:
-        major, minor, patch = version.split(".")[:3]
-        versionOk = major == supported_major and (
-            (minor > supported_minor)
-            or (minor == supported_minor and patch >= supported_patch)
-        )
+        version_tuple = tuple(int(p) for p in version.split(".")[:3])
+        versionOk = version_tuple >= supported_version_tuple
         if not versionOk:
             msg = (
                 f"<p><b>The installed Kart version ({version}) is not"
