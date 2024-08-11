@@ -6,7 +6,7 @@ import difflib
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
-from qgis.PyQt.QtGui import QIcon, QColor, QBrush
+from qgis.PyQt.QtGui import QColor, QBrush
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
     QTableWidgetItem,
@@ -35,6 +35,8 @@ from qgis.utils import iface
 from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
 
 from .mapswipetool import MapSwipeTool
+
+from kart.gui import icons
 from kart.utils import setting, DIFFSTYLES
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
@@ -52,17 +54,6 @@ TAB_GEOMETRY = 1
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
-
-def icon(f):
-    return QIcon(os.path.join(pluginPath, "img", f))
-
-
-vectorDatasetIcon = icon("vector-polyline.png")
-tableIcon = icon("table.png")
-featureIcon = icon("geometry.png")
-addedIcon = icon("add.png")
-removedIcon = icon("remove.png")
-modifiedIcon = icon("edit.png")
 
 pointsStyle = os.path.join(
     pluginPath, "resources", "diff_styles", "geomdiff_points.qml"
@@ -311,13 +302,13 @@ class DiffViewerWidget(WIDGET, BASE):
             datasetItem = DatasetItem(dataset, crs is None)
             addedItem = QTreeWidgetItem()
             addedItem.setText(0, "Added")
-            addedItem.setIcon(0, addedIcon)
+            addedItem.setIcon(0, icons.addedIcon)
             removedItem = QTreeWidgetItem()
             removedItem.setText(0, "Removed")
-            removedItem.setIcon(0, removedIcon)
+            removedItem.setIcon(0, icons.removeIcon)
             modifiedItem = QTreeWidgetItem()
             modifiedItem.setText(0, "Modified")
-            modifiedItem.setIcon(0, modifiedIcon)
+            modifiedItem.setIcon(0, icons.modifiedIcon)
 
             subItems = {"I": addedItem, "U": modifiedItem, "D": removedItem}
             changes = {feat["id"]: feat for feat in changes}
@@ -627,7 +618,7 @@ class DiffViewerWidget(WIDGET, BASE):
 class FeatureItem(QTreeWidgetItem):
     def __init__(self, fid, old, new, dataset):
         QTreeWidgetItem.__init__(self)
-        self.setIcon(0, featureIcon)
+        self.setIcon(0, icons.featureIcon)
         self.setText(0, fid)
         self.old = old
         self.new = new
@@ -639,7 +630,7 @@ class DatasetItem(QTreeWidgetItem):
     def __init__(self, dataset, isTable):
         QTreeWidgetItem.__init__(self)
         self.dataset = dataset
-        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
+        self.setIcon(0, icons.tableIcon if isTable else icons.vectorDatasetIcon)
         self.setText(0, dataset)
 
 

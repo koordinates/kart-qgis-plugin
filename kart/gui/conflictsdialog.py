@@ -6,7 +6,7 @@ from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QSize, Qt
-from qgis.PyQt.QtGui import QIcon, QFont
+from qgis.PyQt.QtGui import QFont
 from qgis.PyQt.QtWidgets import (
     QDialog,
     QTreeWidgetItem,
@@ -17,15 +17,8 @@ from qgis.PyQt.QtWidgets import (
     QTreeWidgetItemIterator,
 )
 
-pluginPath = os.path.split(os.path.dirname(__file__))[0]
+from kart.gui import icons
 
-
-def icon(f):
-    return QIcon(os.path.join(pluginPath, "img", f))
-
-
-layerIcon = icon("layer.png")
-featureIcon = icon("layer.png")
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "conflictsdialog.ui")
@@ -84,7 +77,7 @@ class ConflictsDialog(BASE, WIDGET):
         for path, conflicts in self.conflicts.items():
             topItem = QTreeWidgetItem()
             topItem.setText(0, path)
-            topItem.setIcon(0, layerIcon)
+            topItem.setIcon(0, icons.layerIcon)
             self.treeConflicts.addTopLevelItem(topItem)
             self.treeItems[path] = {}
             for fid, conflict in conflicts.items():
@@ -352,7 +345,7 @@ class ConflictItem(QTreeWidgetItem):
     def __init__(self, path, fid, conflict):
         QTreeWidgetItem.__init__(self)
         self.setText(0, fid)
-        self.setIcon(0, featureIcon)
+        self.setIcon(0, icons.featureIcon)
         self.setSizeHint(0, QSize(self.sizeHint(0).width(), 25))
         self.conflict = conflict
         self.fid = fid

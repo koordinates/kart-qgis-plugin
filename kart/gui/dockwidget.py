@@ -4,7 +4,6 @@ import tempfile
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice
 
-from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
     QTreeWidgetItem,
@@ -32,6 +31,7 @@ from kart.kartapi import (
     KartException,
     checkKartInstalled,
 )
+from kart.gui import icons
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.conflictsdialog import ConflictsDialog
@@ -53,35 +53,6 @@ from kart.utils import (
 )
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
-
-
-def icon(f):
-    return QIcon(os.path.join(pluginPath, "img", f))
-
-
-repoIcon = icon("repository.png")
-addRepoIcon = icon("addrepo.png")
-createRepoIcon = icon("createrepo.png")
-cloneRepoIcon = icon("clone.png")
-logIcon = icon("log.png")
-importIcon = icon("import.png")
-checkoutIcon = icon("checkout.png")
-commitIcon = icon("commit.png")
-discardIcon = icon("reset.png")
-datasetIcon = icon("dataset.png")
-vectorDatasetIcon = icon("vector-polyline.png")
-tableIcon = icon("table.png")
-mergeIcon = icon("merge.png")
-addtoQgisIcon = icon("openinqgis.png")
-diffIcon = icon("changes.png")
-abortIcon = icon("abort.png")
-resolveIcon = icon("resolve.png")
-pushIcon = icon("push.png")
-pullIcon = icon("pull.png")
-removeIcon = icon("remove.png")
-refreshIcon = icon("refresh.png")
-propertiesIcon = icon("info.png")
-patchIcon = icon("patch.png")
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -172,7 +143,7 @@ class KartDockWidget(BASE, WIDGET):
 class RefreshableItem(QTreeWidgetItem):
     def actions(self):
         actions = [
-            ("Refresh", self.refreshContent, refreshIcon),
+            ("Refresh", self.refreshContent, icons.refreshIcon),
             ("divider", None, None),
         ]
         actions.extend(self._actions())
@@ -188,7 +159,7 @@ class ReposItem(RefreshableItem):
         QTreeWidgetItem.__init__(self)
 
         self.setText(0, "Repositories")
-        self.setIcon(0, repoIcon)
+        self.setIcon(0, icons.repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
         self.populate()
@@ -202,9 +173,9 @@ class ReposItem(RefreshableItem):
 
     def _actions(self):
         actions = [
-            ("Add existing repository...", self.addRepo, addRepoIcon),
-            ("Create new repository...", self.createRepo, createRepoIcon),
-            ("Clone repository...", self.cloneRepo, cloneRepoIcon),
+            ("Add existing repository...", self.addRepo, icons.addRepoIcon),
+            ("Create new repository...", self.createRepo, icons.createRepoIcon),
+            ("Clone repository...", self.cloneRepo, icons.cloneRepoIcon),
         ]
 
         return actions
@@ -284,7 +255,7 @@ class RepoItem(RefreshableItem):
         self.populated = False
 
         self.setTitle()
-        self.setIcon(0, repoIcon)
+        self.setIcon(0, icons.repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 
     def refreshContent(self):
@@ -323,44 +294,52 @@ class RepoItem(RefreshableItem):
         if self.repo.isMerging():
             actions.extend(
                 [
-                    ("Resolve conflicts...", self.resolveConflicts, resolveIcon),
-                    ("Continue merge", self.continueMerge, mergeIcon),
-                    ("Abort merge", self.abortMerge, abortIcon),
+                    ("Resolve conflicts...", self.resolveConflicts, icons.resolveIcon),
+                    ("Continue merge", self.continueMerge, icons.mergeIcon),
+                    ("Abort merge", self.abortMerge, icons.abortIcon),
                 ]
             )
         else:
             actions.extend(
                 [
-                    ("Show log...", self.showLog, logIcon),
-                    ("Show working copy changes...", self.showChanges, diffIcon),
-                    ("Discard working copy changes", self.discardChanges, discardIcon),
-                    ("Commit working copy changes...", self.commitChanges, commitIcon),
-                    ("Switch branch...", self.switchBranch, checkoutIcon),
-                    ("Merge into current branch...", self.mergeBranch, mergeIcon),
+                    ("Show log...", self.showLog, icons.logIcon),
+                    ("Show working copy changes...", self.showChanges, icons.diffIcon),
+                    (
+                        "Discard working copy changes",
+                        self.discardChanges,
+                        icons.discardIcon,
+                    ),
+                    (
+                        "Commit working copy changes...",
+                        self.commitChanges,
+                        icons.commitIcon,
+                    ),
+                    ("Switch branch...", self.switchBranch, icons.checkoutIcon),
+                    ("Merge into current branch...", self.mergeBranch, icons.mergeIcon),
                     ("divider", None, None),
-                    ("Pull...", self.pull, pullIcon),
-                    ("Push...", self.push, pushIcon),
+                    ("Pull...", self.pull, icons.pullIcon),
+                    ("Push...", self.push, icons.pushIcon),
                     ("divider", None, None),
                     (
                         "Import dataset from file...",
                         self.importLayerFromFile,
-                        importIcon,
+                        icons.importIcon,
                     ),
                     (
                         "Import dataset from database...",
                         self.importLayerFromDatabase,
-                        importIcon,
+                        icons.importIcon,
                     ),
-                    ("Apply patch...", self.applyPatch, patchIcon),
+                    ("Apply patch...", self.applyPatch, icons.patchIcon),
                 ]
             )
 
         actions.extend(
             [
                 ("divider", None, None),
-                ("Refresh", self.refreshContent, refreshIcon),
-                ("Properties...", self.showProperties, propertiesIcon),
-                ("Remove this repository", self.removeRepository, removeIcon),
+                ("Refresh", self.refreshContent, icons.refreshIcon),
+                ("Properties...", self.showProperties, icons.propertiesIcon),
+                ("Remove this repository", self.removeRepository, icons.removeIcon),
             ]
         )
 
@@ -624,7 +603,7 @@ class DatasetsItem(RefreshableItem):
         self.repo = repo
 
         self.setText(0, "Datasets")
-        self.setIcon(0, datasetIcon)
+        self.setIcon(0, icons.datasetIcon)
 
         self.populate()
 
@@ -650,32 +629,32 @@ class DatasetItem(QTreeWidgetItem):
         self.isTable = isTable
 
         self.setText(0, name)
-        self.setIcon(0, tableIcon if isTable else vectorDatasetIcon)
+        self.setIcon(0, icons.tableIcon if isTable else icons.vectorDatasetIcon)
 
     def actions(self):
-        actions = [("Add to QGIS project", self.addToProject, addtoQgisIcon)]
+        actions = [("Add to QGIS project", self.addToProject, icons.addtoQgisIcon)]
         if not self.repo.isMerging():
             actions.extend(
                 [
                     ("divider", None, None),
-                    ("Show log...", self.showLog, logIcon),
+                    ("Show log...", self.showLog, icons.logIcon),
                     (
                         "Show working copy changes for this dataset...",
                         self.showChanges,
-                        diffIcon,
+                        icons.diffIcon,
                     ),
                     (
                         "Discard working copy changes for this dataset",
                         self.discardChanges,
-                        discardIcon,
+                        icons.discardIcon,
                     ),
                     (
                         "Commit working copy changes for this dataset...",
                         self.commitChanges,
-                        commitIcon,
+                        icons.commitIcon,
                     ),
                     ("divider", None, None),
-                    ("Remove from repository", self.removeFromRepo, removeIcon),
+                    ("Remove from repository", self.removeFromRepo, icons.removeIcon),
                 ]
             )
 

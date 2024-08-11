@@ -2,6 +2,7 @@ import json
 import os
 
 from kart.kartapi import executeskart
+from kart.gui import icons
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.utils import setting, DIFFSTYLES
 
@@ -17,7 +18,6 @@ from qgis.PyQt.QtCore import (
     QDateTime,
 )
 from qgis.PyQt.QtGui import (
-    QIcon,
     QPixmap,
     QPainter,
     QColor,
@@ -59,22 +59,6 @@ COLORS = [
     QColor(Qt.cyan),
     QColor(Qt.magenta),
 ]
-
-
-def icon(f):
-    return QIcon(os.path.join(os.path.dirname(os.path.dirname(__file__)), "img", f))
-
-
-resetIcon = icon("reset.png")
-diffIcon = icon("changes.png")
-checkoutIcon = icon("checkout.png")
-mergeIcon = icon("merge.png")
-createBranchIcon = icon("createbranch.png")
-deleteIcon = icon("delete.png")
-createTagIcon = icon("label.png")
-restoreIcon = icon("checkout.png")
-patchIcon = icon("patch.png")
-addtoQgisIcon = icon("openinqgis.png")
 
 
 class HistoryTree(QTreeWidget):
@@ -120,18 +104,18 @@ class HistoryTree(QTreeWidget):
                         item.commit["commit"],
                         parents[0],
                     ),
-                    diffIcon,
+                    icons.diffIcon,
                 )
                 actions["Save changes as patch..."] = (
                     _f(
                         self.savePatch,
                         item.commit["commit"],
                     ),
-                    patchIcon,
+                    icons.patchIcon,
                 )
                 actions["Add changes to current QGIS project as vector layer"] = (
                     _f(self.saveAsLayer, item.commit["commit"], parents[0]),
-                    addtoQgisIcon,
+                    icons.addtoQgisIcon,
                 )
             elif len(parents) > 1:
                 for parent in parents:
@@ -143,25 +127,25 @@ class HistoryTree(QTreeWidget):
                             item.commit["commit"],
                             parent,
                         ),
-                        diffIcon,
+                        icons.diffIcon,
                     )
             actions.update(
                 {
                     "Reset current branch to this commit": (
                         _f(self.resetBranch, item),
-                        resetIcon,
+                        icons.resetIcon,
                     ),
                     "Create branch at this commit...": (
                         _f(self.createBranch, item),
-                        createBranchIcon,
+                        icons.createBranchIcon,
                     ),
                     "Create tag at this commit...": (
                         _f(self.createTag, item),
-                        createTagIcon,
+                        icons.createTagIcon,
                     ),
                     "Restore working tree datasets to this version...": (
                         _f(self.restoreDatasets, item),
-                        restoreIcon,
+                        icons.restoreIcon,
                     ),
                 }
             )
@@ -173,16 +157,16 @@ class HistoryTree(QTreeWidget):
                     tag = ref[4:].strip()
                     actions[f"Delete tag '{tag}'"] = (
                         _f(self.deleteTag, tag),
-                        deleteIcon,
+                        icons.deleteIcon,
                     )
                 else:
                     actions[f"Switch to branch '{ref}'"] = (
                         _f(self.switchBranch, ref),
-                        checkoutIcon,
+                        icons.checkoutIcon,
                     )
                     actions[f"Delete branch '{ref}'"] = (
                         _f(self.deleteBranch, ref),
-                        deleteIcon,
+                        icons.deleteIcon,
                     )
         elif selected and len(selected) == 2:
             itema = selected[0]
@@ -194,7 +178,7 @@ class HistoryTree(QTreeWidget):
                         itema.commit["commit"],
                         itemb.commit["commit"],
                     ),
-                    diffIcon,
+                    icons.diffIcon,
                 )
             }
         else:

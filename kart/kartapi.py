@@ -62,7 +62,7 @@ def executeskart(f):
             msglines = []
             for line in lines:
                 # skip lines that refer to missing loads of shared libraries
-                if line.startswith("ERROR 1: Can't load") or '.dylib' in line:
+                if line.startswith("ERROR 1: Can't load") or ".dylib" in line:
                     continue
                 if "The specified procedure could not be found" in line:
                     continue
@@ -211,7 +211,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             executeKart.env.pop("GDAL_DRIVER_PATH")
 
     # always set the use helper env var as it is long lived and the setting may have changed
-    executeKart.env['KART_USE_HELPER'] = '1' if setting(HELPERMODE) else ''
+    executeKart.env["KART_USE_HELPER"] = "1" if setting(HELPERMODE) else ""
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
@@ -342,7 +342,7 @@ class Repository:
         extent: Optional[QgsReferencedRectangle] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
-    ) -> 'Repository':
+    ) -> "Repository":
         """
         Performs a (blocking, main thread only) clone operation
         """
