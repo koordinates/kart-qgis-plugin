@@ -16,12 +16,12 @@ jobs:
 
     strategy:
       matrix:
-        qgis_version: [release-3_28, latest]
+        qgis_version: [release-3_34, latest]
       fail-fast: false
 
     env:
       QGIS_TEST_VERSION: ${{ matrix.qgis_version }}
-      KART_VERSION: "0.15.0"
+      KART_VERSION: "0.15.2"
 
     steps:
       - name: Checkout
@@ -29,5 +29,5 @@ jobs:
 
       - name: Test on QGIS
         run: >
-          docker-compose -f .docker/docker-compose.gh.yml run --build --rm
+          docker compose -f .docker/docker-compose.gh.yml run --build --rm
           qgis /usr/src/.docker/run-docker-tests.sh
