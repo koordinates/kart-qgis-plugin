@@ -1,6 +1,8 @@
 ARG QGIS_TEST_VERSION=latest
 FROM qgis/qgis:${QGIS_TEST_VERSION}
 
+ENV PIP_BREAK_SYSTEM_PACKAGES 1
+
 RUN apt-get update && \
     apt-get install -y python3-pip
 COPY ./requirements.txt /tmp/
