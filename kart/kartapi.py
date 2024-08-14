@@ -1,14 +1,13 @@
 import json
 import locale
-import math
 import os
 import re
 import subprocess
 import sys
 import tempfile
 
-from typing import Optional, List
-from functools import partial, wraps
+from typing import Optional, List, Callable
+from functools import wraps
 
 from urllib.parse import urlparse
 
@@ -33,7 +32,7 @@ from qgis.utils import iface
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 
-from kart.utils import progressBar, setting, setSetting, KARTPATH, HELPERMODE
+from kart.utils import setting, setSetting, KARTPATH, HELPERMODE
 from kart import logging
 
 
@@ -258,23 +257,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         QApplication.restoreOverrideCursor()
 
 
-def _processProgressLine(bar, line):
-    if "Writing dataset" in line:
-        datasetname = line.split(":")[-1].strip()
-        bar.setText(f"Checking out layer '{datasetname}'")
-    elif line.startswith("Receiving objects: ") or line.startswith("Writing objects: "):
-        tokens = line.split(": ")
-        bar.setText(tokens[0])
-        bar.setValue(math.floor(float(tokens[1][1 : tokens[1].find("%")].strip())))
-    else:
-        msg = line.split(" - ")[-1]
-        if "%" in msg:
-            matches = re.findall(r"(\d+(\.\d+)?)", msg)
-            if matches:
-                value = math.floor(float(matches[0][0]))
-                bar.setValue(value)
-
-
 class Repository:
     def __init__(self, path):
         self.path = path
@@ -342,6 +324,7 @@ class Repository:
         extent: Optional[QgsReferencedRectangle] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
+        output_handler: Callable[[str], None] = None,
     ) -> "Repository":
         """
         Performs a (blocking, main thread only) clone operation
@@ -349,11 +332,7 @@ class Repository:
         commands = Repository.generate_clone_arguments(
             src, dst, location, extent, username, password
         )
-
-        with progressBar("Clone") as bar:
-            bar.setText("Cloning repository")
-            executeKart(commands, feedback=partial(_processProgressLine, bar))
-
+        executeKart(commands, feedback=output_handler)
         return Repository(dst)
 
     def title(self):

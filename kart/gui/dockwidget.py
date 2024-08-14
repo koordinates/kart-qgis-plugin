@@ -1,5 +1,8 @@
 import os
+import re
+import math
 import tempfile
+from functools import partial
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice
@@ -50,6 +53,7 @@ from kart.utils import (
     setSetting,
     LASTREPO,
     waitcursor,
+    progressBar,
 )
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -227,18 +231,41 @@ class ReposItem(RefreshableItem):
 
     @executeskart
     def cloneRepo(self):
+        def _processProgressLine(bar, line):
+            if "Writing dataset" in line:
+                datasetname = line.split(":")[-1].strip()
+                bar.setText(f"Checking out layer '{datasetname}'")
+            elif line.startswith("Receiving objects: ") or line.startswith(
+                "Writing objects: "
+            ):
+                tokens = line.split(": ")
+                bar.setText(tokens[0])
+                bar.setValue(
+                    math.floor(float(tokens[1][1 : tokens[1].find("%")].strip()))
+                )
+            else:
+                msg = line.split(" - ")[-1]
+                if "%" in msg:
+                    matches = re.findall(r"(\d+(\.\d+)?)", msg)
+                    if matches:
+                        value = math.floor(float(matches[0][0]))
+                        bar.setValue(value)
+
         dialog = CloneDialog()
         dialog.show()
         ret = dialog.exec_()
         if ret == dialog.Accepted:
-            repo = Repository.clone(
-                dialog.src,
-                dialog.dst,
-                dialog.location,
-                dialog.extent,
-                dialog.username,
-                dialog.password,
-            )
+            with progressBar("Clone") as bar:
+                bar.setText("Cloning repository")
+                repo = Repository.clone(
+                    dialog.src,
+                    dialog.dst,
+                    dialog.location,
+                    dialog.extent,
+                    dialog.username,
+                    dialog.password,
+                    output_handler=partial(_processProgressLine, bar),
+                )
             RepoManager.instance().add_repo(repo)
 
     def addRepoToUI(self, repo: Repository):
