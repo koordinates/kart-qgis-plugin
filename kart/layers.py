@@ -20,28 +20,16 @@ from qgis.core import (
 from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand
 
 from qgis.PyQt.QtCore import Qt, QSizeF, QPointF
-from qgis.PyQt.QtGui import QIcon, QColor, QTextDocument
+from qgis.PyQt.QtGui import QColor, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 
+from kart.gui import icons
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
 from kart.kartapi import executeskart
 from kart.utils import setting, AUTOCOMMIT
 from kart.core import RepoManager
-
-pluginPath = os.path.dirname(__file__)
-
-
-def icon(f):
-    return QIcon(os.path.join(pluginPath, "img", f))
-
-
-logIcon = icon("log.png")
-commitIcon = icon("commit.png")
-discardIcon = icon("reset.png")
-crossIcon = icon("cross.png")
-diffIcon = icon("changes.png")
 
 
 def _f(f, *args):
@@ -74,14 +62,14 @@ class LayerTracker:
         self.mapTool.canvasClicked.connect(self.canvasClicked)
         self.mapToolLayer = None
 
-        self.showLogAction = QAction(logIcon, "Show Log...", iface)
+        self.showLogAction = QAction(icons.logIcon, "Show Log...", iface)
         self.showLogAction.triggered.connect(_f(self.showLog))
         iface.addCustomActionForLayerType(
             self.showLogAction, "Kart", QgsMapLayer.VectorLayer, False
         )
 
         self.showWorkingTreeChangesAction = QAction(
-            diffIcon, "Show working copy changes...", iface
+            icons.diffIcon, "Show working copy changes...", iface
         )
         self.showWorkingTreeChangesAction.triggered.connect(
             _f(self.showWorkingTreeChanges)
@@ -91,7 +79,7 @@ class LayerTracker:
         )
 
         self.discardWorkingTreeChangesAction = QAction(
-            discardIcon, "Discard working copy changes...", iface
+            icons.discardIcon, "Discard working copy changes...", iface
         )
         self.discardWorkingTreeChangesAction.triggered.connect(
             _f(self.discardWorkingTreeChanges)
@@ -101,7 +89,7 @@ class LayerTracker:
         )
 
         self.commitWorkingTreeChangesAction = QAction(
-            commitIcon, "Commit working copy changes...", iface
+            icons.commitIcon, "Commit working copy changes...", iface
         )
         self.commitWorkingTreeChangesAction.triggered.connect(
             _f(self.commitWorkingTreeChanges)
@@ -111,7 +99,7 @@ class LayerTracker:
         )
 
         self.setMapToolAction = QAction(
-            crossIcon, "Activate 'show feature history' map tool", iface
+            icons.crossIcon, "Activate 'show feature history' map tool", iface
         )
         self.setMapToolAction.triggered.connect(_f(self.setMapTool))
         iface.addCustomActionForLayerType(
