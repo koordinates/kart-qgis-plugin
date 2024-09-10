@@ -212,6 +212,11 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     # always set the use helper env var as it is long lived and the setting may have changed
     executeKart.env["KART_USE_HELPER"] = "1" if setting(HELPERMODE) else ""
 
+    # TODO - merge into Kart proper already
+    logging.debug("Enabling VPC/VRTs generation...")
+    executeKart.env["KART_POINT_CLOUD_VPCS"] = "1"
+    executeKart.env["KART_RASTER_VRTS"] = "1"
+
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -293,6 +298,7 @@ class Repository:
         dst: str,
         location: Optional[str] = None,
         extent: Optional[QgsReferencedRectangle] = None,
+        depth: Optional[int] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
     ) -> List[str]:
@@ -313,6 +319,8 @@ class Repository:
         if extent is not None:
             kart_extent = f"{extent.crs().authid()};{extent.asWktPolygon()}"
             commands.extend(["--spatial-filter", kart_extent])
+        if depth is not None:
+            commands.extend(["--depth", str(depth)])
 
         return commands
 
@@ -322,6 +330,7 @@ class Repository:
         dst: str,
         location: Optional[str] = None,
         extent: Optional[QgsReferencedRectangle] = None,
+        depth: Optional[int] = None,
         username: Optional[str] = None,
         password: Optional[str] = None,
         output_handler: Callable[[str], None] = None,
@@ -330,7 +339,7 @@ class Repository:
         Performs a (blocking, main thread only) clone operation
         """
         commands = Repository.generate_clone_arguments(
-            src, dst, location, extent, username, password
+            src, dst, location, extent, depth, username, password
         )
         executeKart(commands, feedback=output_handler)
         return Repository(dst)
@@ -396,8 +405,11 @@ class Repository:
         else:
             self.executeKart(["init"])
 
-    def importIntoRepo(self, source):
-        self.executeKart(["import", source])
+    def importIntoRepo(self, source, dataset=None):
+        importArgs = [source]
+        if dataset:
+            importArgs += ["--dataset", dataset]
+        self.executeKart(["import"] + importArgs)
 
     def checkUserConfigured(self):
         configDict = self._config()
