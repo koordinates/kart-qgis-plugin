@@ -212,6 +212,11 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     # always set the use helper env var as it is long lived and the setting may have changed
     executeKart.env["KART_USE_HELPER"] = "1" if setting(HELPERMODE) else ""
 
+    # TODO - merge into Kart proper already
+    logging.debug("Enabling VPC/VRTs generation...")
+    executeKart.env["KART_POINT_CLOUD_VPCS"] = "1"
+    executeKart.env["KART_RASTER_VRTS"] = "1"
+
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
         QApplication.setOverrideCursor(Qt.WaitCursor)
