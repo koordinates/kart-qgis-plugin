@@ -38,7 +38,7 @@ class RepoCreateBranch(KartAlgorithm):
         from kart.kartapi import Repository
 
         repo_path = self.parameterAsFile(parameters, self.REPO_PATH, context)
-        branch_name = self.parameterAsString(parameters, self.REPO_REFISH, context)
+        branch_name = self.parameterAsString(parameters, self.REPO_BRANCH_NAME, context)
 
         repo = Repository(repo_path)
         repo.createBranch(branch_name)

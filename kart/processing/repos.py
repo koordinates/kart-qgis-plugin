@@ -1,4 +1,5 @@
 from qgis.core import (
+    QgsProcessingContext,
     QgsProcessingParameterFile,
     QgsProcessingParameterBoolean,
     QgsProcessingParameterNumber,
@@ -148,7 +149,9 @@ class RepoClone(KartAlgorithm):
 
         if add_layers:
             for layer in layers:
-                context.context.addLayerToLoadOnCompletion(layer)
+                context.addLayerToLoadOnCompletion(
+                    layer.id(), QgsProcessingContext.LayerDetails()
+                )
 
         return {
             self.REPO_OUTPUT_FOLDER: folder,
