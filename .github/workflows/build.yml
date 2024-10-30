@@ -22,7 +22,7 @@ jobs:
           mkdir tmp
           unzip kart.zip -d tmp
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: kart_package
           path: tmp
