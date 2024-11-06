@@ -36,6 +36,7 @@ def package(version=None):
         buf = StringIO()
         cfg.write(buf)
         zipFile.writestr("kart/metadata.txt", buf.getvalue())
+        zipFile.write("LICENSE", "kart/LICENSE")
 
         def filter_excludes(files):
             if not files:
