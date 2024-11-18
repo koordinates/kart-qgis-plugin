@@ -258,12 +258,12 @@ class ReposItem(RefreshableItem):
             with progressBar("Clone") as bar:
                 bar.setText("Cloning repository")
                 repo = Repository.clone(
-                    dialog.src,
-                    dialog.dst,
-                    dialog.location,
-                    dialog.extent,
-                    dialog.username,
-                    dialog.password,
+                    src=dialog.src,
+                    dst=dialog.dst,
+                    location=dialog.location,
+                    extent=dialog.extent,
+                    username=dialog.username,
+                    password=dialog.password,
                     output_handler=partial(_processProgressLine, bar),
                 )
             RepoManager.instance().add_repo(repo)
