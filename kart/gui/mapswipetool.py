@@ -56,6 +56,11 @@ class MapSwipeTool(QgsMapTool):
         self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
 
     def canvasMoveEvent(self, e):
+        if (e.x(), e.y()) == (self.firstPoint.x(), self.firstPoint.y()):
+            # the moveEvent was fired immediately after the press event,
+            # don't change the swipe direction
+            return
+
         THRESHOLD = 10
         if self.hasSwipe:
             if self.checkDirection:
