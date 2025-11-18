@@ -21,7 +21,7 @@ class InitDialog(BASE, WIDGET):
         self.setupUi(self)
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.btnBrowse.clicked.connect(self.browse)
@@ -44,7 +44,7 @@ class InitDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                "Invalid location definition", Qgis.Warning, duration=5
+                "Invalid location definition", Qgis.MessageLevel.Warning, duration=5
             )
             return
         self.folder = self.txtFolder.text()
@@ -52,5 +52,5 @@ class InitDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.Warning, duration=5
+                "Text fields must not be empty", Qgis.MessageLevel.Warning, duration=5
             )

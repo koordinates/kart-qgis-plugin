@@ -32,7 +32,7 @@ class RepoInit(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -94,7 +94,7 @@ class RepoClone(KartAlgorithm):
             QgsProcessingParameterNumber(
                 self.REPO_CLONE_DEPTH,
                 self.tr("Depth"),
-                type=QgsProcessingParameterNumber.Integer,
+                type=QgsProcessingParameterNumber.Type.Integer,
                 optional=True,
                 minValue=1,
             )

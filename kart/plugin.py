@@ -29,7 +29,7 @@ class KartPlugin(object):
     def initGui(self):
 
         self.dock = KartDockWidget()
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
 
         self.explorerAction = QAction("Repositories...", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.explorerAction)
@@ -83,7 +83,7 @@ class KartPlugin(object):
         )
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle("About Kart")
-        dlg.setMessage(html, QgsMessageOutput.MessageHtml)
+        dlg.setMessage(html, QgsMessageOutput.MessageType.MessageHtml)
         dlg.showMessage()
 
     def unload(self):

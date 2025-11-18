@@ -24,3 +24,4 @@ tracker=https://github.com/koordinates/kart-qgis-plugin/issues
 icon=img/kart.png
 category=Plugins
 hasProcessingProvider=yes
+supportsQt6=True

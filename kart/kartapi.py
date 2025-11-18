@@ -77,7 +77,7 @@ def executeskart(f):
                     <p><b>Kart failed with the following message:</b></p>
                     <p style="color:red">{errors}</p>
                     """
-            dlg.setMessage(msg, QgsMessageOutput.MessageHtml)
+            dlg.setMessage(msg, QgsMessageOutput.MessageType.MessageHtml)
             dlg.showMessage()
 
     return inner
@@ -137,14 +137,14 @@ def checkKartInstalled(showMessage=True, useCache=True):
                 iface.messageBar().pushMessage(
                     "Install",
                     "Kart has been correctly installed",
-                    level=Qgis.Success,
+                    level=Qgis.MessageLevel.Success,
                 )
                 return True
             else:
                 iface.messageBar().pushMessage(
                     "Install",
                     "Kart was not installed. Please install it manually.",
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
         return False
     else:
@@ -219,7 +219,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
 
     try:
         encoding = locale.getdefaultlocale()[1] or "utf-8"
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
         # TODO - all of this should be replaced by useage of QgsTask which
         #  will execute on a background thread. There are a number of

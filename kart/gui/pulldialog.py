@@ -22,7 +22,7 @@ class PullDialog(BASE, WIDGET):
         self.setupUi(self)
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.btnManageRemotes.clicked.connect(self.manageRemotes)
@@ -51,7 +51,10 @@ class PullDialog(BASE, WIDGET):
         self.remote = self.comboRemote.currentText()
         if not self.remote:
             self.bar.pushMessage(
-                "", "Branch and remote must not be empty", Qgis.Warning, duration=5
+                "",
+                "Branch and remote must not be empty",
+                Qgis.MessageLevel.Warning,
+                duration=5,
             )
         else:
             self.accept()

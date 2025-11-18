@@ -28,7 +28,7 @@ class RepoImportData(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -36,7 +36,7 @@ class RepoImportData(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_DATA_PATH,
                 self.tr("Data Path"),
-                behavior=QgsProcessingParameterFile.File,
+                behavior=QgsProcessingParameterFile.Behavior.File,
             )
         )
 

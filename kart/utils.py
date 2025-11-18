@@ -24,9 +24,11 @@ class ProgressBar:
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
-        self.progress.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.progress.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.progressMessageBar.layout().addWidget(self.progress)
-        iface.messageBar().pushWidget(self.progressMessageBar, Qgis.Info)
+        iface.messageBar().pushWidget(self.progressMessageBar, Qgis.MessageLevel.Info)
         QCoreApplication.processEvents()
 
     def setValue(self, value):
@@ -54,7 +56,7 @@ def progressBar(title):
 def waitcursor(method):
     def func(*args, **kw):
         try:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
+            QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             return method(*args, **kw)
         except Exception as ex:
             raise ex
@@ -66,9 +68,12 @@ def waitcursor(method):
 
 def confirm(msg):
     ret = QMessageBox.warning(
-        iface.mainWindow(), "Kart", msg, QMessageBox.Yes | QMessageBox.No
+        iface.mainWindow(),
+        "Kart",
+        msg,
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
     )
-    return ret == QMessageBox.Yes
+    return ret == QMessageBox.StandardButton.Yes
 
 
 def layerFromSource(path):

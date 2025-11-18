@@ -67,11 +67,11 @@ WIDGET, BASE = uic.loadUiType(
 class DiffViewerDialog(QDialog):
     def __init__(self, parent, diff, repo, showRecoverNewButton=True):
         super(QDialog, self).__init__(parent)
-        self.setWindowFlags(Qt.Window)
+        self.setWindowFlags(Qt.WindowType.Window)
         layout = QVBoxLayout()
         layout.setMargin(0)
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.bar)
         self.history = DiffViewerWidget(diff, repo, showRecoverNewButton)
         self.history.workingLayerChanged.connect(self.workingLayerChanged)
@@ -81,7 +81,9 @@ class DiffViewerDialog(QDialog):
         self.setWindowTitle("Diff viewer")
 
     def workingLayerChanged(self):
-        self.bar.pushMessage("Diff", "Working copy has been updated", Qgis.Success, 5)
+        self.bar.pushMessage(
+            "Diff", "Working copy has been updated", Qgis.MessageLevel.Success, 5
+        )
 
     def closeEvent(self, evt):
         self.history.removeMapLayers()
@@ -112,10 +114,10 @@ class DiffViewerWidget(WIDGET, BASE):
 
         self.setupUi(self)
 
-        self.setWindowFlags(self.windowFlags() | Qt.WindowSystemMenuHint)
+        self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowSystemMenuHint)
 
         self.canvas = QgsMapCanvas(self.canvasWidget)
-        self.canvas.setCanvasColor(Qt.white)
+        self.canvas.setCanvasColor(Qt.GlobalColor.white)
         self.canvas.enableAntiAliasing(True)
         tabLayout = QVBoxLayout()
         tabLayout.setMargin(0)
@@ -157,7 +159,7 @@ class DiffViewerWidget(WIDGET, BASE):
             return ref["geometry"] is not None
         else:
             oldLayer, newLayer = self.layerDiffLayers[item.dataset]
-            return oldLayer.wkbType() != QgsWkbTypes.NoGeometry
+            return oldLayer.wkbType() != QgsWkbTypes.Type.NoGeometry
 
     def treeItemChanged(self, current, previous):
         self.grpTransparency.setVisible(True)
@@ -218,7 +220,12 @@ class DiffViewerWidget(WIDGET, BASE):
         fields.extend(old.get("properties", {}).keys())
         fields = list(set(fields))
 
-        changeTypeColor = [Qt.green, QColor(255, 170, 0), Qt.red, Qt.white]
+        changeTypeColor = [
+            Qt.GlobalColor.green,
+            QColor(255, 170, 0),
+            Qt.GlobalColor.red,
+            Qt.GlobalColor.white,
+        ]
         changeTypeName = ["Added", "Modified", "Removed", "Unchanged"]
         self.attributesTable.clear()
         self.attributesTable.verticalHeader().show()
@@ -286,10 +293,10 @@ class DiffViewerWidget(WIDGET, BASE):
         self.attributesTable.resizeColumnsToContents()
         header = self.attributesTable.horizontalHeader()
         for column in range(header.count()):
-            header.setSectionResizeMode(column, QHeaderView.Fixed)
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
             width = header.sectionSize(column)
             header.resizeSection(column, width)
-            header.setSectionResizeMode(column, QHeaderView.Interactive)
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
 
     def fillTree(self):
         self.featuresTree.clear()
