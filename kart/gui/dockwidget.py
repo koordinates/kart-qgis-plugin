@@ -16,6 +16,7 @@ from qgis.PyQt.QtWidgets import (
     QMenu,
     QInputDialog,
     QMessageBox,
+    QDialog,
 )
 
 from qgis.utils import iface
@@ -203,7 +204,7 @@ class ReposItem(RefreshableItem):
     def createRepo(self):
         dialog = InitDialog()
         ret = dialog.exec()
-        if ret == dialog.Accepted:
+        if ret == QDialog.DialogCode.Accepted:
             if os.path.exists(dialog.folder):
                 if any(os.scandir(dialog.folder)):
                     iface.messageBar().pushMessage(
@@ -258,7 +259,7 @@ class ReposItem(RefreshableItem):
         dialog = CloneDialog()
         dialog.show()
         ret = dialog.exec()
-        if ret == dialog.Accepted:
+        if ret == QDialog.DialogCode.Accepted:
             with progressBar("Clone") as bar:
                 bar.setText("Cloning repository")
                 repo = Repository.clone(
@@ -396,7 +397,7 @@ class RepoItem(RefreshableItem):
     def importLayerFromDatabase(self):
         dlg = DbConnectionDialog()
         ret = dlg.exec()
-        if ret == dlg.Accepted:
+        if ret == QDialog.DialogCode.Accepted:
             self._importIntoRepo(dlg.url)
 
     def importLayerFromFile(self):
@@ -496,14 +497,14 @@ class RepoItem(RefreshableItem):
     @executeskart
     def switchBranch(self):
         dialog = SwitchDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.repo.checkoutBranch(dialog.branch, dialog.force)
             self.setTitle()
 
     @executeskart
     def mergeBranch(self):
         dialog = MergeDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             conflicts = self.repo.mergeBranch(
                 dialog.ref, msg=dialog.message, noff=dialog.noff, ffonly=dialog.ffonly
             )
@@ -587,7 +588,7 @@ class RepoItem(RefreshableItem):
     @executeskart
     def push(self):
         dialog = PushDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.repo.push(dialog.remote, dialog.branch, dialog.pushAll)
             iface.messageBar().pushMessage(
                 "Push",
@@ -603,7 +604,7 @@ class RepoItem(RefreshableItem):
     @executeskart
     def pull(self):
         dialog = PullDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             ret = self.repo.pull(dialog.remote, dialog.branch)
             if not ret:
                 QMessageBox.warning(

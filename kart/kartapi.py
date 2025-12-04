@@ -15,6 +15,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import (
     QApplication,
+    QDialog,
 )
 
 from qgis.core import (
@@ -218,7 +219,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     executeKart.env["KART_RASTER_VRTS"] = "1"
 
     try:
-        encoding = locale.getdefaultlocale()[1] or "utf-8"
+        encoding = locale.getpreferredencoding(False)
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
         # TODO - all of this should be replaced by useage of QgsTask which
@@ -417,7 +418,7 @@ class Repository:
         if all(configDict.get(configKey) for configKey in ("user.name", "user.email")):
             return True
         dlg = UserConfigDialog(configDict)
-        if dlg.exec() == dlg.Accepted:
+        if dlg.exec() == QDialog.DialogCode.Accepted:
             self.configureUser(dlg.username, dlg.email)
             return True
         else:
