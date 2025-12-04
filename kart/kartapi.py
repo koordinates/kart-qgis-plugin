@@ -38,7 +38,7 @@ from kart import logging
 
 
 MINIMUM_SUPPORTED_VERSION = "0.14.0"
-CURRENT_VERSION = "0.15.3"
+CURRENT_VERSION = "0.17.0"
 
 
 class KartException(Exception):
