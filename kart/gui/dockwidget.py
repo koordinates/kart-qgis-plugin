@@ -109,8 +109,8 @@ class KartDockWidget(BASE, WIDGET):
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
-        self.setWindowTitle(QCoreApplication.translate("DockWidget", "Kart repositories"))
-        self.label_2.setText(QCoreApplication.translate("DockWidget", "Tip: right-click on items for available actions"))
+        self.setWindowTitle(tr("Kart repositories"))
+        self.label_2.setText(tr("Tip: right-click on items for available actions"))
 
     def fillTree(self):
         self.tree.clear()
@@ -170,7 +170,7 @@ class ReposItem(RefreshableItem):
     def __init__(self):
         QTreeWidgetItem.__init__(self)
 
-        self.setText(0, tr("Repositories"))
+        self.setText(0, tr('Repositories'))
         self.setIcon(0, icons.repoIcon)
         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
 

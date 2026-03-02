@@ -1,5 +1,4 @@
 import os
-
 from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
@@ -40,25 +39,25 @@ class SettingsDialog(BASE, WIDGET):
     def retranslateUi(self):
         """Update translations for UI elements from the .ui file"""
         # Window Title
-        self.setWindowTitle(QCoreApplication.translate("Dialog", "Kart Settings"))
+        self.setWindowTitle(tr("Kart Settings"))
 
         # Kart Executable Section
-        self.groupBox.setTitle(QCoreApplication.translate("Dialog", "Kart executable"))
-        self.label_2.setText(QCoreApplication.translate("Dialog", "Path to Kart executable"))
+        self.groupBox.setTitle(tr("Kart executable"))
+        self.label_2.setText(tr("Path to Kart executable"))
         self.txtKartPath.setPlaceholderText(
-            QCoreApplication.translate("Dialog", "[Leave empty to use default Kart installation path]")
+            tr("[Leave empty to use default Kart installation path]")
         )
-        self.chkHelperMode.setText(QCoreApplication.translate("Dialog", "Use helper mode"))
+        self.chkHelperMode.setText(tr("Use helper mode"))
 
         # Auto Commit Section
-        self.groupBox_3.setTitle(QCoreApplication.translate("Dialog", "Auto commit"))
+        self.groupBox_3.setTitle(tr("Auto commit"))
         self.chkAutoCommit.setText(
-            QCoreApplication.translate("Dialog", "Commit automatically after closing editing")
+            tr("Commit automatically after closing editing")
         )
 
         # Diff Styles Section
-        self.groupBox_2.setTitle(QCoreApplication.translate("Dialog", "Diff styles"))
-        self.label.setText(QCoreApplication.translate("Dialog", "Styles to use for geometry diffs"))
+        self.groupBox_2.setTitle(tr("Diff styles"))
+        self.label.setText(tr("Styles to use for geometry diffs"))
 
     def setValues(self):
         self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))

@@ -1,6 +1,6 @@
 import os
 
-from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings, QTranslator, QT_TRANSLATE_NOOP
 from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox, QApplication
 from qgis.core import QgsProject, Qgis
 from qgis.utils import iface as qgisiface
@@ -16,7 +16,7 @@ if iface is None:
     iface = get_iface()
 
 def tr(string):
-    return QCoreApplication.translate('Kart', string)
+    return QCoreApplication.translate("Kart", string)
 
 class ProgressBar:
     def __init__(self, title):
