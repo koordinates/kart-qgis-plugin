@@ -29,93 +29,18 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="70"/>
-        <source>Select Folder</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/initdialog.py" line="49"/>
-        <source>Invalid location definition</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/repopropertiesdialog.py" line="66"/>
+        <location filename="../gui/clonedialog.py" line="76"/>
         <source>Invalid extent value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/initdialog.py" line="57"/>
-        <source>Text fields must not be empty</source>
+        <location filename="../gui/dockwidget.py" line="112"/>
+        <source>Kart repositories</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="182"/>
-        <source>Solve conflicts</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="121"/>
-        <source>Are you sure you want to solve all conflicts using the &apos;ours&apos; version?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="132"/>
-        <source>Are you sure you want to solve all conflicts using the &apos;theirs&apos; version?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="165"/>
-        <source>There are still conflicts in the current feature</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="182"/>
-        <source>All conflicts are solved. The merge operation will now be closed</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="294"/>
-        <source>Conflict resolution</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/conflictsdialog.py" line="294"/>
-        <source>Do you really want to exit without resolving conflicts?</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/dbconnectiondialog.py" line="36"/>
-        <source>These credentials are not saved</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/dbconnectiondialog.py" line="56"/>
-        <source>All tables</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/dbconnectiondialog.py" line="82"/>
-        <source>Cannot connect to the provided database table(s)</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/dbconnectiondialog.py" line="73"/>
-        <source>Tables correctly loaded into tables list</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/diffviewer.py" line="81"/>
-        <source>Diff viewer</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/diffviewer.py" line="84"/>
-        <source>Diff</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/diffviewer.py" line="84"/>
-        <source>Working copy has been updated</source>
+        <location filename="../gui/dockwidget.py" line="113"/>
+        <source>Tip: right-click on items for available actions</source>
         <translation></translation>
     </message>
     <message>
@@ -531,28 +456,13 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/extentselectionpanel.py" line="46"/>
-        <source>Use Canvas Extent</source>
+        <location filename="../gui/historyviewer.py" line="226"/>
+        <source>Create branch</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/extentselectionpanel.py" line="47"/>
-        <source>Use Layer Extent…</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/extentselectionpanel.py" line="48"/>
-        <source>Select Extent on Canvas</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/featurehistorydialog.py" line="156"/>
-        <source>Feature history</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/featurehistorydialog.py" line="156"/>
-        <source>Working copy has been correctly modified</source>
+        <location filename="../gui/historyviewer.py" line="226"/>
+        <source>Enter name of branch to create</source>
         <translation></translation>
     </message>
     <message>
@@ -676,16 +586,6 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/switchdialog.py" line="37"/>
-        <source>Create branch</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/switchdialog.py" line="37"/>
-        <source>Enter name of branch to create</source>
-        <translation></translation>
-    </message>
-    <message>
         <location filename="../gui/historyviewer.py" line="231"/>
         <source>Branch correctly created</source>
         <translation></translation>
@@ -736,8 +636,68 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/pushdialog.py" line="60"/>
+        <location filename="../gui/pulldialog.py" line="55"/>
         <source>Branch and remote must not be empty</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="182"/>
+        <source>Solve conflicts</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="121"/>
+        <source>Are you sure you want to solve all conflicts using the &apos;ours&apos; version?</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="132"/>
+        <source>Are you sure you want to solve all conflicts using the &apos;theirs&apos; version?</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="165"/>
+        <source>There are still conflicts in the current feature</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="182"/>
+        <source>All conflicts are solved. The merge operation will now be closed</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="294"/>
+        <source>Conflict resolution</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="294"/>
+        <source>Do you really want to exit without resolving conflicts?</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/featurehistorydialog.py" line="156"/>
+        <source>Feature history</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/featurehistorydialog.py" line="156"/>
+        <source>Working copy has been correctly modified</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/settingsdialog.py" line="69"/>
+        <source>Select Folder</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/clonedialog.py" line="67"/>
+        <source>Invalid location definition</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/clonedialog.py" line="87"/>
+        <source>Text fields must not be empty</source>
         <translation></translation>
     </message>
     <message>
@@ -751,93 +711,103 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../gui/dbconnectiondialog.py" line="36"/>
+        <source>These credentials are not saved</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/dbconnectiondialog.py" line="56"/>
+        <source>All tables</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/dbconnectiondialog.py" line="82"/>
+        <source>Cannot connect to the provided database table(s)</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/dbconnectiondialog.py" line="73"/>
+        <source>Tables correctly loaded into tables list</source>
+        <translation></translation>
+    </message>
+    <message>
         <location filename="../gui/userconfigdialog.py" line="41"/>
         <source>Username and email must not be empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="12"/>
-        <source>Create Branch</source>
+        <location filename="../gui/extentselectionpanel.py" line="46"/>
+        <source>Use Canvas Extent</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="15"/>
-        <source>Create a new branch</source>
+        <location filename="../gui/extentselectionpanel.py" line="47"/>
+        <source>Use Layer Extent…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/tags.py" line="22"/>
-        <source>Repo Path</source>
+        <location filename="../gui/extentselectionpanel.py" line="48"/>
+        <source>Select Extent on Canvas</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/remotes.py" line="85"/>
-        <source>Branch Name</source>
+        <location filename="../gui/settingsdialog.py" line="42"/>
+        <source>Kart Settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="56"/>
-        <source>Switch to Branch</source>
+        <location filename="../gui/settingsdialog.py" line="45"/>
+        <source>Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="59"/>
-        <source>Switches to a named branch</source>
+        <location filename="../gui/settingsdialog.py" line="46"/>
+        <source>Path to Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="100"/>
-        <source>Delete Branch</source>
+        <location filename="../gui/settingsdialog.py" line="47"/>
+        <source>[Leave empty to use default Kart installation path]</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/branches.py" line="103"/>
-        <source>Delete a branch</source>
+        <location filename="../gui/settingsdialog.py" line="50"/>
+        <source>Use helper mode</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/data.py" line="17"/>
-        <source>Import Data</source>
+        <location filename="../gui/settingsdialog.py" line="53"/>
+        <source>Auto commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/data.py" line="20"/>
-        <source>Import data into a repository</source>
+        <location filename="../gui/settingsdialog.py" line="54"/>
+        <source>Commit automatically after closing editing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/data.py" line="35"/>
-        <source>Data Path</source>
+        <location filename="../gui/settingsdialog.py" line="59"/>
+        <source>Diff styles</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/data.py" line="43"/>
-        <source>Dataset Name</source>
+        <location filename="../gui/settingsdialog.py" line="60"/>
+        <source>Styles to use for geometry diffs</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/remotes.py" line="13"/>
-        <source>Push Changes to Remote</source>
+        <location filename="../gui/diffviewer.py" line="81"/>
+        <source>Diff viewer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/remotes.py" line="16"/>
-        <source>Sync changes in a repository to a remote location</source>
+        <location filename="../gui/diffviewer.py" line="84"/>
+        <source>Diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/remotes.py" line="92"/>
-        <source>Remote Name</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../processing/remotes.py" line="67"/>
-        <source>Pull Changes from Remote</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../processing/remotes.py" line="70"/>
-        <source>Sync changes in a remote location to a local repository</source>
+        <location filename="../gui/diffviewer.py" line="84"/>
+        <source>Working copy has been updated</source>
         <translation></translation>
     </message>
     <message>
@@ -848,6 +818,11 @@ Do you want to continue?</source>
     <message>
         <location filename="../processing/repos.py" line="24"/>
         <source>Create a new empty repository</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/remotes.py" line="77"/>
+        <source>Repo Path</source>
         <translation></translation>
     </message>
     <message>
@@ -896,6 +871,61 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
+        <location filename="../processing/data.py" line="17"/>
+        <source>Import Data</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/data.py" line="20"/>
+        <source>Import data into a repository</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/data.py" line="35"/>
+        <source>Data Path</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/data.py" line="43"/>
+        <source>Dataset Name</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="12"/>
+        <source>Create Branch</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="15"/>
+        <source>Create a new branch</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/remotes.py" line="85"/>
+        <source>Branch Name</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="56"/>
+        <source>Switch to Branch</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="59"/>
+        <source>Switches to a named branch</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="100"/>
+        <source>Delete Branch</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../processing/branches.py" line="103"/>
+        <source>Delete a branch</source>
+        <translation></translation>
+    </message>
+    <message>
         <location filename="../processing/tags.py" line="12"/>
         <source>Create Tag</source>
         <translation></translation>
@@ -910,65 +940,29 @@ Do you want to continue?</source>
         <source>Tag Name</source>
         <translation></translation>
     </message>
-</context>
-<context>
-    <name>Dialog</name>
     <message>
-        <location filename="../gui/settingsdialog.py" line="43"/>
-        <source>Kart Settings</source>
+        <location filename="../processing/remotes.py" line="13"/>
+        <source>Push Changes to Remote</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="46"/>
-        <source>Kart executable</source>
+        <location filename="../processing/remotes.py" line="16"/>
+        <source>Sync changes in a repository to a remote location</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="47"/>
-        <source>Path to Kart executable</source>
+        <location filename="../processing/remotes.py" line="92"/>
+        <source>Remote Name</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="48"/>
-        <source>[Leave empty to use default Kart installation path]</source>
+        <location filename="../processing/remotes.py" line="67"/>
+        <source>Pull Changes from Remote</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="51"/>
-        <source>Use helper mode</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/settingsdialog.py" line="54"/>
-        <source>Auto commit</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/settingsdialog.py" line="55"/>
-        <source>Commit automatically after closing editing</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/settingsdialog.py" line="60"/>
-        <source>Diff styles</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/settingsdialog.py" line="61"/>
-        <source>Styles to use for geometry diffs</source>
-        <translation></translation>
-    </message>
-</context>
-<context>
-    <name>DockWidget</name>
-    <message>
-        <location filename="../gui/dockwidget.py" line="112"/>
-        <source>Kart repositories</source>
-        <translation></translation>
-    </message>
-    <message>
-        <location filename="../gui/dockwidget.py" line="113"/>
-        <source>Tip: right-click on items for available actions</source>
+        <location filename="../processing/remotes.py" line="70"/>
+        <source>Sync changes in a remote location to a local repository</source>
         <translation></translation>
     </message>
 </context>
