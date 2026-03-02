@@ -101,7 +101,7 @@
     <message>
         <location filename="../gui/dockwidget.py" line="245"/>
         <source>Checking out layer &apos;{datasetname}&apos;</source>
-        <translation>Checkout da camada '{datasetname}'</translation>
+        <translation>Obtendo camada &apos;{datasetname}&apos;</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="267"/>
@@ -116,17 +116,17 @@
     <message>
         <location filename="../gui/dockwidget.py" line="330"/>
         <source>Continue merge</source>
-        <translation>Continuar merge</translation>
+        <translation>Continuar mesclagem</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="330"/>
         <source>Abort merge</source>
-        <translation>Abortar merge</translation>
+        <translation>Abortar mesclagem</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="676"/>
         <source>Show log...</source>
-        <translation>Mostrar log...</translation>
+        <translation>Exibir registro de alterações...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
@@ -141,27 +141,27 @@
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Commit working copy changes...</source>
-        <translation>Fazer commit das alterações da cópia de trabalho...</translation>
+        <translation>Registrar alterações da cópia de trabalho...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Switch branch...</source>
-        <translation>Alternar branch...</translation>
+        <translation>Alternar ramo...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Merge into current branch...</source>
-        <translation>Merge no branch atual...</translation>
+        <translation>Mesclar no ramo atual...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Pull...</source>
-        <translation>Pull...</translation>
+        <translation>Obter...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Push...</source>
-        <translation>Push...</translation>
+        <translation>Enviar...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
@@ -176,7 +176,7 @@
     <message>
         <location filename="../gui/dockwidget.py" line="338"/>
         <source>Apply patch...</source>
-        <translation>Aplicar patch...</translation>
+        <translation>Aplicar correção...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="372"/>
@@ -221,27 +221,27 @@
     <message>
         <location filename="../gui/dockwidget.py" line="719"/>
         <source>Commit</source>
-        <translation>Commit</translation>
+        <translation>Registrar</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="706"/>
         <source>Nothing to commit</source>
-        <translation>Nada a fazer commit</translation>
+        <translation>Nada para registrar</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="710"/>
         <source>Enter commit message:</source>
-        <translation>Informe a mensagem de commit:</translation>
+        <translation>Informe a mensagem de registro:</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="715"/>
         <source>Changes correctly committed</source>
-        <translation>Alterações confirmadas com sucesso</translation>
+        <translation>Alterações registradas com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="719"/>
         <source>Changes could not be commited</source>
-        <translation>Não foi possível fazer commit das alterações</translation>
+        <translation>Não foi possível registrar as alterações</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="740"/>
@@ -251,7 +251,7 @@
     <message>
         <location filename="../gui/dockwidget.py" line="727"/>
         <source>There are schema changes in the working copy and changes cannot be shown</source>
-        <translation>Existem alterações de schema na cópia de trabalho e as alterações não podem ser exibidas</translation>
+        <translation>Existem alterações de esquema na cópia de trabalho e as alterações não podem ser exibidas</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="490"/>
@@ -261,20 +261,20 @@
     <message>
         <location filename="../gui/dockwidget.py" line="575"/>
         <source>Merge</source>
-        <translation>Merge</translation>
+        <translation>Mesclar</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="511"/>
         <source>There were conflicts during the merge operation.
-Resolve them and then commit your changes to 
+Resolve them and then commit your changes to
 complete the merge.</source>
-        <translation>Houve conflitos durante a operação de merge.
-Resolva-os e depois commit suas alterações para concluí-la.</translation>
+        <translation>Houve conflitos durante a operação de mesclagem.
+Resolva-os e depois registre suas alterações para concluí-la.</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="521"/>
         <source>Branch correctly merged</source>
-        <translation>Merge do branch realizado com sucesso</translation>
+        <translation>Mesclagem do ramo realizada com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="527"/>
@@ -294,17 +294,17 @@ Resolva-os e depois commit suas alterações para concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="538"/>
         <source>Cannot continue. There are merge conflicts.</source>
-        <translation>Não é possível continuar. Existem conflitos de merge.</translation>
+        <translation>Não é possível continuar. Existem conflitos de mesclagem.</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="575"/>
         <source>Merge operation was correctly continued and closed</source>
-        <translation>Operação de merge continuada e concluída com sucesso</translation>
+        <translation>Operação de mesclagem continuada e concluída com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="554"/>
         <source>Merge operation was correctly aborted</source>
-        <translation>Operação de merge abortada com sucesso</translation>
+        <translation>Operação de mesclagem abortada com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="581"/>
@@ -314,7 +314,7 @@ Resolva-os e depois commit suas alterações para concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="561"/>
         <source>Conflicts involve schema changes and cannot be resolved using the plugin interface</source>
-        <translation>Os conflitos envolvem alterações de schema e não podem ser resolvidos pela interface do plugin</translation>
+        <translation>Os conflitos envolvem alterações de esquema e não podem ser resolvidos pela interface do plugin</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="581"/>
@@ -324,17 +324,17 @@ Resolva-os e depois commit suas alterações para concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="590"/>
         <source>Push</source>
-        <translation>Push</translation>
+        <translation>Enviar</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="590"/>
         <source>Repo changes have been pushed to </source>
-        <translation>Alterações do repositório enviadas via push para </translation>
+        <translation>Alterações do repositório enviadas para </translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="590"/>
         <source>all branches at {dialog.remote}</source>
-        <translation>todos os branches em {dialog.remote}</translation>
+        <translation>todos os ramos em {dialog.remote}</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="590"/>
@@ -344,46 +344,46 @@ Resolva-os e depois commit suas alterações para concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="617"/>
         <source>Pull</source>
-        <translation>Pull</translation>
+        <translation>Obter</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="607"/>
         <source>There were conflicts during the pull operation.
-Resolve them and then commit your changes to 
+Resolve them and then commit your changes to
 complete it.</source>
-        <translation>Houve conflitos durante a operação de pull.
-Resolva-os e depois faça o commit de suas alterações para
+        <translation>Houve conflitos durante a operação de obter.
+Resolva-os e depois registre suas alterações para
 concluí-la.</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="617"/>
         <source>Pull correctly performed</source>
-        <translation>Pull executado com sucesso</translation>
+        <translation>Obter executado com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="264"/>
         <source>Patch file</source>
-        <translation>Arquivo de patch</translation>
+        <translation>Arquivo de correção</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="264"/>
         <source>Patch files (*.patch);;All files (*.*)</source>
-        <translation>Arquivos de patch (*.patch);;Todos os arquivos (*.*)</translation>
+        <translation>Arquivos de correção (*.patch);;Todos os arquivos (*.*)</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="631"/>
         <source>Apply patch</source>
-        <translation>Aplicar patch</translation>
+        <translation>Aplicar correção</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="631"/>
         <source>Patch was correctly applied to working copy</source>
-        <translation>Patch aplicado com sucesso à cópia de trabalho</translation>
+        <translation>Correção aplicada com sucesso à cópia de trabalho</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="644"/>
         <source>Datasets</source>
-        <translation>Datasets</translation>
+        <translation>Conjuntos de dados</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="674"/>
@@ -393,17 +393,17 @@ concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="676"/>
         <source>Show working copy changes for this dataset...</source>
-        <translation>Exibir alterações da cópia de trabalho para este dataset...</translation>
+        <translation>Exibir alterações da cópia de trabalho para estes dados...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="676"/>
         <source>Discard working copy changes for this dataset</source>
-        <translation>Descartar alterações da cópia de trabalho para este dataset</translation>
+        <translation>Descartar alterações da cópia de trabalho para estes dados</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="676"/>
         <source>Commit working copy changes for this dataset...</source>
-        <translation>Fazer commit das alterações da cópia de trabalho para este dataset...</translation>
+        <translation>Registrar alterações da cópia de trabalho para estes dados...</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="676"/>
@@ -413,12 +413,12 @@ concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="740"/>
         <source>There are no changes in the working copy for this dataset</source>
-        <translation>Não há alterações na cópia de trabalho para este dataset</translation>
+        <translation>Não há alterações na cópia de trabalho para estes dados</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="748"/>
         <source>Are you sure you want to discard the working copy changes for this dataset?</source>
-        <translation>Tem certeza de que deseja descartar as alterações da cópia de trabalho para este dataset?</translation>
+        <translation>Tem certeza de que deseja descartar as alterações da cópia de trabalho para estes dados?</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="766"/>
@@ -428,24 +428,24 @@ concluí-la.</translation>
     <message>
         <location filename="../gui/dockwidget.py" line="766"/>
         <source>Dataset could not be added</source>
-        <translation>O dataset não pôde ser adicionado</translation>
+        <translation>O conjunto de dados não pôde ser adicionado</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="805"/>
         <source>Remove dataset</source>
-        <translation>Remover dataset</translation>
+        <translation>Remover conjunto de dados</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="777"/>
         <source>There are pending changes in the working copy. Commit them before deleting this dataset</source>
-        <translation>Existem alterações pendentes na cópia de trabalho. Faça o commit antes de excluir este dataset</translation>
+        <translation>Existem alterações pendentes na cópia de trabalho. Registre-as antes de excluir este conjunto de dados</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="789"/>
-        <source>The dataset is loaded in QGIS. 
+        <source>The dataset is loaded in QGIS.
 It will be removed from the repository and from your current project.
 Do you want to continue?</source>
-        <translation>O dataset está carregado no QGIS.
+        <translation>O conjunto de dados está carregado no QGIS.
 Ele será removido do repositório e do seu projeto atual.
 Você deseja continuar?</translation>
     </message>
@@ -453,23 +453,23 @@ Você deseja continuar?</translation>
         <location filename="../gui/dockwidget.py" line="795"/>
         <source>The dataset will be removed from the repository.
 Do you want to continue?</source>
-        <translation>O dataset será removido do repositório.
+        <translation>O conjunto de dados será removido do repositório.
 Deseja continuar?</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="805"/>
         <source>Dataset correctly removed</source>
-        <translation>Dataset removido com sucesso</translation>
+        <translation>Conjunto de dados removido com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="226"/>
         <source>Create branch</source>
-        <translation>Criar branch</translation>
+        <translation>Criar ramo</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="226"/>
         <source>Enter name of branch to create</source>
-        <translation>Digite o nome do branch a ser criado</translation>
+        <translation>Digite o nome do ramo a ser criado</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="79"/>
@@ -499,17 +499,17 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/historyviewer.py" line="79"/>
         <source>CommitID</source>
-        <translation>ID do Commit</translation>
+        <translation>ID do Registro</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="102"/>
         <source>Show changes introduced by this commit...</source>
-        <translation>Mostrar alterações introduzidas por este commit...</translation>
+        <translation>Mostrar alterações introduzidas por este registro...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="110"/>
         <source>Save changes as patch...</source>
-        <translation>Salvar alterações como patch...</translation>
+        <translation>Salvar alterações como correção...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="117"/>
@@ -519,107 +519,107 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/historyviewer.py" line="125"/>
         <source>Show diff between this commit and parent {parent[:7]}...</source>
-        <translation>Comparar este commit com o commit pai {parent[:7]}...</translation>
+        <translation>Comparar este registro com o registro pai {parent[:7]}...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="133"/>
         <source>Reset current branch to this commit</source>
-        <translation>Redefinir o branch atual para este commit</translation>
+        <translation>Redefinir o ramo atual para este registro</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="133"/>
         <source>Create branch at this commit...</source>
-        <translation>Criar branch neste commit...</translation>
+        <translation>Criar ramo neste registro...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="133"/>
         <source>Create tag at this commit...</source>
-        <translation>Criar tag neste commit...</translation>
+        <translation>Criar etiqueta neste registro...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="133"/>
         <source>Restore working tree datasets to this version...</source>
-        <translation>Restaurar datasets da working tree para esta versão...</translation>
+        <translation>Restaurar conjuntos de dados da árvore de trabalho para esta versão...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="159"/>
         <source>Delete tag &apos;{tag}&apos;</source>
-        <translation>Excluir tag '{tag}'</translation>
+        <translation>Excluir etiqueta &apos;{tag}&apos;</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="164"/>
         <source>Switch to branch &apos;{ref}&apos;</source>
-        <translation>Alternar para o branch '{ref}'</translation>
+        <translation>Alternar para o ramo &apos;{ref}&apos;</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="168"/>
         <source>Delete branch &apos;{ref}&apos;</source>
-        <translation>Excluir branch '{ref}'</translation>
+        <translation>Excluir ramo &apos;{ref}&apos;</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="176"/>
         <source>Show changes between these commits...</source>
-        <translation>Mostrar alterações entre estes commits...</translation>
+        <translation>Mostrar alterações entre estes registros...</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="198"/>
         <source>Create tag</source>
-        <translation>Criar tag</translation>
+        <translation>Criar etiqueta</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="198"/>
         <source>Enter name of tag to create</source>
-        <translation>Digite o nome da tag a ser criada</translation>
+        <translation>Digite o nome da etiqueta a ser criada</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="203"/>
         <source>Tag correctly created</source>
-        <translation>Tag criada com sucesso</translation>
+        <translation>Etiqueta criada com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="209"/>
         <source>Correctly deleted tag &apos;{tag}&apos;</source>
-        <translation>Tag '{tag}' excluída com sucesso</translation>
+        <translation>Etiqueta &apos;{tag}&apos; excluída com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="215"/>
         <source>Correctly switched to branch &apos;{branch}&apos;</source>
-        <translation>Alternado para o branch '{branch}' com sucesso</translation>
+        <translation>Alternado para o ramo &apos;{branch}&apos; com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="221"/>
         <source>Correctly deleted branch &apos;{branch}&apos;</source>
-        <translation>Branch '{branch}' excluído com sucesso</translation>
+        <translation>Ramo &apos;{branch}&apos; excluído com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="231"/>
         <source>Branch correctly created</source>
-        <translation>Branch criado com sucesso</translation>
+        <translation>Ramo criado com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="239"/>
         <source>There are schema changes in the selected commit and changes cannot be shown</source>
-        <translation>Existem alterações de schema no commit selecionado e as alterações não podem ser exibidas</translation>
+        <translation>Existem alterações de esquema no registro selecionado e as alterações não podem ser exibidas</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="252"/>
         <source>There are schema changes between the selected commits and changes cannot be shown</source>
-        <translation>Existem alterações de schema entre os commits selecionados e as alterações não podem ser exibidas</translation>
+        <translation>Existem alterações de esquema entre os registros selecionados e as alterações não podem ser exibidas</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="276"/>
         <source>There are schema changes between the selected commits and changes cannot be saved as a layer</source>
-        <translation>Existem alterações de schema entre os commits selecionados e as alterações não podem ser salvas como camada</translation>
+        <translation>Existem alterações de esquema entre os registros selecionados e as alterações não podem ser salvas como camada</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="303"/>
         <source>Branch correctly reset to selected commit</source>
-        <translation>Branch resetado com sucesso para o commit selecionado</translation>
+        <translation>Ramo redefinido com sucesso para o registro selecionado</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="308"/>
         <source>Restore all datasets</source>
-        <translation>Restaurar todos os datasets</translation>
+        <translation>Restaurar todos os conjuntos de dados</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="313"/>
@@ -629,22 +629,22 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/historyviewer.py" line="313"/>
         <source>Select dataset to restore:</source>
-        <translation>Selecione o dataset para restaurar:</translation>
+        <translation>Selecione o conjunto de dados para restaurar:</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="324"/>
         <source>Selected dataset(s) correctly restored in working copy</source>
-        <translation>Dataset(s) selecionado(s) restaurado(s) com sucesso na cópia de trabalho</translation>
+        <translation>Conjunto(s) de dados selecionado(s) restaurado(s) com sucesso na cópia de trabalho</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="512"/>
         <source>This repository is a shallow clone, history past this point is not available locally</source>
-        <translation>Este repositório é um shallow clone; o histórico anterior a este ponto não está disponível localmente</translation>
+        <translation>Este repositório é um clone raso; o histórico anterior a este ponto não está disponível localmente</translation>
     </message>
     <message>
         <location filename="../gui/pulldialog.py" line="55"/>
         <source>Branch and remote must not be empty</source>
-        <translation>O branch e o remote não devem estar vazios</translation>
+        <translation>O ramo e o servidor remoto não devem estar vazios</translation>
     </message>
     <message>
         <location filename="../gui/conflictsdialog.py" line="182"/>
@@ -654,12 +654,12 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/conflictsdialog.py" line="121"/>
         <source>Are you sure you want to solve all conflicts using the &apos;ours&apos; version?</source>
-        <translation>Tem certeza de que deseja resolver todos os conflitos usando a versão 'nossa' (ours)?</translation>
+        <translation>Tem certeza de que deseja resolver todos os conflitos usando a nossa versão?</translation>
     </message>
     <message>
         <location filename="../gui/conflictsdialog.py" line="132"/>
         <source>Are you sure you want to solve all conflicts using the &apos;theirs&apos; version?</source>
-        <translation>Tem certeza de que deseja resolver todos os conflitos usando a versão 'deles' (theirs)?</translation>
+        <translation>Tem certeza de que deseja resolver todos os conflitos usando a versão deles?</translation>
     </message>
     <message>
         <location filename="../gui/conflictsdialog.py" line="165"/>
@@ -669,7 +669,7 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/conflictsdialog.py" line="182"/>
         <source>All conflicts are solved. The merge operation will now be closed</source>
-        <translation>Todos os conflitos foram resolvidos. A operação de merge será encerrada</translation>
+        <translation>Todos os conflitos foram resolvidos. A operação de mesclagem será encerrada</translation>
     </message>
     <message>
         <location filename="../gui/conflictsdialog.py" line="294"/>
@@ -709,12 +709,12 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/remotesdialog.py" line="52"/>
         <source>Values for both remote name and url must be provided</source>
-        <translation>Valores para o nome e a URL do remote devem ser fornecidos</translation>
+        <translation>Valores para o nome e a URL do servidor remoto devem ser fornecidos</translation>
     </message>
     <message>
         <location filename="../gui/remotesdialog.py" line="75"/>
         <source>A remote with that name does not exist</source>
-        <translation>Um remote com esse nome não existe</translation>
+        <translation>Um servidor remoto com esse nome não existe</translation>
     </message>
     <message>
         <location filename="../gui/dbconnectiondialog.py" line="36"/>
@@ -744,7 +744,7 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/extentselectionpanel.py" line="46"/>
         <source>Use Canvas Extent</source>
-        <translation>Usar Extensão do Canvas</translation>
+        <translation>Usar Extensão da tela</translation>
     </message>
     <message>
         <location filename="../gui/extentselectionpanel.py" line="47"/>
@@ -754,7 +754,7 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/extentselectionpanel.py" line="48"/>
         <source>Select Extent on Canvas</source>
-        <translation>Selecionar Extensão no Canvas</translation>
+        <translation>Selecionar Extensão na tela</translation>
     </message>
     <message>
         <location filename="../gui/settingsdialog.py" line="42"/>
@@ -784,12 +784,12 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/settingsdialog.py" line="53"/>
         <source>Auto commit</source>
-        <translation>Commit automático</translation>
+        <translation>Registro automático</translation>
     </message>
     <message>
         <location filename="../gui/settingsdialog.py" line="54"/>
         <source>Commit automatically after closing editing</source>
-        <translation>Faça o commit automaticamente após encerrar a edição</translation>
+        <translation>Registrar automaticamente após encerrar a edição</translation>
     </message>
     <message>
         <location filename="../gui/settingsdialog.py" line="59"/>
@@ -802,27 +802,27 @@ Deseja continuar?</translation>
         <translation>Estilos para comparação de geometrias</translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="83"/>
+        <location filename="../gui/diffviewer.py" line="81"/>
         <source>Diff viewer</source>
         <translation>Comparar geometrias</translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="86"/>
+        <location filename="../gui/diffviewer.py" line="84"/>
         <source>Diff</source>
         <translation>Comparar</translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="86"/>
+        <location filename="../gui/diffviewer.py" line="84"/>
         <source>Working copy has been updated</source>
         <translation>Cópia de trabalho atualizada</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="22"/>
+        <location filename="../processing/repos.py" line="21"/>
         <source>Create Empty Repo</source>
         <translation>Criar Repositório Vazio</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="25"/>
+        <location filename="../processing/repos.py" line="24"/>
         <source>Create a new empty repository</source>
         <translation>Cria um novo repositório vazio</translation>
     </message>
@@ -832,47 +832,47 @@ Deseja continuar?</translation>
         <translation>Caminho do Repositório</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="61"/>
+        <location filename="../processing/repos.py" line="60"/>
         <source>Clone Repo</source>
         <translation>Clonar Repositório</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="64"/>
+        <location filename="../processing/repos.py" line="63"/>
         <source>Clones a repository to a folder</source>
         <translation>Clona um repositório para uma pasta</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="71"/>
+        <location filename="../processing/repos.py" line="70"/>
         <source>Repo URL</source>
         <translation>URL do Repositório</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="78"/>
+        <location filename="../processing/repos.py" line="77"/>
         <source>Branch/Tag/Ref</source>
-        <translation>Branch/Tag/Ref</translation>
+        <translation>Ramo/Etiqueta/Ref</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="86"/>
+        <location filename="../processing/repos.py" line="85"/>
         <source>Spatial Extent</source>
         <translation>Extensão Espacial</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="94"/>
+        <location filename="../processing/repos.py" line="93"/>
         <source>Depth</source>
-        <translation>Depth</translation>
+        <translation>Profundidade</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="104"/>
+        <location filename="../processing/repos.py" line="103"/>
         <source>Output folder</source>
         <translation>Pasta de saída</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="110"/>
+        <location filename="../processing/repos.py" line="109"/>
         <source>Add layers to the Map</source>
         <translation>Adicionar camadas ao Mapa</translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="116"/>
+        <location filename="../processing/repos.py" line="115"/>
         <source>Output Layers</source>
         <translation>Camadas de Saída</translation>
     </message>
@@ -894,82 +894,82 @@ Deseja continuar?</translation>
     <message>
         <location filename="../processing/data.py" line="43"/>
         <source>Dataset Name</source>
-        <translation>Nome do Dataset</translation>
+        <translation>Nome do conjunto de dados</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="12"/>
         <source>Create Branch</source>
-        <translation>Criar Branch</translation>
+        <translation>Criar Ramo</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="15"/>
         <source>Create a new branch</source>
-        <translation>Cria um novo branch</translation>
+        <translation>Cria um novo ramo</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="85"/>
         <source>Branch Name</source>
-        <translation>Nome do Branch</translation>
+        <translation>Nome do Ramo</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="56"/>
         <source>Switch to Branch</source>
-        <translation>Alternar para Branch</translation>
+        <translation>Alternar para Ramo</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="59"/>
         <source>Switches to a named branch</source>
-        <translation>Alterna para um branch nomeado</translation>
+        <translation>Alterna para um ramo nomeado</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="100"/>
         <source>Delete Branch</source>
-        <translation>Excluir Branch</translation>
+        <translation>Excluir Ramo</translation>
     </message>
     <message>
         <location filename="../processing/branches.py" line="103"/>
         <source>Delete a branch</source>
-        <translation>Exclui um branch</translation>
+        <translation>Exclui um ramo</translation>
     </message>
     <message>
         <location filename="../processing/tags.py" line="12"/>
         <source>Create Tag</source>
-        <translation>Criar Tag</translation>
+        <translation>Criar Etiqueta</translation>
     </message>
     <message>
         <location filename="../processing/tags.py" line="15"/>
         <source>Create a new tag</source>
-        <translation>Cria uma nova tag</translation>
+        <translation>Cria uma nova etiqueta</translation>
     </message>
     <message>
         <location filename="../processing/tags.py" line="30"/>
         <source>Tag Name</source>
-        <translation>Nome da Tag</translation>
+        <translation>Nome da Etiqueta</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="13"/>
         <source>Push Changes to Remote</source>
-        <translation>Push de Alterações para o Remote</translation>
+        <translation>Enviar alterações para o servidor remoto</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="16"/>
         <source>Sync changes in a repository to a remote location</source>
-        <translation>Sincroniza alterações de um repositório para um local remoto (push)</translation>
+        <translation>Sincroniza alterações de um repositório para um local remoto (enviar)</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="92"/>
         <source>Remote Name</source>
-        <translation>Nome do Remote</translation>
+        <translation>Nome do servidor remoto</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="67"/>
         <source>Pull Changes from Remote</source>
-        <translation>Pull de Alterações do Remote</translation>
+        <translation>Obter alterações do servidor remoto</translation>
     </message>
     <message>
         <location filename="../processing/remotes.py" line="70"/>
         <source>Sync changes in a remote location to a local repository</source>
-        <translation>Sincroniza alterações de um local remoto para um repositório local (pull)</translation>
+        <translation>Sincroniza alterações de um local remoto para um repositório local (obter)</translation>
     </message>
 </context>
 </TS>

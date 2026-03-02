@@ -796,27 +796,27 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="83"/>
+        <location filename="../gui/diffviewer.py" line="81"/>
         <source>Diff viewer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="86"/>
+        <location filename="../gui/diffviewer.py" line="84"/>
         <source>Diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="86"/>
+        <location filename="../gui/diffviewer.py" line="84"/>
         <source>Working copy has been updated</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="22"/>
+        <location filename="../processing/repos.py" line="21"/>
         <source>Create Empty Repo</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="25"/>
+        <location filename="../processing/repos.py" line="24"/>
         <source>Create a new empty repository</source>
         <translation></translation>
     </message>
@@ -826,47 +826,47 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="61"/>
+        <location filename="../processing/repos.py" line="60"/>
         <source>Clone Repo</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="64"/>
+        <location filename="../processing/repos.py" line="63"/>
         <source>Clones a repository to a folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="71"/>
+        <location filename="../processing/repos.py" line="70"/>
         <source>Repo URL</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="78"/>
+        <location filename="../processing/repos.py" line="77"/>
         <source>Branch/Tag/Ref</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="86"/>
+        <location filename="../processing/repos.py" line="85"/>
         <source>Spatial Extent</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="94"/>
+        <location filename="../processing/repos.py" line="93"/>
         <source>Depth</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="104"/>
+        <location filename="../processing/repos.py" line="103"/>
         <source>Output folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="110"/>
+        <location filename="../processing/repos.py" line="109"/>
         <source>Add layers to the Map</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/repos.py" line="116"/>
+        <location filename="../processing/repos.py" line="115"/>
         <source>Output Layers</source>
         <translation></translation>
     </message>
