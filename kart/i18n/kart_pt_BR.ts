@@ -101,7 +101,7 @@
     <message>
         <location filename="../gui/dockwidget.py" line="245"/>
         <source>Checking out layer &apos;{datasetname}&apos;</source>
-        <translation>Obtendo camada &apos;{datasetname}&apos;</translation>
+        <translation>Obtendo camada '{datasetname}'</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="267"/>
@@ -264,14 +264,6 @@
         <translation>Mesclar</translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="511"/>
-        <source>There were conflicts during the merge operation.
-Resolve them and then commit your changes to
-complete the merge.</source>
-        <translation>Houve conflitos durante a operação de mesclagem.
-Resolva-os e depois registre suas alterações para concluí-la.</translation>
-    </message>
-    <message>
         <location filename="../gui/dockwidget.py" line="521"/>
         <source>Branch correctly merged</source>
         <translation>Mesclagem do ramo realizada com sucesso</translation>
@@ -345,15 +337,6 @@ Resolva-os e depois registre suas alterações para concluí-la.</translation>
         <location filename="../gui/dockwidget.py" line="617"/>
         <source>Pull</source>
         <translation>Obter</translation>
-    </message>
-    <message>
-        <location filename="../gui/dockwidget.py" line="607"/>
-        <source>There were conflicts during the pull operation.
-Resolve them and then commit your changes to
-complete it.</source>
-        <translation>Houve conflitos durante a operação de obter.
-Resolva-os e depois registre suas alterações para
-concluí-la.</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="617"/>
@@ -439,15 +422,6 @@ concluí-la.</translation>
         <location filename="../gui/dockwidget.py" line="777"/>
         <source>There are pending changes in the working copy. Commit them before deleting this dataset</source>
         <translation>Existem alterações pendentes na cópia de trabalho. Registre-as antes de excluir este conjunto de dados</translation>
-    </message>
-    <message>
-        <location filename="../gui/dockwidget.py" line="789"/>
-        <source>The dataset is loaded in QGIS.
-It will be removed from the repository and from your current project.
-Do you want to continue?</source>
-        <translation>O conjunto de dados está carregado no QGIS.
-Ele será removido do repositório e do seu projeto atual.
-Você deseja continuar?</translation>
     </message>
     <message>
         <location filename="../gui/dockwidget.py" line="795"/>
@@ -544,17 +518,17 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/historyviewer.py" line="159"/>
         <source>Delete tag &apos;{tag}&apos;</source>
-        <translation>Excluir etiqueta &apos;{tag}&apos;</translation>
+        <translation>Excluir etiqueta '{tag}'</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="164"/>
         <source>Switch to branch &apos;{ref}&apos;</source>
-        <translation>Alternar para o ramo &apos;{ref}&apos;</translation>
+        <translation>Alternar para o ramo '{ref}'</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="168"/>
         <source>Delete branch &apos;{ref}&apos;</source>
-        <translation>Excluir ramo &apos;{ref}&apos;</translation>
+        <translation>Excluir ramo '{ref}'</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="176"/>
@@ -579,17 +553,17 @@ Deseja continuar?</translation>
     <message>
         <location filename="../gui/historyviewer.py" line="209"/>
         <source>Correctly deleted tag &apos;{tag}&apos;</source>
-        <translation>Etiqueta &apos;{tag}&apos; excluída com sucesso</translation>
+        <translation>Etiqueta '{tag}' excluída com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="215"/>
         <source>Correctly switched to branch &apos;{branch}&apos;</source>
-        <translation>Alternado para o ramo &apos;{branch}&apos; com sucesso</translation>
+        <translation>Alternado para o ramo '{branch}' com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="221"/>
         <source>Correctly deleted branch &apos;{branch}&apos;</source>
-        <translation>Ramo &apos;{branch}&apos; excluído com sucesso</translation>
+        <translation>Ramo '{branch}' excluído com sucesso</translation>
     </message>
     <message>
         <location filename="../gui/historyviewer.py" line="231"/>
@@ -692,7 +666,7 @@ Deseja continuar?</translation>
         <translation>Cópia de trabalho modificada com sucesso</translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="69"/>
+        <location filename="../gui/settingsdialog.py" line="67"/>
         <source>Select Folder</source>
         <translation>Selecionar Pasta</translation>
     </message>
@@ -792,12 +766,12 @@ Deseja continuar?</translation>
         <translation>Registrar automaticamente após encerrar a edição</translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="59"/>
+        <location filename="../gui/settingsdialog.py" line="57"/>
         <source>Diff styles</source>
         <translation>Estilos de comparação</translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="60"/>
+        <location filename="../gui/settingsdialog.py" line="58"/>
         <source>Styles to use for geometry diffs</source>
         <translation>Estilos para comparação de geometrias</translation>
     </message>
@@ -970,6 +944,32 @@ Deseja continuar?</translation>
         <location filename="../processing/remotes.py" line="70"/>
         <source>Sync changes in a remote location to a local repository</source>
         <translation>Sincroniza alterações de um local remoto para um repositório local (obter)</translation>
+    </message>
+    <message>
+        <location filename="../gui/dockwidget.py" line="511"/>
+        <source>There were conflicts during the merge operation.
+Resolve them and then commit your changes to 
+complete the merge.</source>
+        <translation>Houve conflitos durante a operação de mesclagem.
+Resolva-os e depois registre suas alterações para concluí-la.</translation>
+    </message>
+    <message>
+        <location filename="../gui/dockwidget.py" line="607"/>
+        <source>There were conflicts during the pull operation.
+Resolve them and then commit your changes to 
+complete it.</source>
+        <translation>Houve conflitos durante a operação para obter os dados.
+Resolva-os e depois registre suas alterações para
+concluí-la.</translation>
+    </message>
+    <message>
+        <location filename="../gui/dockwidget.py" line="789"/>
+        <source>The dataset is loaded in QGIS. 
+It will be removed from the repository and from your current project.
+Do you want to continue?</source>
+        <translation>conjunto de dados está carregado no QGIS.
+Ele será removido do repositório e do seu projeto atual.
+Você deseja continuar?</translation>
     </message>
 </context>
 </TS>

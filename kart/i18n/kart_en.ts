@@ -686,7 +686,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="69"/>
+        <location filename="../gui/settingsdialog.py" line="67"/>
         <source>Select Folder</source>
         <translation></translation>
     </message>
@@ -786,12 +786,12 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="59"/>
+        <location filename="../gui/settingsdialog.py" line="57"/>
         <source>Diff styles</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="60"/>
+        <location filename="../gui/settingsdialog.py" line="58"/>
         <source>Styles to use for geometry diffs</source>
         <translation></translation>
     </message>
