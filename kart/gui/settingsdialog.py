@@ -36,7 +36,7 @@ class SettingsDialog(BASE, WIDGET):
 
         self.setValues()
 
-    def retranslateUi(self):
+    def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
         # Window Title
         self.setWindowTitle(tr("Kart Settings"))
@@ -51,9 +51,7 @@ class SettingsDialog(BASE, WIDGET):
 
         # Auto Commit Section
         self.groupBox_3.setTitle(tr("Auto commit"))
-        self.chkAutoCommit.setText(
-            tr("Commit automatically after closing editing")
-        )
+        self.chkAutoCommit.setText(tr("Commit automatically after closing editing"))
 
         # Diff Styles Section
         self.groupBox_2.setTitle(tr("Diff styles"))
