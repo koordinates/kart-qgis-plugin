@@ -4,7 +4,7 @@ import platform
 
 from qgis.core import QgsApplication, QgsProject, Qgis, QgsMessageOutput
 
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings, QTranslator
 from qgis.PyQt.QtWidgets import QAction
 
 from kart.gui.dockwidget import KartDockWidget
@@ -12,7 +12,7 @@ from kart.gui.settingsdialog import SettingsDialog
 from kart.kartapi import checkKartInstalled, kartVersionDetails
 from kart.layers import LayerTracker
 from kart.processing import KartProvider
-
+from kart.utils import tr
 
 pluginPath = os.path.dirname(__file__)
 
@@ -21,6 +21,17 @@ class KartPlugin(object):
     def __init__(self, iface):
         self.iface = iface
         self.provider = None
+
+        # Adds support for internationalization
+        locale = QSettings().value("locale/userLocale")
+        locale_path = os.path.join(
+            pluginPath, "i18n",
+            f"kart_{locale}.qm"
+        )
+        if os.path.exists(locale_path):
+            self.translator = QTranslator()
+            self.translator.load(locale_path)
+            QCoreApplication.installTranslator(self.translator)
 
     def initProcessing(self):
         self.provider = KartProvider()
@@ -31,17 +42,17 @@ class KartPlugin(object):
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
 
-        self.explorerAction = QAction("Repositories...", self.iface.mainWindow())
-        self.iface.addPluginToMenu("Kart", self.explorerAction)
+        self.explorerAction = QAction(tr("Repositories..."), self.iface.mainWindow())
+        self.iface.addPluginToMenu(tr("Kart"), self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
-        self.settingsAction = QAction("Settings...", self.iface.mainWindow())
-        self.iface.addPluginToMenu("Kart", self.settingsAction)
+        self.settingsAction = QAction(tr("Settings..."), self.iface.mainWindow())
+        self.iface.addPluginToMenu(tr("Kart"), self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
-        self.aboutAction = QAction("About...", self.iface.mainWindow())
-        self.iface.addPluginToMenu("Kart", self.aboutAction)
+        self.aboutAction = QAction(tr("About..."), self.iface.mainWindow())
+        self.iface.addPluginToMenu(tr("Kart"), self.aboutAction)
         self.aboutAction.triggered.connect(self.openAbout)
 
         self.tracker = LayerTracker.instance()
@@ -74,15 +85,15 @@ class KartPlugin(object):
         html = (
             "<html><style>body {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
             "</style><body>"
-            f"<h4>Kart Plugin version</h4><p>{pluginVersion}</p>"
-            f"<h4>QGIS version</h4> <p>{qgisVersion}</p>"
-            f"<h4>Operating system</h4><p>{osInfo}</p>"
-            f"<h4>Kart version</h4> <p>{kartVersion}</p>"
+            f"<h4>{tr('Kart Plugin version')}</h4><p>{pluginVersion}</p>"
+            f"<h4>{tr('QGIS version')}</h4> <p>{qgisVersion}</p>"
+            f"<h4>{tr('Operating system')}</h4><p>{osInfo}</p>"
+            f"<h4>{tr('Kart version')}</h4> <p>{kartVersion}</p>"
             "</body>"
             "</html>"
         )
         dlg = QgsMessageOutput.createMessageOutput()
-        dlg.setTitle("About Kart")
+        dlg.setTitle(tr("About Kart"))
         dlg.setMessage(html, QgsMessageOutput.MessageHtml)
         dlg.showMessage()
 

@@ -2,17 +2,17 @@ from qgis.core import QgsProcessingParameterFile, QgsProcessingParameterString
 from kart.gui import icons
 
 from .base import KartAlgorithm
-
+from kart.utils import tr
 
 class RepoCreateBranch(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
     REPO_BRANCH_NAME = "REPO_BRANCH_NAME"
 
     def displayName(self):
-        return self.tr("Create Branch")
+        return tr("Create Branch")
 
     def shortHelpString(self):
-        return self.tr("Create a new branch")
+        return tr("Create a new branch")
 
     def icon(self):
         return icons.createBranchIcon
@@ -22,7 +22,7 @@ class RepoCreateBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -30,7 +30,7 @@ class RepoCreateBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_BRANCH_NAME,
-                self.tr("Branch Name"),
+                tr("Branch Name"),
             )
         )
 
@@ -53,10 +53,10 @@ class RepoSwitchBranch(KartAlgorithm):
     REPO_BRANCH_NAME = "REPO_BRANCH_NAME"
 
     def displayName(self):
-        return self.tr("Switch to Branch")
+        return tr("Switch to Branch")
 
     def shortHelpString(self):
-        return self.tr("Switches to a named branch")
+        return tr("Switches to a named branch")
 
     def icon(self):
         return icons.checkoutIcon
@@ -66,7 +66,7 @@ class RepoSwitchBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -74,7 +74,7 @@ class RepoSwitchBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_BRANCH_NAME,
-                self.tr("Branch Name"),
+                tr("Branch Name"),
             )
         )
 
@@ -97,10 +97,10 @@ class RepoDeleteBranch(KartAlgorithm):
     REPO_BRANCH_NAME = "REPO_BRANCH_NAME"
 
     def displayName(self):
-        return self.tr("Delete Branch")
+        return tr("Delete Branch")
 
     def shortHelpString(self):
-        return self.tr("Delete a branch")
+        return tr("Delete a branch")
 
     def icon(self):
         return icons.deleteIcon
@@ -110,7 +110,7 @@ class RepoDeleteBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -118,7 +118,7 @@ class RepoDeleteBranch(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_BRANCH_NAME,
-                self.tr("Branch Name"),
+                tr("Branch Name"),
             )
         )
 

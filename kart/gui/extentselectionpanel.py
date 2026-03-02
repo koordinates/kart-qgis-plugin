@@ -1,6 +1,7 @@
 import os
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import (
     QMenu,
     QAction,
@@ -18,6 +19,7 @@ from qgis.core import (
 from processing.gui.ExtentSelectionPanel import LayerSelectionDialog
 from processing.gui.RectangleMapTool import RectangleMapTool
 
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "extentselectionpanel.ui")
@@ -41,9 +43,9 @@ class ExtentSelectionPanel(BASE, WIDGET):
 
     def selectExtent(self):
         popupmenu = QMenu()
-        useCanvasExtentAction = QAction("Use Canvas Extent", self.btnSetFrom)
-        useLayerExtentAction = QAction("Use Layer Extent…", self.btnSetFrom)
-        selectOnCanvasAction = QAction("Select Extent on Canvas", self.btnSetFrom)
+        useCanvasExtentAction = QAction(tr("Use Canvas Extent"), self.btnSetFrom)
+        useLayerExtentAction = QAction(tr("Use Layer Extent…"), self.btnSetFrom)
+        selectOnCanvasAction = QAction(tr("Select Extent on Canvas"), self.btnSetFrom)
 
         popupmenu.addAction(useCanvasExtentAction)
         popupmenu.addAction(selectOnCanvasAction)

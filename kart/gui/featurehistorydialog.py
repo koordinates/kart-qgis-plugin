@@ -2,7 +2,7 @@ import os
 import json
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QTableWidgetItem,
@@ -23,6 +23,8 @@ from qgis.core import (
 )
 from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
 from qgis.utils import iface
+
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
@@ -152,8 +154,8 @@ class FeatureHistoryDialog(BASE, WIDGET):
         provider.addFeatures([new])
         self.repo.updateCanvas()
         self.bar.pushMessage(
-            "Feature history",
-            "Working copy has been correctly modified",
+            tr("Feature history"),
+            tr("Working copy has been correctly modified"),
             Qgis.Success,
             5,
         )

@@ -5,12 +5,15 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
 from kart.gui.locationselectionpanel import (
     LocationSelectionPanel,
     InvalidLocationException,
 )
+
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "initdialog.ui"))
 
@@ -34,7 +37,7 @@ class InitDialog(BASE, WIDGET):
 
     def browse(self):
         folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), "Select Folder", ""
+            iface.mainWindow(), tr("Select Folder"), ""
         )
         if folder:
             self.txtFolder.setText(folder)
@@ -44,7 +47,7 @@ class InitDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                "Invalid location definition", Qgis.Warning, duration=5
+                tr("Invalid location definition"), Qgis.Warning, duration=5
             )
             return
         self.folder = self.txtFolder.text()
@@ -52,5 +55,5 @@ class InitDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.Warning, duration=5
+                tr("Text fields must not be empty"), Qgis.Warning, duration=5
             )

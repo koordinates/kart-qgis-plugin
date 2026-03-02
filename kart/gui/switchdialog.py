@@ -2,9 +2,11 @@ import os
 
 from qgis.utils import iface
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QInputDialog
 
 from kart.kartapi import executeskart
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
@@ -33,7 +35,7 @@ class SwitchDialog(BASE, WIDGET):
     @executeskart
     def createNewClicked(self, item):
         name, ok = QInputDialog.getText(
-            self, "Create branch", "Enter name of branch to create"
+            self, tr("Create branch"), tr("Enter name of branch to create")
         )
         if ok and name:
             self.repo.createBranch(name)

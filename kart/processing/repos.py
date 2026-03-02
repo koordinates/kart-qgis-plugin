@@ -12,16 +12,16 @@ from qgis.core import (
 from kart.gui import icons
 
 from .base import KartAlgorithm
-
+from kart.utils import tr
 
 class RepoInit(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
 
     def displayName(self):
-        return self.tr("Create Empty Repo")
+        return tr("Create Empty Repo")
 
     def shortHelpString(self):
-        return self.tr("Create a new empty repository")
+        return tr("Create a new empty repository")
 
     def icon(self):
         return icons.createRepoIcon
@@ -31,7 +31,7 @@ class RepoInit(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -57,10 +57,10 @@ class RepoClone(KartAlgorithm):
     REPO_OUTPUT_LAYERS = "REPO_OUTPUT_LAYERS"
 
     def displayName(self):
-        return self.tr("Clone Repo")
+        return tr("Clone Repo")
 
     def shortHelpString(self):
-        return self.tr("Clones a repository to a folder")
+        return tr("Clones a repository to a folder")
 
     def icon(self):
         return icons.cloneRepoIcon
@@ -70,14 +70,14 @@ class RepoClone(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_CLONE_URL,
-                self.tr("Repo URL"),
+                tr("Repo URL"),
             )
         )
 
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_CLONE_REFISH,
-                self.tr("Branch/Tag/Ref"),
+                tr("Branch/Tag/Ref"),
                 optional=True,
             )
         )
@@ -85,7 +85,7 @@ class RepoClone(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterExtent(
                 self.REPO_CLONE_SPATIAL_EXTENT,
-                self.tr("Spatial Extent"),
+                tr("Spatial Extent"),
                 optional=True,
             )
         )
@@ -93,7 +93,7 @@ class RepoClone(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.REPO_CLONE_DEPTH,
-                self.tr("Depth"),
+                tr("Depth"),
                 type=QgsProcessingParameterNumber.Integer,
                 optional=True,
                 minValue=1,
@@ -102,20 +102,20 @@ class RepoClone(KartAlgorithm):
 
         self.addParameter(
             QgsProcessingParameterFolderDestination(
-                self.REPO_OUTPUT_FOLDER, self.tr("Output folder")
+                self.REPO_OUTPUT_FOLDER, tr("Output folder")
             )
         )
 
         self.addParameter(
             QgsProcessingParameterBoolean(
-                self.REPO_ADD_TO_MAP, self.tr("Add layers to the Map")
+                self.REPO_ADD_TO_MAP, tr("Add layers to the Map")
             )
         )
 
         self.addOutput(
             QgsProcessingOutputMultipleLayers(
                 self.REPO_OUTPUT_LAYERS,
-                self.tr("Output Layers"),
+                tr("Output Layers"),
             )
         )
 

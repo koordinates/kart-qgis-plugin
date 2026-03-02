@@ -3,6 +3,7 @@ import os
 from qgis.utils import iface
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 from qgis.core import (
     Qgis,
@@ -13,11 +14,12 @@ from qgis.core import (
 from qgis.gui import QgsAuthSettingsWidget, QgsMessageBar
 
 from kart.kartapi import Repository
-from kart.utils import waitcursor
+from kart.utils import waitcursor, tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "dbconnectiondialog.ui")
 )
+
 
 
 class DbConnectionDialog(BASE, WIDGET):
@@ -31,7 +33,7 @@ class DbConnectionDialog(BASE, WIDGET):
         self.layout().addWidget(self.bar, 10, 0, 1, 3)
 
         self.authWidget = QgsAuthSettingsWidget()
-        self.authWidget.setWarningText("These credentials are not saved")
+        self.authWidget.setWarningText(tr("These credentials are not saved"))
         self.layout().addWidget(self.authWidget, 7, 1, 1, 2)
 
         self.btnLoadTables.clicked.connect(self.loadTables)
@@ -51,7 +53,7 @@ class DbConnectionDialog(BASE, WIDGET):
 
     def resetTables(self):
         self.comboTable.clear()
-        self.comboTable.addItem("All tables", None)
+        self.comboTable.addItem(tr("All tables"), None)
 
     def loadTables(self):
         self.resetTables()
@@ -60,7 +62,7 @@ class DbConnectionDialog(BASE, WIDGET):
             tables = self._getTables(url)
         except Exception:
             self.bar.pushMessage(
-                "Cannot connect to the provided database table(s)",
+                tr("Cannot connect to the provided database table(s)"),
                 Qgis.Warning,
                 duration=5,
             )
@@ -69,7 +71,7 @@ class DbConnectionDialog(BASE, WIDGET):
             table = table.replace(".", "/")
             self.comboTable.addItem(table, table)
         self.bar.pushMessage(
-            "Tables correctly loaded into tables list", Qgis.Success, duration=5
+            tr("Tables correctly loaded into tables list"), Qgis.Success, duration=5
         )
 
     def okClicked(self):
@@ -78,7 +80,7 @@ class DbConnectionDialog(BASE, WIDGET):
             self._getTables(url)
         except Exception:
             self.bar.pushMessage(
-                "Cannot connect to the provided database table(s)",
+                tr("Cannot connect to the provided database table(s)"),
                 Qgis.Warning,
                 duration=5,
             )

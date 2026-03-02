@@ -5,10 +5,12 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 from kart.kartapi import executeskart
 from kart.gui.remotesdialog import RemotesDialog
+from kart.utils import tr
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -56,7 +58,7 @@ class PushDialog(BASE, WIDGET):
         self.remote = self.comboRemote.currentText()
         if not self.remote:
             self.bar.pushMessage(
-                "", "Branch and remote must not be empty", Qgis.Warning, duration=5
+                "", tr("Branch and remote must not be empty"), Qgis.Warning, duration=5
             )
         else:
             self.accept()

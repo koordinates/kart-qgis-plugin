@@ -5,7 +5,7 @@ from qgis.core import Qgis
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QSize, Qt
+from qgis.PyQt.QtCore import QSize, Qt, QCoreApplication
 from qgis.PyQt.QtGui import QFont
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -18,11 +18,13 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from kart.gui import icons
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "conflictsdialog.ui")
 )
+
 
 
 class ConflictsDialog(BASE, WIDGET):
@@ -118,8 +120,8 @@ class ConflictsDialog(BASE, WIDGET):
     def solveAllOurs(self):
         ret = QMessageBox.warning(
             self,
-            "Solve conflicts",
-            "Are you sure you want to solve all conflicts using the 'ours' version?",
+            tr("Solve conflicts"),
+            tr("Are you sure you want to solve all conflicts using the 'ours' version?"),
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.Yes,
         )
@@ -129,8 +131,8 @@ class ConflictsDialog(BASE, WIDGET):
     def solveAllTheirs(self):
         ret = QMessageBox.warning(
             self,
-            "Solve conflicts",
-            "Are you sure you want to solve all conflicts using the 'theirs' version?",
+            tr("Solve conflicts"),
+            tr("Are you sure you want to solve all conflicts using the 'theirs' version?"),
             QMessageBox.Yes | QMessageBox.No,
             QMessageBox.Yes,
         )
@@ -152,7 +154,7 @@ class ConflictsDialog(BASE, WIDGET):
                 feature["properties"][attrib] = finalItem.value
             else:
                 self.bar.pushMessage(
-                    "", "There are still conflicts in the current feature", Qgis.Warning
+                    "", tr("There are still conflicts in the current feature"), Qgis.Warning
                 )
                 return
         if hasGeom:
@@ -161,7 +163,7 @@ class ConflictsDialog(BASE, WIDGET):
                 feature["geometry"] = geomItem.value
             else:
                 self.bar.pushMessage(
-                    "", "There are still conflicts in the current feature", Qgis.Warning
+                    "", tr("There are still conflicts in the current feature"), Qgis.Warning
                 )
                 return
         feature[
@@ -179,8 +181,8 @@ class ConflictsDialog(BASE, WIDGET):
             if not self.treeConflicts.topLevelItemCount():
                 QMessageBox.warning(
                     self,
-                    "Solve conflicts",
-                    "All conflicts are solved. The merge operation will now be closed",
+                    tr("Solve conflicts"),
+                    tr("All conflicts are solved. The merge operation will now be closed"),
                     QMessageBox.Ok,
                     QMessageBox.Ok,
                 )
@@ -291,8 +293,8 @@ class ConflictsDialog(BASE, WIDGET):
         if not self.okToMerge:
             ret = QMessageBox.warning(
                 self,
-                "Conflict resolution",
-                "Do you really want to exit without resolving conflicts?",
+                tr("Conflict resolution"),
+                tr("Do you really want to exit without resolving conflicts?"),
                 QMessageBox.Yes | QMessageBox.No,
             )
             if ret == QMessageBox.No:

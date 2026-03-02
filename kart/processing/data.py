@@ -6,7 +6,7 @@ from qgis.core import (
 from kart.gui import icons
 
 from .base import KartAlgorithm
-
+from kart.utils import tr
 
 class RepoImportData(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
@@ -14,10 +14,10 @@ class RepoImportData(KartAlgorithm):
     REPO_DATASET_NAME = "REPO_DATASET_NAME"
 
     def displayName(self):
-        return self.tr("Import Data")
+        return tr("Import Data")
 
     def shortHelpString(self):
-        return self.tr("Import data into a repository")
+        return tr("Import data into a repository")
 
     def icon(self):
         return icons.importIcon
@@ -27,7 +27,7 @@ class RepoImportData(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -35,7 +35,7 @@ class RepoImportData(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_DATA_PATH,
-                self.tr("Data Path"),
+                tr("Data Path"),
                 behavior=QgsProcessingParameterFile.File,
             )
         )
@@ -43,7 +43,7 @@ class RepoImportData(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_DATASET_NAME,
-                self.tr("Dataset Name"),
+                tr("Dataset Name"),
                 optional=True,
             )
         )
@@ -51,7 +51,7 @@ class RepoImportData(KartAlgorithm):
         self.addOutput(
             QgsProcessingOutputFolder(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
             )
         )
 

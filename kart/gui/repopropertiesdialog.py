@@ -5,12 +5,14 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 
 from kart.layers import LayerTracker
 from kart.kartapi import executeskart
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui")
@@ -61,7 +63,7 @@ class RepoPropertiesDialog(BASE, WIDGET):
         if self.grpFilter.isChecked():
             extent = self.extentPanel.getExtent()
             if extent is None:
-                self.bar.pushMessage("Invalid extent value", Qgis.Warning, duration=5)
+                self.bar.pushMessage(tr("Invalid extent value"), Qgis.Warning, duration=5)
                 return
         else:
             extent = None

@@ -5,7 +5,7 @@ import json
 import difflib
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QCoreApplication
 from qgis.PyQt.QtGui import QColor, QBrush
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
@@ -37,7 +37,7 @@ from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
 from .mapswipetool import MapSwipeTool
 
 from kart.gui import icons
-from kart.utils import setting, DIFFSTYLES
+from kart.utils import setting, DIFFSTYLES, tr
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
@@ -78,10 +78,10 @@ class DiffViewerDialog(QDialog):
         layout.addWidget(self.history)
         self.setLayout(layout)
         self.resize(1024, 768)
-        self.setWindowTitle("Diff viewer")
+        self.setWindowTitle(tr("Diff viewer"))
 
     def workingLayerChanged(self):
-        self.bar.pushMessage("Diff", "Working copy has been updated", Qgis.Success, 5)
+        self.bar.pushMessage(tr("Diff"), tr("Working copy has been updated"), Qgis.Success, 5)
 
     def closeEvent(self, evt):
         self.history.removeMapLayers()

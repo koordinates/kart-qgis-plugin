@@ -5,7 +5,7 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
@@ -13,6 +13,8 @@ from kart.gui.locationselectionpanel import (
     LocationSelectionPanel,
     InvalidLocationException,
 )
+
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
 
@@ -48,7 +50,7 @@ class CloneDialog(BASE, WIDGET):
 
     def browse(self, textbox):
         folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), "Select Folder", ""
+            iface.mainWindow(), tr("Select Folder"), ""
         )
         if folder:
             textbox.setText(folder)
@@ -63,7 +65,7 @@ class CloneDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                "Invalid location definition", Qgis.Warning, duration=5
+                tr("Invalid location definition"), Qgis.Warning, duration=5
             )
             return
         self.src = self.txtSrc.text()
@@ -71,7 +73,7 @@ class CloneDialog(BASE, WIDGET):
         if self.grpFilter.isChecked():
             self.extent = self.extentPanel.getExtent()
             if self.extent is None:
-                self.bar.pushMessage("Invalid extent value", Qgis.Warning, duration=5)
+                self.bar.pushMessage(tr("Invalid extent value"), Qgis.Warning, duration=5)
                 return
         else:
             self.extent = None
@@ -83,5 +85,5 @@ class CloneDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.Warning, duration=5
+                tr("Text fields must not be empty"), Qgis.Warning, duration=5
             )

@@ -2,7 +2,7 @@ from qgis.core import QgsProcessingParameterFile, QgsProcessingParameterString
 from kart.gui import icons
 
 from .base import KartAlgorithm
-
+from kart.utils import tr
 
 class RepoPushToRemote(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
@@ -10,10 +10,10 @@ class RepoPushToRemote(KartAlgorithm):
     REPO_REMOTE_NAME = "REPO_REMOTE_NAME"
 
     def displayName(self):
-        return self.tr("Push Changes to Remote")
+        return tr("Push Changes to Remote")
 
     def shortHelpString(self):
-        return self.tr("Sync changes in a repository to a remote location")
+        return tr("Sync changes in a repository to a remote location")
 
     def icon(self):
         return icons.pushIcon
@@ -23,7 +23,7 @@ class RepoPushToRemote(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -31,14 +31,14 @@ class RepoPushToRemote(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_BRANCH_NAME,
-                self.tr("Branch Name"),
+                tr("Branch Name"),
                 defaultValue="main",
             )
         )
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_REMOTE_NAME,
-                self.tr("Remote Name"),
+                tr("Remote Name"),
                 defaultValue="origin",
             )
         )
@@ -64,10 +64,10 @@ class RepoPullFromRemote(KartAlgorithm):
     REPO_REMOTE_NAME = "REPO_REMOTE_NAME"
 
     def displayName(self):
-        return self.tr("Pull Changes from Remote")
+        return tr("Pull Changes from Remote")
 
     def shortHelpString(self):
-        return self.tr("Sync changes in a remote location to a local repository")
+        return tr("Sync changes in a remote location to a local repository")
 
     def icon(self):
         return icons.pullIcon
@@ -77,7 +77,7 @@ class RepoPullFromRemote(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
-                self.tr("Repo Path"),
+                tr("Repo Path"),
                 behavior=QgsProcessingParameterFile.Folder,
             )
         )
@@ -85,14 +85,14 @@ class RepoPullFromRemote(KartAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_BRANCH_NAME,
-                self.tr("Branch Name"),
+                tr("Branch Name"),
                 defaultValue="main",
             )
         )
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_REMOTE_NAME,
-                self.tr("Remote Name"),
+                tr("Remote Name"),
                 defaultValue="origin",
             )
         )
