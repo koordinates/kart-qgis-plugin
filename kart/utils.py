@@ -15,6 +15,8 @@ if iface is None:
 
     iface = get_iface()
 
+def tr(string):
+    return QCoreApplication.translate('Kart', string)
 
 class ProgressBar:
     def __init__(self, title):
