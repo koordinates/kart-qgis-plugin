@@ -16,7 +16,10 @@ if iface is None:
     iface = get_iface()
 
 def tr(string):
-    return QCoreApplication.translate("Kart", string)
+    # Does the function not return the context?
+    # return QCoreApplication.translate("Kart", string)
+    # Using @default as a fallback
+    return QCoreApplication.translate("@default", string)
 
 class ProgressBar:
     def __init__(self, title):
