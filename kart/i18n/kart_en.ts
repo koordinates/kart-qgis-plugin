@@ -24,336 +24,336 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../plugin.py" line="96"/>
+        <location filename="../plugin.py" line="109"/>
         <source>About Kart</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="76"/>
+        <location filename="../gui/clonedialog.py" line="78"/>
         <source>Invalid extent value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="112"/>
+        <location filename="../gui/dockwidget.py" line="150"/>
         <source>Kart repositories</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="113"/>
+        <location filename="../gui/dockwidget.py" line="151"/>
         <source>Tip: right-click on items for available actions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="372"/>
+        <location filename="../gui/dockwidget.py" line="370"/>
         <source>Refresh</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="173"/>
+        <location filename="../gui/dockwidget.py" line="171"/>
         <source>Repositories</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="188"/>
+        <location filename="../gui/dockwidget.py" line="186"/>
         <source>Add existing repository...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="189"/>
+        <location filename="../gui/dockwidget.py" line="187"/>
         <source>Create new repository...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="190"/>
+        <location filename="../gui/dockwidget.py" line="188"/>
         <source>Clone repository...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="196"/>
+        <location filename="../gui/dockwidget.py" line="194"/>
         <source>Repository Folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="236"/>
+        <location filename="../gui/dockwidget.py" line="234"/>
         <source>Error</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="204"/>
+        <location filename="../gui/dockwidget.py" line="202"/>
         <source>The selected folder is not a Kart repository</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="217"/>
+        <location filename="../gui/dockwidget.py" line="215"/>
         <source>The specified folder is not empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="225"/>
+        <location filename="../gui/dockwidget.py" line="223"/>
         <source>Could not create the specified folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="236"/>
+        <location filename="../gui/dockwidget.py" line="234"/>
         <source>Could not initialize repository</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="245"/>
+        <location filename="../gui/dockwidget.py" line="243"/>
         <source>Checking out layer &apos;{datasetname}&apos;</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="267"/>
+        <location filename="../gui/dockwidget.py" line="265"/>
         <source>Cloning repository</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="330"/>
+        <location filename="../gui/dockwidget.py" line="328"/>
         <source>Resolve conflicts...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="330"/>
+        <location filename="../gui/dockwidget.py" line="328"/>
         <source>Continue merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="330"/>
+        <location filename="../gui/dockwidget.py" line="328"/>
         <source>Abort merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="676"/>
+        <location filename="../gui/dockwidget.py" line="674"/>
         <source>Show log...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Show working copy changes...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Discard working copy changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Commit working copy changes...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Switch branch...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Merge into current branch...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Pull...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Push...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Import dataset from file...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Import dataset from database...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="338"/>
+        <location filename="../gui/dockwidget.py" line="336"/>
         <source>Apply patch...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="372"/>
+        <location filename="../gui/dockwidget.py" line="370"/>
         <source>Properties...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="372"/>
+        <location filename="../gui/dockwidget.py" line="370"/>
         <source>Remove this repository</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="390"/>
+        <location filename="../gui/dockwidget.py" line="388"/>
         <source>Are you sure you want to remove this repository?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="407"/>
+        <location filename="../gui/dockwidget.py" line="405"/>
         <source>Select vector layer to import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="445"/>
+        <location filename="../gui/dockwidget.py" line="443"/>
         <source>Import</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="420"/>
+        <location filename="../gui/dockwidget.py" line="418"/>
         <source>The selected file is not a valid vector layer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="433"/>
+        <location filename="../gui/dockwidget.py" line="431"/>
         <source>Could not convert the selected layer to a gpkg file</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="445"/>
+        <location filename="../gui/dockwidget.py" line="443"/>
         <source>Layer correctly imported</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="719"/>
+        <location filename="../gui/dockwidget.py" line="717"/>
         <source>Commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="706"/>
+        <location filename="../gui/dockwidget.py" line="704"/>
         <source>Nothing to commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="710"/>
+        <location filename="../gui/dockwidget.py" line="708"/>
         <source>Enter commit message:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="715"/>
+        <location filename="../gui/dockwidget.py" line="713"/>
         <source>Changes correctly committed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="719"/>
+        <location filename="../gui/dockwidget.py" line="717"/>
         <source>Changes could not be commited</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="740"/>
+        <location filename="../gui/dockwidget.py" line="738"/>
         <source>Changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="727"/>
+        <location filename="../gui/dockwidget.py" line="725"/>
         <source>There are schema changes in the working copy and changes cannot be shown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="490"/>
+        <location filename="../gui/dockwidget.py" line="488"/>
         <source>There are no changes in the working copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="575"/>
+        <location filename="../gui/mergedialog.py" line="46"/>
         <source>Merge</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="511"/>
+        <location filename="../gui/dockwidget.py" line="509"/>
         <source>There were conflicts during the merge operation.
 Resolve them and then commit your changes to 
 complete the merge.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="521"/>
+        <location filename="../gui/dockwidget.py" line="519"/>
         <source>Branch correctly merged</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="527"/>
+        <location filename="../gui/dockwidget.py" line="525"/>
         <source>Are you sure you want to discard the working copy changes?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="752"/>
+        <location filename="../gui/dockwidget.py" line="750"/>
         <source>Discard changes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="752"/>
+        <location filename="../gui/dockwidget.py" line="750"/>
         <source>Working copy changes have been discarded</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="538"/>
+        <location filename="../gui/dockwidget.py" line="536"/>
         <source>Cannot continue. There are merge conflicts.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="575"/>
+        <location filename="../gui/dockwidget.py" line="573"/>
         <source>Merge operation was correctly continued and closed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="554"/>
+        <location filename="../gui/dockwidget.py" line="552"/>
         <source>Merge operation was correctly aborted</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="581"/>
+        <location filename="../gui/dockwidget.py" line="579"/>
         <source>Resolve</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="561"/>
+        <location filename="../gui/dockwidget.py" line="559"/>
         <source>Conflicts involve schema changes and cannot be resolved using the plugin interface</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="581"/>
+        <location filename="../gui/dockwidget.py" line="579"/>
         <source>There are no conflicts to resolve</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="590"/>
+        <location filename="../gui/pushdialog.py" line="71"/>
         <source>Push</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="590"/>
+        <location filename="../gui/dockwidget.py" line="588"/>
         <source>Repo changes have been pushed to </source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="590"/>
+        <location filename="../gui/dockwidget.py" line="588"/>
         <source>all branches at {dialog.remote}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="590"/>
+        <location filename="../gui/dockwidget.py" line="588"/>
         <source>{dialog.remote}/{dialog.branch}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="617"/>
+        <location filename="../gui/pulldialog.py" line="66"/>
         <source>Pull</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="607"/>
+        <location filename="../gui/dockwidget.py" line="605"/>
         <source>There were conflicts during the pull operation.
 Resolve them and then commit your changes to 
 complete it.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="617"/>
+        <location filename="../gui/dockwidget.py" line="615"/>
         <source>Pull correctly performed</source>
         <translation></translation>
     </message>
@@ -368,90 +368,90 @@ complete it.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="631"/>
+        <location filename="../gui/dockwidget.py" line="629"/>
         <source>Apply patch</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="631"/>
+        <location filename="../gui/dockwidget.py" line="629"/>
         <source>Patch was correctly applied to working copy</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="644"/>
+        <location filename="../gui/dockwidget.py" line="642"/>
         <source>Datasets</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="674"/>
+        <location filename="../gui/dockwidget.py" line="672"/>
         <source>Add to QGIS project</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="676"/>
+        <location filename="../gui/dockwidget.py" line="674"/>
         <source>Show working copy changes for this dataset...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="676"/>
+        <location filename="../gui/dockwidget.py" line="674"/>
         <source>Discard working copy changes for this dataset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="676"/>
+        <location filename="../gui/dockwidget.py" line="674"/>
         <source>Commit working copy changes for this dataset...</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="676"/>
+        <location filename="../gui/dockwidget.py" line="674"/>
         <source>Remove from repository</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="740"/>
+        <location filename="../gui/dockwidget.py" line="738"/>
         <source>There are no changes in the working copy for this dataset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="748"/>
+        <location filename="../gui/dockwidget.py" line="746"/>
         <source>Are you sure you want to discard the working copy changes for this dataset?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="766"/>
+        <location filename="../gui/dockwidget.py" line="764"/>
         <source>Add layer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="766"/>
+        <location filename="../gui/dockwidget.py" line="764"/>
         <source>Dataset could not be added</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="805"/>
+        <location filename="../gui/dockwidget.py" line="803"/>
         <source>Remove dataset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="777"/>
+        <location filename="../gui/dockwidget.py" line="775"/>
         <source>There are pending changes in the working copy. Commit them before deleting this dataset</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="789"/>
+        <location filename="../gui/dockwidget.py" line="787"/>
         <source>The dataset is loaded in QGIS. 
 It will be removed from the repository and from your current project.
 Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="795"/>
+        <location filename="../gui/dockwidget.py" line="793"/>
         <source>The dataset will be removed from the repository.
 Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dockwidget.py" line="805"/>
+        <location filename="../gui/dockwidget.py" line="803"/>
         <source>Dataset correctly removed</source>
         <translation></translation>
     </message>
@@ -636,162 +636,162 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/pulldialog.py" line="55"/>
+        <location filename="../gui/pulldialog.py" line="58"/>
         <source>Branch and remote must not be empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="182"/>
+        <location filename="../gui/conflictsdialog.py" line="184"/>
         <source>Solve conflicts</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="121"/>
+        <location filename="../gui/conflictsdialog.py" line="123"/>
         <source>Are you sure you want to solve all conflicts using the &apos;ours&apos; version?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="132"/>
+        <location filename="../gui/conflictsdialog.py" line="134"/>
         <source>Are you sure you want to solve all conflicts using the &apos;theirs&apos; version?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="165"/>
+        <location filename="../gui/conflictsdialog.py" line="167"/>
         <source>There are still conflicts in the current feature</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="182"/>
+        <location filename="../gui/conflictsdialog.py" line="184"/>
         <source>All conflicts are solved. The merge operation will now be closed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="294"/>
+        <location filename="../gui/conflictsdialog.py" line="296"/>
         <source>Conflict resolution</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/conflictsdialog.py" line="294"/>
+        <location filename="../gui/conflictsdialog.py" line="296"/>
         <source>Do you really want to exit without resolving conflicts?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/featurehistorydialog.py" line="156"/>
+        <location filename="../gui/featurehistorydialog.py" line="177"/>
         <source>Feature history</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/featurehistorydialog.py" line="156"/>
+        <location filename="../gui/featurehistorydialog.py" line="159"/>
         <source>Working copy has been correctly modified</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="67"/>
+        <location filename="../gui/settingsdialog.py" line="45"/>
         <source>Select Folder</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="67"/>
+        <location filename="../gui/clonedialog.py" line="69"/>
         <source>Invalid location definition</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="87"/>
+        <location filename="../gui/clonedialog.py" line="89"/>
         <source>Text fields must not be empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/remotesdialog.py" line="52"/>
+        <location filename="../gui/remotesdialog.py" line="55"/>
         <source>Values for both remote name and url must be provided</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/remotesdialog.py" line="75"/>
+        <location filename="../gui/remotesdialog.py" line="78"/>
         <source>A remote with that name does not exist</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="36"/>
+        <location filename="../gui/dbconnectiondialog.py" line="38"/>
         <source>These credentials are not saved</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="56"/>
+        <location filename="../gui/dbconnectiondialog.py" line="58"/>
         <source>All tables</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="82"/>
+        <location filename="../gui/dbconnectiondialog.py" line="84"/>
         <source>Cannot connect to the provided database table(s)</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="73"/>
+        <location filename="../gui/dbconnectiondialog.py" line="75"/>
         <source>Tables correctly loaded into tables list</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/userconfigdialog.py" line="41"/>
+        <location filename="../gui/userconfigdialog.py" line="44"/>
         <source>Username and email must not be empty</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/extentselectionpanel.py" line="46"/>
+        <location filename="../gui/extentselectionpanel.py" line="48"/>
         <source>Use Canvas Extent</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/extentselectionpanel.py" line="47"/>
+        <location filename="../gui/extentselectionpanel.py" line="49"/>
         <source>Use Layer Extent…</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/extentselectionpanel.py" line="48"/>
+        <location filename="../gui/extentselectionpanel.py" line="50"/>
         <source>Select Extent on Canvas</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="42"/>
+        <location filename="../gui/settingsdialog.py" line="61"/>
         <source>Kart Settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="45"/>
+        <location filename="../gui/settingsdialog.py" line="64"/>
         <source>Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="46"/>
+        <location filename="../gui/settingsdialog.py" line="65"/>
         <source>Path to Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="47"/>
+        <location filename="../gui/settingsdialog.py" line="66"/>
         <source>[Leave empty to use default Kart installation path]</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="50"/>
+        <location filename="../gui/settingsdialog.py" line="69"/>
         <source>Use helper mode</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="53"/>
+        <location filename="../gui/settingsdialog.py" line="72"/>
         <source>Auto commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="54"/>
+        <location filename="../gui/settingsdialog.py" line="73"/>
         <source>Commit automatically after closing editing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="57"/>
+        <location filename="../gui/settingsdialog.py" line="76"/>
         <source>Diff styles</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="58"/>
+        <location filename="../gui/settingsdialog.py" line="77"/>
         <source>Styles to use for geometry diffs</source>
         <translation></translation>
     </message>
@@ -963,6 +963,201 @@ Do you want to continue?</source>
     <message>
         <location filename="../processing/remotes.py" line="70"/>
         <source>Sync changes in a remote location to a local repository</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/repopropertiesdialog.py" line="82"/>
+        <source>Repository Properties</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/switchdialog.py" line="51"/>
+        <source>Switch/Checkout</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/historyviewer.py" line="566"/>
+        <source>History</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/historyviewer.py" line="570"/>
+        <source>From:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/historyviewer.py" line="571"/>
+        <source>To:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/historyviewer.py" line="572"/>
+        <source>Filter:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/conflictsdialog.py" line="360"/>
+        <source>Merge Conflicts</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/featurehistorydialog.py" line="180"/>
+        <source>ATTRIBUTE</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/featurehistorydialog.py" line="180"/>
+        <source>Value</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/featurehistorydialog.py" line="186"/>
+        <source>Recover this version into working copy</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/locationselectionpanel.py" line="43"/>
+        <source>Location Selection</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/initdialog.py" line="65"/>
+        <source>New Repository</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/clonedialog.py" line="95"/>
+        <source>Clone</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/remotesdialog.py" line="97"/>
+        <source>Manage Remotes</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/dbconnectiondialog.py" line="131"/>
+        <source>Import from Database</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/userconfigdialog.py" line="50"/>
+        <source>User Configuration</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/installationwarningdialog.py" line="147"/>
+        <source>Kart Installation</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/extentselectionpanel.py" line="118"/>
+        <source>Extent Selection</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="653"/>
+        <source>Attributes</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="654"/>
+        <source>Geometries</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="657"/>
+        <source>Old Value</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="657"/>
+        <source>New Value</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="657"/>
+        <source>Change type</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="664"/>
+        <source>Additional layers:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="665"/>
+        <source>Diff type:</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="668"/>
+        <source>Project layers</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="669"/>
+        <source>OSM basemap</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="670"/>
+        <source>No additional layers</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="678"/>
+        <source>Transparency</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="674"/>
+        <source>Swipe</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="675"/>
+        <source>Per-vertex diff</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="679"/>
+        <source>Old version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="680"/>
+        <source>New version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="683"/>
+        <source>Restore old version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../gui/diffviewer.py" line="684"/>
+        <source>Restore new version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../plugin.py" line="97"/>
+        <source>Kart Plugin version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../plugin.py" line="97"/>
+        <source>QGIS version</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../plugin.py" line="97"/>
+        <source>Operating system</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="../plugin.py" line="97"/>
+        <source>Kart version</source>
         <translation></translation>
     </message>
 </context>
