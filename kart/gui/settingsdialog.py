@@ -20,7 +20,6 @@ class SettingsDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
-        # Initialize translations for UI elements defined in the .ui file
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
@@ -35,6 +34,26 @@ class SettingsDialog(BASE, WIDGET):
         self.comboDiffStyles.addItems(DIFF_STYLES)
 
         self.setValues()
+
+    def setValues(self):
+        self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))
+        self.chkHelperMode.setChecked(setting(HELPERMODE))
+        self.chkAutoCommit.setChecked(setting(AUTOCOMMIT))
+        self.txtKartPath.setText(setting(KARTPATH))
+
+    def browse(self, textbox):
+        folder = QFileDialog.getExistingDirectory(
+            iface.mainWindow(), tr("Select Folder"), ""
+        )
+        if folder:
+            textbox.setText(folder)
+
+    def okClicked(self):
+        setSetting(KARTPATH, self.txtKartPath.text())
+        setSetting(HELPERMODE, self.chkHelperMode.isChecked())
+        setSetting(AUTOCOMMIT, self.chkAutoCommit.isChecked())
+        setSetting(DIFFSTYLES, self.comboDiffStyles.currentText())
+        self.accept()
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
@@ -56,23 +75,3 @@ class SettingsDialog(BASE, WIDGET):
         # Diff Styles Section
         self.groupBox_2.setTitle(tr("Diff styles"))
         self.label.setText(tr("Styles to use for geometry diffs"))
-
-    def setValues(self):
-        self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))
-        self.chkHelperMode.setChecked(setting(HELPERMODE))
-        self.chkAutoCommit.setChecked(setting(AUTOCOMMIT))
-        self.txtKartPath.setText(setting(KARTPATH))
-
-    def browse(self, textbox):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), tr("Select Folder"), ""
-        )
-        if folder:
-            textbox.setText(folder)
-
-    def okClicked(self):
-        setSetting(KARTPATH, self.txtKartPath.text())
-        setSetting(HELPERMODE, self.chkHelperMode.isChecked())
-        setSetting(AUTOCOMMIT, self.chkAutoCommit.isChecked())
-        setSetting(DIFFSTYLES, self.comboDiffStyles.currentText())
-        self.accept()

@@ -66,7 +66,6 @@ class KartDockWidget(BASE, WIDGET):
         super(QDockWidget, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
-        # Initialize translations for elements defined in the .ui file
         self.retranslateUi()
 
         self.tree.setFocusPolicy(Qt.NoFocus)
@@ -107,11 +106,6 @@ class KartDockWidget(BASE, WIDGET):
 
         self.fillTree()
 
-    def retranslateUi(self, *args):
-        """Update translations for UI elements from the .ui file"""
-        self.setWindowTitle(tr("Kart repositories"))
-        self.label_2.setText(tr("Tip: right-click on items for available actions"))
-
     def fillTree(self):
         self.tree.clear()
         self.reposItem = ReposItem()
@@ -151,6 +145,10 @@ class KartDockWidget(BASE, WIDGET):
 
         return menu
 
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Kart repositories"))
+        self.label_2.setText(tr("Tip: right-click on items for available actions"))
 
 class RefreshableItem(QTreeWidgetItem):
     def actions(self):
