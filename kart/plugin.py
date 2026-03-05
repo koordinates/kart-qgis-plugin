@@ -85,7 +85,7 @@ class KartPlugin(object):
 
         html_template = (
             "<html><style>"
-            "body {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
+            "body {{padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}}"
             "</style><body>"
             "<h4>{label_plugin}</h4><p>{plugin_ver}</p>"
             "<h4>{label_qgis}</h4><p>{qgis_ver}</p>"
