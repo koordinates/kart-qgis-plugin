@@ -25,6 +25,8 @@ class CloneDialog(BASE, WIDGET):
         super(QDialog, self).__init__(parent)
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.layout().addWidget(self.bar)
@@ -87,3 +89,8 @@ class CloneDialog(BASE, WIDGET):
             self.bar.pushMessage(
                 tr("Text fields must not be empty"), Qgis.Warning, duration=5
             )
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Clone"))
+

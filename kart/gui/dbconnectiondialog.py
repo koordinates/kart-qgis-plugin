@@ -28,6 +28,8 @@ class DbConnectionDialog(BASE, WIDGET):
         super(QDialog, self).__init__(parent)
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.layout().addWidget(self.bar, 10, 0, 1, 3)
@@ -123,3 +125,8 @@ class DbConnectionDialog(BASE, WIDGET):
         else:
             credentials = ""
         return f"{dbtype}{credentials}{host}:{port}/{database}{schema}"
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Import from Database"))
+

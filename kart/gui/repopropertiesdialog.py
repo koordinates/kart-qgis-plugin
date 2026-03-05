@@ -23,6 +23,9 @@ class RepoPropertiesDialog(BASE, WIDGET):
     def __init__(self, repo):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+        
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.repo = repo
 
@@ -73,3 +76,7 @@ class RepoPropertiesDialog(BASE, WIDGET):
 
     def showBoundingBoxStateChanged(self, _):
         self.btnColor.setEnabled(self.chkShowBoundingBox.isChecked())
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Repository Properties"))

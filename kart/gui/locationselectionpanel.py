@@ -18,6 +18,8 @@ class LocationSelectionPanel(BASE, WIDGET):
         super(QWidget, self).__init__()
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.grpPostgis.setVisible(False)
         self.comboStorageType.currentIndexChanged.connect(self.comboChanged)
 
@@ -35,3 +37,7 @@ class LocationSelectionPanel(BASE, WIDGET):
             if "" in [host, port, database, schema]:
                 raise InvalidLocationException
             return f"postgresql://{host}:{port}/{database}/{schema}"
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Location Selection"))

@@ -22,6 +22,9 @@ class PushDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
+        
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -62,3 +65,7 @@ class PushDialog(BASE, WIDGET):
             )
         else:
             self.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Push"))

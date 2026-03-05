@@ -31,6 +31,8 @@ class ExtentSelectionPanel(BASE, WIDGET):
         super(ExtentSelectionPanel, self).__init__(dialog)
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.crsSelector.setCrs(QgsCoordinateReferenceSystem("EPSG:4326"))
         self.dialog = dialog
 
@@ -110,3 +112,7 @@ class ExtentSelectionPanel(BASE, WIDGET):
             return None
         rect = QgsRectangle(coords[0], coords[1], coords[2], coords[3])
         return QgsReferencedRectangle(rect, self.crsSelector.crs())
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Extent Selection"))

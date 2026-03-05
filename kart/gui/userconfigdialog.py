@@ -22,6 +22,9 @@ class UserConfigDialog(BASE, WIDGET):
     def __init__(self, existingConfigDict):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+        
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -41,3 +44,7 @@ class UserConfigDialog(BASE, WIDGET):
             self.bar.pushMessage(
                 "", tr("Username and email must not be empty"), Qgis.Warning, duration=5
             )
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("User Configuration"))

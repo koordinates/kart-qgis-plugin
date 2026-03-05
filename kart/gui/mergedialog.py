@@ -14,6 +14,8 @@ class MergeDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.comboTag.addItems(repo.tags())
         self.comboBranch.addItems(repo.branches())
 
@@ -38,3 +40,7 @@ class MergeDialog(BASE, WIDGET):
         self.ffonly = self.chkFastForwardOnly.isChecked()
         self.message = self.txtMessage.toPlainText().strip()
         self.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Merge"))

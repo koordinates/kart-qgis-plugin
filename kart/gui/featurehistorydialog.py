@@ -44,6 +44,9 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.workingCopyLayerIdField = None
         self.workingCopyLayerCrs = None
         self.setupUi(self)
+
+        self.retranslateUi()
+        
         self.setWindowFlags(Qt.Window)
 
         self.bar = QgsMessageBar()
@@ -167,6 +170,20 @@ class FeatureHistoryDialog(BASE, WIDGET):
     def closeEvent(self, evt):
         self.removeLayer()
         evt.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        # Window title
+        self.setWindowTitle(tr("Feature history"))
+
+        # Table columns
+        self.attributesTable.setHorizontalHeaderLabels([
+            tr("ATTRIBUTE"),
+            tr("Value")
+        ])
+
+        # Button
+        self.btnRecover.setText(tr("Recover this version into working copy"))
 
 
 class CommitListItem(QListWidgetItem):

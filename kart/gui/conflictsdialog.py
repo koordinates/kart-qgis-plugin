@@ -34,6 +34,8 @@ class ConflictsDialog(BASE, WIDGET):
         self.conflicts = conflicts
         self.setupUi(self)
 
+        self.retranslateUi()
+
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
         self.layout().addWidget(self.bar)
@@ -352,3 +354,7 @@ class ConflictItem(QTreeWidgetItem):
         self.conflict = conflict
         self.fid = fid
         self.path = path
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Merge Conflicts"))

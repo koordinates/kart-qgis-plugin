@@ -23,6 +23,9 @@ class RemotesDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
+        
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
@@ -88,3 +91,7 @@ class RemotesDialog(BASE, WIDGET):
             item = self.listWidget.item(i)
             if item.text() == name:
                 return item
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Manage Remotes"))

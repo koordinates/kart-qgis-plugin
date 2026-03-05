@@ -521,6 +521,9 @@ class HistoryDialog(WIDGET, BASE):
     def __init__(self, repo, dataset=None):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.retranslateUi()
+        
         self.setWindowFlags(Qt.Window)
 
         self.dateEditStart.setDateTime(QDateTime.fromSecsSinceEpoch(0))
@@ -556,3 +559,14 @@ class HistoryDialog(WIDGET, BASE):
         startDate = self.dateEditStart.date()
         endDate = self.dateEditEnd.date()
         self.history.filterCommits(self.txtFilter.text(), startDate, endDate)
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        # Window title
+        self.setWindowTitle(tr("History"))
+
+        # Date filter labels
+        layout = self.frameHistory.parent().layout().itemAt(0).widget().layout()
+        layout.itemAt(0).widget().setText(tr("From:"))
+        layout.itemAt(2).widget().setText(tr("To:"))
+        layout.itemAt(4).widget().setText(tr("Filter:"))

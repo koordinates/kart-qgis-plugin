@@ -107,6 +107,8 @@ class InstallationWarningDialog(BASE, WIDGET):
     def __init__(self, msg: str, version: str):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.retranslateUi()
         self.version = version
         self.widgetDownload.setVisible(False)
         self.btnInstall.clicked.connect(self.install)
@@ -139,3 +141,7 @@ class InstallationWarningDialog(BASE, WIDGET):
         self.accept()
         dlg = SettingsDialog()
         dlg.exec()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Kart Installation"))
