@@ -82,16 +82,29 @@ class KartPlugin(object):
         pluginVersion = self.pluginVersion()
         kartVersion = kartVersionDetails().replace("\n", "<br>")
         qgisVersion = Qgis.QGIS_VERSION
-        html = (
-            "<html><style>body {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
+
+        html_template = (
+            "<html><style>"
+            "body {padding:0px; margin:0px; font-family:verdana; font-size: 1.1em;}"
             "</style><body>"
-            f"<h4>{tr('Kart Plugin version')}</h4><p>{pluginVersion}</p>"
-            f"<h4>{tr('QGIS version')}</h4> <p>{qgisVersion}</p>"
-            f"<h4>{tr('Operating system')}</h4><p>{osInfo}</p>"
-            f"<h4>{tr('Kart version')}</h4> <p>{kartVersion}</p>"
-            "</body>"
-            "</html>"
+            "<h4>{label_plugin}</h4><p>{plugin_ver}</p>"
+            "<h4>{label_qgis}</h4><p>{qgis_ver}</p>"
+            "<h4>{label_os}</h4><p>{os_info}</p>"
+            "<h4>{label_kart}</h4><p>{kart_ver}</p>"
+            "</body></html>"
         )
+
+        html = html_template.format(
+            label_plugin=tr("Kart Plugin version"),
+            plugin_ver=pluginVersion,
+            label_qgis=tr("QGIS version"),
+            qgis_ver=qgisVersion,
+            label_os=tr("Operating system"),
+            os_info=osInfo,
+            label_kart=tr("Kart version"),
+            kart_ver=kartVersion
+        )
+
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle(tr("About Kart"))
         dlg.setMessage(html, QgsMessageOutput.MessageHtml)
