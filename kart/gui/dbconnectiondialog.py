@@ -27,7 +27,7 @@ class DbConnectionDialog(BASE, WIDGET):
         self.setupUi(self)
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar, 10, 0, 1, 3)
 
         self.authWidget = QgsAuthSettingsWidget()
@@ -61,7 +61,7 @@ class DbConnectionDialog(BASE, WIDGET):
         except Exception:
             self.bar.pushMessage(
                 "Cannot connect to the provided database table(s)",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
                 duration=5,
             )
             return
@@ -69,7 +69,9 @@ class DbConnectionDialog(BASE, WIDGET):
             table = table.replace(".", "/")
             self.comboTable.addItem(table, table)
         self.bar.pushMessage(
-            "Tables correctly loaded into tables list", Qgis.Success, duration=5
+            "Tables correctly loaded into tables list",
+            Qgis.MessageLevel.Success,
+            duration=5,
         )
 
     def okClicked(self):
@@ -79,7 +81,7 @@ class DbConnectionDialog(BASE, WIDGET):
         except Exception:
             self.bar.pushMessage(
                 "Cannot connect to the provided database table(s)",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
                 duration=5,
             )
             return

@@ -24,7 +24,7 @@ class RepoPushToRemote(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -78,7 +78,7 @@ class RepoPullFromRemote(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 

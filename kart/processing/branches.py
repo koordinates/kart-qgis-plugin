@@ -23,7 +23,7 @@ class RepoCreateBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -67,7 +67,7 @@ class RepoSwitchBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -111,7 +111,7 @@ class RepoDeleteBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 

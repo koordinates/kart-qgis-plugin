@@ -4,7 +4,7 @@ DEBUG = True
 MAX_LINES = 20
 
 
-def _log(msg, level=Qgis.Info):
+def _log(msg, level=Qgis.MessageLevel.Info):
     lines = msg.splitlines()
     if len(lines) > 20:
         msg = "\n".join(lines[:20]) + f"\n[Showing only the first {MAX_LINES} lines]"
@@ -12,11 +12,11 @@ def _log(msg, level=Qgis.Info):
 
 
 def info(msg):
-    _log(msg, Qgis.Info)
+    _log(msg, Qgis.MessageLevel.Info)
 
 
 def error(msg):
-    _log(msg, Qgis.Critical)
+    _log(msg, Qgis.MessageLevel.Critical)
 
 
 def debug(msg):

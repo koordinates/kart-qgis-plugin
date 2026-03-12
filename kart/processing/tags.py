@@ -23,7 +23,7 @@ class RepoCreateTag(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 self.tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 

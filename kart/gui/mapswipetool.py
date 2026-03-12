@@ -17,8 +17,8 @@ class MapSwipeTool(QgsMapTool):
         self.layer = layer
         self.checkDirection = self.hasSwipe = self.disabledSwipe = None
         self.firstPoint = QPoint()
-        self.cursorV = QCursor(Qt.SplitVCursor)
-        self.cursorH = QCursor(Qt.SplitHCursor)
+        self.cursorV = QCursor(Qt.CursorShape.SplitVCursor)
+        self.cursorH = QCursor(Qt.CursorShape.SplitHCursor)
 
     def _connect(self, isConnect=True):
         if isConnect:
@@ -28,7 +28,7 @@ class MapSwipeTool(QgsMapTool):
 
     def activate(self):
         super().activate()
-        self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
+        self.canvas().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
         self._connect()
         self.hasSwipe = False
         self.disabledSwipe = False
@@ -53,7 +53,7 @@ class MapSwipeTool(QgsMapTool):
 
     def canvasReleaseEvent(self, e):
         self.hasSwipe = False
-        self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
+        self.canvas().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
     def canvasMoveEvent(self, e):
         THRESHOLD = 10
@@ -78,7 +78,7 @@ class MapSwipeTool(QgsMapTool):
                     self.cursorH if self.swipe.isVertical else self.cursorV
                 )
             else:
-                self.canvas().setCursor(QCursor(Qt.PointingHandCursor))
+                self.canvas().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 
     def setLayersSwipe(self):
         if self.disabledSwipe:

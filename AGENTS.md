@@ -73,7 +73,7 @@ python helper.py package
 
 - QGIS 3.16+
 - Kart 0.15.3 installed separately (minimum supported: 0.14.0)
-- Compatible with Python 3.7+
+- Compatible with Python 3.9+
 
 ## Testing Notes
 

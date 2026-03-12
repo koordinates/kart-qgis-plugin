@@ -24,7 +24,7 @@ class CloneDialog(BASE, WIDGET):
         self.setupUi(self)
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.btnBrowseSrc.clicked.connect(lambda: self.browse(self.txtSrc))
@@ -55,7 +55,7 @@ class CloneDialog(BASE, WIDGET):
 
         self.show()
         self.raise_()
-        self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+        self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized)
         self.activateWindow()
 
     def okClicked(self):
@@ -63,7 +63,7 @@ class CloneDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                "Invalid location definition", Qgis.Warning, duration=5
+                "Invalid location definition", Qgis.MessageLevel.Warning, duration=5
             )
             return
         self.src = self.txtSrc.text()
@@ -71,7 +71,9 @@ class CloneDialog(BASE, WIDGET):
         if self.grpFilter.isChecked():
             self.extent = self.extentPanel.getExtent()
             if self.extent is None:
-                self.bar.pushMessage("Invalid extent value", Qgis.Warning, duration=5)
+                self.bar.pushMessage(
+                    "Invalid extent value", Qgis.MessageLevel.Warning, duration=5
+                )
                 return
         else:
             self.extent = None
@@ -83,5 +85,5 @@ class CloneDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.Warning, duration=5
+                "Text fields must not be empty", Qgis.MessageLevel.Warning, duration=5
             )

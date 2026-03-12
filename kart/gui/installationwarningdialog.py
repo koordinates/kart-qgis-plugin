@@ -130,9 +130,9 @@ class InstallationWarningDialog(BASE, WIDGET):
         loop = QEventLoop()
         t.downloadProgressChanged.connect(self.progressBar.setValue)
         t.downloadFinished.connect(self.hide)
-        t.finished.connect(loop.exit, Qt.QueuedConnection)
+        t.finished.connect(loop.exit, Qt.ConnectionType.QueuedConnection)
         t.start()
-        loop.exec_(flags=QEventLoop.ExcludeUserInputEvents)
+        loop.exec(flags=QEventLoop.ProcessEventsFlag.ExcludeUserInputEvents)
         self.accept()
 
     def openSettings(self):

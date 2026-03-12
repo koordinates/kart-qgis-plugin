@@ -49,15 +49,15 @@ PEN_WIDTH = 2
 MARGIN = 50
 
 COLORS = [
-    QColor(Qt.red),
-    QColor(Qt.green),
-    QColor(Qt.blue),
-    QColor(Qt.black),
+    QColor(Qt.GlobalColor.red),
+    QColor(Qt.GlobalColor.green),
+    QColor(Qt.GlobalColor.blue),
+    QColor(Qt.GlobalColor.black),
     QColor(255, 166, 0),
-    QColor(Qt.darkGreen),
-    QColor(Qt.darkBlue),
-    QColor(Qt.cyan),
-    QColor(Qt.magenta),
+    QColor(Qt.GlobalColor.darkGreen),
+    QColor(Qt.GlobalColor.darkBlue),
+    QColor(Qt.GlobalColor.cyan),
+    QColor(Qt.GlobalColor.magenta),
 ]
 
 
@@ -73,13 +73,13 @@ class HistoryTree(QTreeWidget):
         self.initGui()
 
     def initGui(self):
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         # self.header().setStretchLastSection(True)
         self.setHeaderLabels(
             ["Graph", "Refs", "Description", "Author", "Date", "CommitID"]
         )
         self.customContextMenuRequested.connect(self._showPopupMenu)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.populate()
 
     def _showPopupMenu(self, point):
@@ -199,25 +199,25 @@ class HistoryTree(QTreeWidget):
         )
         if ok and name:
             self.repo.createTag(name, item.commit["commit"])
-            self.message("Tag correctly created", Qgis.Info)
+            self.message("Tag correctly created", Qgis.MessageLevel.Info)
             self.populate()
 
     @executeskart
     def deleteTag(self, tag):
         self.repo.deleteTag(tag)
-        self.message(f"Correctly deleted tag '{tag}'", Qgis.Info)
+        self.message(f"Correctly deleted tag '{tag}'", Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
     def switchBranch(self, branch):
         self.repo.checkoutBranch(branch)
-        self.message(f"Correctly switched to branch '{branch}'", Qgis.Info)
+        self.message(f"Correctly switched to branch '{branch}'", Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
     def deleteBranch(self, branch):
         self.repo.deleteBranch(branch)
-        self.message(f"Correctly deleted branch '{branch}'", Qgis.Info)
+        self.message(f"Correctly deleted branch '{branch}'", Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
@@ -227,7 +227,7 @@ class HistoryTree(QTreeWidget):
         )
         if ok and name:
             self.repo.createBranch(name, item.commit["commit"])
-            self.message("Branch correctly created", Qgis.Info)
+            self.message("Branch correctly created", Qgis.MessageLevel.Info)
             self.populate()
 
     @executeskart
@@ -237,7 +237,7 @@ class HistoryTree(QTreeWidget):
         if hasSchemaChanges:
             self.message(
                 "There are schema changes in the selected commit and changes cannot be shown",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
             )
             return
         diff = self.repo.diff(refa, parent)
@@ -251,7 +251,7 @@ class HistoryTree(QTreeWidget):
             self.message(
                 "There are schema changes between the selected commits "
                 "and changes cannot be shown",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
             )
             return
         diff = self.repo.diff(refa, refb)
@@ -275,7 +275,7 @@ class HistoryTree(QTreeWidget):
             self.message(
                 "There are schema changes between the selected commits "
                 "and changes cannot be saved as a layer",
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
             )
             return
         diff = self.repo.diff(refb, refa)
@@ -299,7 +299,9 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def resetBranch(self, item):
         self.repo.reset(item.commit["commit"])
-        self.message("Branch correctly reset to selected commit", Qgis.Info)
+        self.message(
+            "Branch correctly reset to selected commit", Qgis.MessageLevel.Info
+        )
         self.populate()
 
     @executeskart
@@ -321,7 +323,8 @@ class HistoryTree(QTreeWidget):
                 dataset = None
             self.repo.restore(item.commit["commit"], dataset)
             self.message(
-                "Selected dataset(s) correctly restored in working copy", Qgis.Info
+                "Selected dataset(s) correctly restored in working copy",
+                Qgis.MessageLevel.Info,
             )
 
     def message(self, text, level):
@@ -361,8 +364,8 @@ class HistoryTree(QTreeWidget):
         for i in range(1, 6):
             self.resizeColumnToContents(i)
         self.setColumnWidth(0, width + MARGIN)
-        self.header().setSectionResizeMode(0, QHeaderView.Fixed)
-        self.header().setSectionResizeMode(1, QHeaderView.Fixed)
+        self.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
         self.filterCommits()
 
     def graphImage(self, commit, width):
@@ -370,7 +373,8 @@ class HistoryTree(QTreeWidget):
         qp = QPainter(image)
         palette = QWidget().palette()
         qp.fillRect(
-            QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT), palette.color(QPalette.Base)
+            QRectF(0, 0, width, COMMIT_GRAPH_HEIGHT),
+            palette.color(QPalette.ColorRole.Base),
         )
 
         path = QPainterPath()
@@ -404,7 +408,7 @@ class HistoryTree(QTreeWidget):
             path.lineTo(x2, COMMIT_GRAPH_HEIGHT)
         pen = QPen()
         pen.setWidth(PEN_WIDTH)
-        pen.setBrush(palette.color(QPalette.WindowText))
+        pen.setBrush(palette.color(QPalette.ColorRole.WindowText))
         qp.setPen(pen)
         qp.drawPath(path)
 
@@ -437,7 +441,7 @@ class HistoryTree(QTreeWidget):
                     self.filterText in t.lower() for t in values
                 )
                 date = QDateTime.fromString(
-                    item.commit["authorTime"], Qt.ISODate
+                    item.commit["authorTime"], Qt.DateFormat.ISODate
                 ).date()
                 withinDates = date >= self.startDate and date <= self.endDate
                 hide = hide or not withinDates
@@ -516,7 +520,7 @@ class HistoryDialog(WIDGET, BASE):
     def __init__(self, repo, dataset=None):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
-        self.setWindowFlags(Qt.Window)
+        self.setWindowFlags(Qt.WindowType.Window)
 
         self.dateEditStart.setDateTime(QDateTime.fromSecsSinceEpoch(0))
         self.dateEditEnd.setDateTime(QDateTime.currentDateTime())
@@ -524,7 +528,7 @@ class HistoryDialog(WIDGET, BASE):
         layout = QVBoxLayout()
         layout.setMargin(0)
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.bar)
         self.history = HistoryTree(repo, dataset, self)
         layout.addWidget(self.history)
