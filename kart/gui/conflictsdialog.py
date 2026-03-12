@@ -26,7 +26,6 @@ WIDGET, BASE = uic.loadUiType(
 )
 
 
-
 class ConflictsDialog(BASE, WIDGET):
     def __init__(self, conflicts):
         super(QDialog, self).__init__(iface.mainWindow())
@@ -37,7 +36,7 @@ class ConflictsDialog(BASE, WIDGET):
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.resize(1024, 768)
@@ -123,22 +122,26 @@ class ConflictsDialog(BASE, WIDGET):
         ret = QMessageBox.warning(
             self,
             tr("Solve conflicts"),
-            tr("Are you sure you want to solve all conflicts using the 'ours' version?"),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes,
+            tr(
+                "Are you sure you want to solve all conflicts using the 'ours' version?"
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
         )
-        if ret == QMessageBox.Yes:
+        if ret == QMessageBox.StandardButton.Yes:
             pass
 
     def solveAllTheirs(self):
         ret = QMessageBox.warning(
             self,
             tr("Solve conflicts"),
-            tr("Are you sure you want to solve all conflicts using the 'theirs' version?"),
-            QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.Yes,
+            tr(
+                "Are you sure you want to solve all conflicts using the 'theirs' version?"
+            ),
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.Yes,
         )
-        if ret == QMessageBox.Yes:
+        if ret == QMessageBox.StandardButton.Yes:
             pass
 
     def solveFeature(self):
@@ -156,7 +159,9 @@ class ConflictsDialog(BASE, WIDGET):
                 feature["properties"][attrib] = finalItem.value
             else:
                 self.bar.pushMessage(
-                    "", tr("There are still conflicts in the current feature"), Qgis.Warning
+                    "",
+                    tr("There are still conflicts in the current feature"),
+                    Qgis.MessageLevel.Warning,
                 )
                 return
         if hasGeom:
@@ -165,7 +170,9 @@ class ConflictsDialog(BASE, WIDGET):
                 feature["geometry"] = geomItem.value
             else:
                 self.bar.pushMessage(
-                    "", tr("There are still conflicts in the current feature"), Qgis.Warning
+                    "",
+                    tr("There are still conflicts in the current feature"),
+                    Qgis.MessageLevel.Warning,
                 )
                 return
         feature[
@@ -184,9 +191,11 @@ class ConflictsDialog(BASE, WIDGET):
                 QMessageBox.warning(
                     self,
                     tr("Solve conflicts"),
-                    tr("All conflicts are solved. The merge operation will now be closed"),
-                    QMessageBox.Ok,
-                    QMessageBox.Ok,
+                    tr(
+                        "All conflicts are solved. The merge operation will now be closed"
+                    ),
+                    QMessageBox.StandardButton.Ok,
+                    QMessageBox.StandardButton.Ok,
                 )
                 self.okToMerge = True
                 self.close()
@@ -286,9 +295,9 @@ class ConflictsDialog(BASE, WIDGET):
         self.tableAttributes.resizeColumnsToContents()
         header = self.tableAttributes.horizontalHeader()
         for column in range(header.count()):
-            header.setSectionResizeMode(column, QHeaderView.Fixed)
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
             width = header.sectionSize(column)
-            header.setSectionResizeMode(column, QHeaderView.Interactive)
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
             header.resizeSection(column, min(150, width))
 
     def closeEvent(self, evnt):
@@ -297,9 +306,9 @@ class ConflictsDialog(BASE, WIDGET):
                 self,
                 tr("Conflict resolution"),
                 tr("Do you really want to exit without resolving conflicts?"),
-                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
-            if ret == QMessageBox.No:
+            if ret == QMessageBox.StandardButton.No:
                 evnt.ignore()
             else:
                 self.resolvedFeatures = None
@@ -311,9 +320,9 @@ class ValueItem(QTableWidgetItem):
         self.value = value
 
         if conflicted:
-            self.setBackground(Qt.yellow)
+            self.setBackground(Qt.GlobalColor.yellow)
         else:
-            self.setBackground(Qt.white)
+            self.setBackground(Qt.GlobalColor.white)
 
         if isinstance(value, dict):
             s = value["type"]
@@ -321,7 +330,7 @@ class ValueItem(QTableWidgetItem):
             s = str(value)
 
         self.setText(s)
-        self.setFlags(Qt.ItemIsEnabled)
+        self.setFlags(Qt.ItemFlag.ItemIsEnabled)
 
 
 class FinalValueItem(QTableWidgetItem):
@@ -331,7 +340,7 @@ class FinalValueItem(QTableWidgetItem):
         self.value = None
 
         self.setText("")
-        self.setBackground(Qt.yellow)
+        self.setBackground(Qt.GlobalColor.yellow)
 
     def setValue(self, value):
         self.value = value
@@ -342,7 +351,7 @@ class FinalValueItem(QTableWidgetItem):
         else:
             s = str(value)
         self.setText(s)
-        self.setBackground(Qt.white)
+        self.setBackground(Qt.GlobalColor.white)
 
 
 class ConflictItem(QTreeWidgetItem):

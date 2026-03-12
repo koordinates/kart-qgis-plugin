@@ -60,19 +60,19 @@ class SwipeMap(QgsMapCanvasItem):
         self.setRect(self.canvas.extent())
         self.image = QImage(
             QSize(self.canvas.size().width() - 2, self.canvas.size().height() - 2),
-            QImage.Format_ARGB32_Premultiplied,
+            QImage.Format.Format_ARGB32_Premultiplied,
         )
-        self.image.fill(QColor(Qt.transparent))
+        self.image.fill(QColor(Qt.GlobalColor.transparent))
 
         settings = QgsMapSettings(self.canvas.mapSettings())
         settings.setLayers(self.layers)
-        settings.setBackgroundColor(QColor(Qt.transparent))
+        settings.setBackgroundColor(QColor(Qt.GlobalColor.transparent))
         settings.setExtent(self.canvas.extent())
         settings.setOutputSize(self.image.size())
 
         p = QPainter()
         p.begin(self.image)
-        p.setRenderHint(QPainter.Antialiasing)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
         job = QgsMapRendererCustomPainterJob(settings, p)
         job.start()
         job.waitForFinished()

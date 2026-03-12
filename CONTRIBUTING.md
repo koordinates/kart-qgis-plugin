@@ -46,6 +46,6 @@ We use [Black](https://github.com/psf/black) to ensure consistent code formattin
 * Sublime Text: install [sublack](https://packagecontrol.io/packages/sublack) via Package Control
 * VSCode [instructions](https://code.visualstudio.com/docs/python/editing#_formatting)
 
-We use the default settings, and target python 3.7+.
+We use the default settings, and target python 3.9+.
 
 One easy solution is to install [pre-commit](https://pre-commit.com), run `pre-commit install --install-hooks` and it'll automatically validate your changes code as a git pre-commit hook.

@@ -4,6 +4,7 @@ from kart.gui import icons
 from .base import KartAlgorithm
 from kart.utils import tr
 
+
 class RepoCreateTag(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
     REPO_TAG_NAME = "REPO_TAG_NAME"
@@ -23,7 +24,7 @@ class RepoCreateTag(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 

@@ -14,6 +14,7 @@ from kart.gui import icons
 from .base import KartAlgorithm
 from kart.utils import tr
 
+
 class RepoInit(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
 
@@ -32,7 +33,7 @@ class RepoInit(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -94,7 +95,7 @@ class RepoClone(KartAlgorithm):
             QgsProcessingParameterNumber(
                 self.REPO_CLONE_DEPTH,
                 tr("Depth"),
-                type=QgsProcessingParameterNumber.Integer,
+                type=QgsProcessingParameterNumber.Type.Integer,
                 optional=True,
                 minValue=1,
             )

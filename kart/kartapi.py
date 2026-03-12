@@ -15,6 +15,7 @@ from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import (
     QApplication,
+    QDialog,
 )
 
 from qgis.core import (
@@ -37,7 +38,7 @@ from kart import logging
 
 
 MINIMUM_SUPPORTED_VERSION = "0.14.0"
-CURRENT_VERSION = "0.15.3"
+CURRENT_VERSION = "0.17.0"
 
 
 class KartException(Exception):
@@ -77,7 +78,7 @@ def executeskart(f):
                     <p><b>Kart failed with the following message:</b></p>
                     <p style="color:red">{errors}</p>
                     """
-            dlg.setMessage(msg, QgsMessageOutput.MessageHtml)
+            dlg.setMessage(msg, QgsMessageOutput.MessageType.MessageHtml)
             dlg.showMessage()
 
     return inner
@@ -137,14 +138,14 @@ def checkKartInstalled(showMessage=True, useCache=True):
                 iface.messageBar().pushMessage(
                     "Install",
                     "Kart has been correctly installed",
-                    level=Qgis.Success,
+                    level=Qgis.MessageLevel.Success,
                 )
                 return True
             else:
                 iface.messageBar().pushMessage(
                     "Install",
                     "Kart was not installed. Please install it manually.",
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
         return False
     else:
@@ -218,8 +219,8 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     executeKart.env["KART_RASTER_VRTS"] = "1"
 
     try:
-        encoding = locale.getdefaultlocale()[1] or "utf-8"
-        QApplication.setOverrideCursor(Qt.WaitCursor)
+        encoding = locale.getpreferredencoding(False)
+        QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
         # TODO - all of this should be replaced by useage of QgsTask which
         #  will execute on a background thread. There are a number of
@@ -417,7 +418,7 @@ class Repository:
         if all(configDict.get(configKey) for configKey in ("user.name", "user.email")):
             return True
         dlg = UserConfigDialog(configDict)
-        if dlg.exec() == dlg.Accepted:
+        if dlg.exec() == QDialog.DialogCode.Accepted:
             self.configureUser(dlg.username, dlg.email)
             return True
         else:

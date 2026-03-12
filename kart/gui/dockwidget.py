@@ -5,7 +5,14 @@ import tempfile
 from functools import partial
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QMimeData, QByteArray, QDataStream, QIODevice, QCoreApplication
+from qgis.PyQt.QtCore import (
+    Qt,
+    QMimeData,
+    QByteArray,
+    QDataStream,
+    QIODevice,
+    QCoreApplication,
+)
 
 from qgis.PyQt.QtWidgets import (
     QDockWidget,
@@ -16,6 +23,7 @@ from qgis.PyQt.QtWidgets import (
     QMenu,
     QInputDialog,
     QMessageBox,
+    QDialog,
 )
 
 from qgis.utils import iface
@@ -54,12 +62,13 @@ from kart.utils import (
     LASTREPO,
     waitcursor,
     progressBar,
-    tr
+    tr,
 )
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
+
 
 class KartDockWidget(BASE, WIDGET):
     def __init__(self):
@@ -68,11 +77,11 @@ class KartDockWidget(BASE, WIDGET):
 
         self.retranslateUi()
 
-        self.tree.setFocusPolicy(Qt.NoFocus)
-        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.tree.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.tree.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.tree.customContextMenuRequested.connect(self.showPopupMenu)
-        self.tree.setDragDropMode(QAbstractItemView.DragDrop)
+        self.tree.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
 
         def onItemExpanded(item):
             if hasattr(item, "onExpanded"):
@@ -86,7 +95,7 @@ class KartDockWidget(BASE, WIDGET):
         def mimeData(items):
             mimeData = QMimeData()
             encodedData = QByteArray()
-            stream = QDataStream(encodedData, QIODevice.WriteOnly)
+            stream = QDataStream(encodedData, QIODevice.OpenModeFlag.WriteOnly)
 
             for item in items:
                 if isinstance(item, DatasetItem):
@@ -150,6 +159,7 @@ class KartDockWidget(BASE, WIDGET):
         self.setWindowTitle(tr("Kart repositories"))
         self.label_2.setText(tr("Tip: right-click on items for available actions"))
 
+
 class RefreshableItem(QTreeWidgetItem):
     def actions(self):
         actions = [
@@ -168,9 +178,9 @@ class ReposItem(RefreshableItem):
     def __init__(self):
         QTreeWidgetItem.__init__(self)
 
-        self.setText(0, tr('Repositories'))
+        self.setText(0, tr("Repositories"))
         self.setIcon(0, icons.repoIcon)
-        self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+        self.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
 
         self.populate()
 
@@ -202,18 +212,20 @@ class ReposItem(RefreshableItem):
                 iface.messageBar().pushMessage(
                     tr("Error"),
                     tr("The selected folder is not a Kart repository"),
-                    level=Qgis.Warning,
+                    level=Qgis.MessageLevel.Warning,
                 )
 
     @executeskart
     def createRepo(self):
         dialog = InitDialog()
         ret = dialog.exec()
-        if ret == dialog.Accepted:
+        if ret == QDialog.DialogCode.Accepted:
             if os.path.exists(dialog.folder):
                 if any(os.scandir(dialog.folder)):
                     iface.messageBar().pushMessage(
-                        tr("Error"), tr("The specified folder is not empty"), level=Qgis.Warning
+                        tr("Error"),
+                        tr("The specified folder is not empty"),
+                        level=Qgis.MessageLevel.Warning,
                     )
                     return
             else:
@@ -223,7 +235,7 @@ class ReposItem(RefreshableItem):
                     iface.messageBar().pushMessage(
                         tr("Error"),
                         tr("Could not create the specified folder"),
-                        level=Qgis.Warning,
+                        level=Qgis.MessageLevel.Warning,
                     )
                     return
             repo = Repository(dialog.folder)
@@ -232,7 +244,9 @@ class ReposItem(RefreshableItem):
                 RepoManager.instance().add_repo(repo)
             else:
                 iface.messageBar().pushMessage(
-                    tr("Error"), tr("Could not initialize repository"), level=Qgis.Warning
+                    tr("Error"),
+                    tr("Could not initialize repository"),
+                    level=Qgis.MessageLevel.Warning,
                 )
 
     @executeskart
@@ -259,8 +273,8 @@ class ReposItem(RefreshableItem):
 
         dialog = CloneDialog()
         dialog.show()
-        ret = dialog.exec_()
-        if ret == dialog.Accepted:
+        ret = dialog.exec()
+        if ret == QDialog.DialogCode.Accepted:
             with progressBar("Clone") as bar:
                 bar.setText(tr("Cloning repository"))
                 repo = Repository.clone(
@@ -289,7 +303,7 @@ class RepoItem(RefreshableItem):
 
         self.setTitle()
         self.setIcon(0, icons.repoIcon)
-        self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+        self.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
 
     def refreshContent(self):
         self.takeChildren()
@@ -327,7 +341,11 @@ class RepoItem(RefreshableItem):
         if self.repo.isMerging():
             actions.extend(
                 [
-                    (tr("Resolve conflicts..."), self.resolveConflicts, icons.resolveIcon),
+                    (
+                        tr("Resolve conflicts..."),
+                        self.resolveConflicts,
+                        icons.resolveIcon,
+                    ),
                     (tr("Continue merge"), self.continueMerge, icons.mergeIcon),
                     (tr("Abort merge"), self.abortMerge, icons.abortIcon),
                 ]
@@ -336,7 +354,11 @@ class RepoItem(RefreshableItem):
             actions.extend(
                 [
                     (tr("Show log..."), self.showLog, icons.logIcon),
-                    (tr("Show working copy changes..."), self.showChanges, icons.diffIcon),
+                    (
+                        tr("Show working copy changes..."),
+                        self.showChanges,
+                        icons.diffIcon,
+                    ),
                     (
                         tr("Discard working copy changes"),
                         self.discardChanges,
@@ -348,7 +370,11 @@ class RepoItem(RefreshableItem):
                         icons.commitIcon,
                     ),
                     (tr("Switch branch..."), self.switchBranch, icons.checkoutIcon),
-                    (tr("Merge into current branch..."), self.mergeBranch, icons.mergeIcon),
+                    (
+                        tr("Merge into current branch..."),
+                        self.mergeBranch,
+                        icons.mergeIcon,
+                    ),
                     ("divider", None, None),
                     (tr("Pull..."), self.pull, icons.pullIcon),
                     (tr("Push..."), self.push, icons.pushIcon),
@@ -398,7 +424,7 @@ class RepoItem(RefreshableItem):
     def importLayerFromDatabase(self):
         dlg = DbConnectionDialog()
         ret = dlg.exec()
-        if ret == dlg.Accepted:
+        if ret == QDialog.DialogCode.Accepted:
             self._importIntoRepo(dlg.url)
 
     def importLayerFromFile(self):
@@ -418,7 +444,7 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 tr("Import"),
                 tr("The selected file is not a valid vector layer"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return
         tmpfolder = tempfile.TemporaryDirectory()
@@ -427,11 +453,11 @@ class RepoItem(RefreshableItem):
         ret = QgsVectorFileWriter.writeAsVectorFormat(
             layer, filenameToImport, "utf-8", layer.crs()
         )
-        if ret[0] != QgsVectorFileWriter.NoError:
+        if ret[0] != QgsVectorFileWriter.WriterError.NoError:
             iface.messageBar().pushMessage(
                 tr("Import"),
                 tr("Could not convert the selected layer to a gpkg file"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
         else:
             self._importIntoRepo(filenameToImport)
@@ -441,7 +467,7 @@ class RepoItem(RefreshableItem):
     def _importIntoRepo(self, source):
         self.repo.importIntoRepo(source)
         iface.messageBar().pushMessage(
-            tr("Import"), tr("Layer correctly imported"), level=Qgis.Info
+            tr("Import"), tr("Layer correctly imported"), level=Qgis.MessageLevel.Info
         )
         if self.populated:
             self.datasetsItem.refreshContent()
@@ -451,7 +477,7 @@ class RepoItem(RefreshableItem):
     def commitChanges(self):
         if self.repo.isWorkingTreeClean():
             iface.messageBar().pushMessage(
-                tr("Commit"), tr("Nothing to commit"), level=Qgis.Warning
+                tr("Commit"), tr("Nothing to commit"), level=Qgis.MessageLevel.Warning
             )
         else:
             msg, ok = QInputDialog.getMultiLineText(
@@ -460,11 +486,15 @@ class RepoItem(RefreshableItem):
             if ok and msg:
                 if self.repo.commit(msg):
                     iface.messageBar().pushMessage(
-                        tr("Commit"), tr("Changes correctly committed"), level=Qgis.Info
+                        tr("Commit"),
+                        tr("Changes correctly committed"),
+                        level=Qgis.MessageLevel.Info,
                     )
                 else:
                     iface.messageBar().pushMessage(
-                        tr("Commit"), tr("Changes could not be commited"), level=Qgis.Warning
+                        tr("Commit"),
+                        tr("Changes could not be commited"),
+                        level=Qgis.MessageLevel.Warning,
                     )
 
     @executeskart
@@ -473,8 +503,10 @@ class RepoItem(RefreshableItem):
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 tr("Changes"),
-                tr("There are schema changes in the working copy and changes cannot be shown"),
-                level=Qgis.Warning,
+                tr(
+                    "There are schema changes in the working copy and changes cannot be shown"
+                ),
+                level=Qgis.MessageLevel.Warning,
             )
             return
         diff = self.repo.diff()
@@ -488,20 +520,20 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 tr("Changes"),
                 tr("There are no changes in the working copy"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
 
     @executeskart
     def switchBranch(self):
         dialog = SwitchDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.repo.checkoutBranch(dialog.branch, dialog.force)
             self.setTitle()
 
     @executeskart
     def mergeBranch(self):
         dialog = MergeDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             conflicts = self.repo.mergeBranch(
                 dialog.ref, msg=dialog.message, noff=dialog.noff, ffonly=dialog.ffonly
             )
@@ -517,7 +549,9 @@ class RepoItem(RefreshableItem):
                 )
             else:
                 iface.messageBar().pushMessage(
-                    tr("Merge"), tr("Branch correctly merged"), level=Qgis.Info
+                    tr("Merge"),
+                    tr("Branch correctly merged"),
+                    level=Qgis.MessageLevel.Info,
                 )
 
     @executeskart
@@ -527,7 +561,7 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 tr("Discard changes"),
                 tr("Working copy changes have been discarded"),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
     @executeskart
@@ -536,21 +570,23 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 tr("Merge"),
                 tr("Cannot continue. There are merge conflicts."),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
         else:
             self.repo.continueMerge()
             iface.messageBar().pushMessage(
                 tr("Merge"),
                 tr("Merge operation was correctly continued and closed"),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
     @executeskart
     def abortMerge(self):
         self.repo.abortMerge()
         iface.messageBar().pushMessage(
-            tr("Merge"), tr("Merge operation was correctly aborted"), level=Qgis.Info
+            tr("Merge"),
+            tr("Merge operation was correctly aborted"),
+            level=Qgis.MessageLevel.Info,
         )
 
     @executeskart
@@ -558,9 +594,11 @@ class RepoItem(RefreshableItem):
         if self.repo.conflictsHaveSchemaChanges():
             iface.messageBar().pushMessage(
                 tr("Resolve"),
-                tr("Conflicts involve schema changes and cannot be resolved "
-                "using the plugin interface"),
-                level=Qgis.Warning,
+                tr(
+                    "Conflicts involve schema changes and cannot be resolved "
+                    "using the plugin interface"
+                ),
+                level=Qgis.MessageLevel.Warning,
             )
             return
         conflicts = self.repo.conflicts()
@@ -573,17 +611,19 @@ class RepoItem(RefreshableItem):
                 iface.messageBar().pushMessage(
                     tr("Merge"),
                     tr("Merge operation was correctly continued and closed"),
-                    level=Qgis.Info,
+                    level=Qgis.MessageLevel.Info,
                 )
         else:
             iface.messageBar().pushMessage(
-                tr("Resolve"), tr("There are no conflicts to resolve"), level=Qgis.Warning
+                tr("Resolve"),
+                tr("There are no conflicts to resolve"),
+                level=Qgis.MessageLevel.Warning,
             )
 
     @executeskart
     def push(self):
         dialog = PushDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             self.repo.push(dialog.remote, dialog.branch, dialog.pushAll)
             iface.messageBar().pushMessage(
                 tr("Push"),
@@ -593,13 +633,13 @@ class RepoItem(RefreshableItem):
                     if dialog.pushAll
                     else tr(f"{dialog.remote}/{dialog.branch}")
                 ),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
     @executeskart
     def pull(self):
         dialog = PullDialog(self.repo)
-        if dialog.exec() == dialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             ret = self.repo.pull(dialog.remote, dialog.branch)
             if not ret:
                 QMessageBox.warning(
@@ -613,7 +653,9 @@ class RepoItem(RefreshableItem):
                 )
             else:
                 iface.messageBar().pushMessage(
-                    tr("Pull"), tr("Pull correctly performed"), level=Qgis.Info
+                    tr("Pull"),
+                    tr("Pull correctly performed"),
+                    level=Qgis.MessageLevel.Info,
                 )
 
     @executeskart
@@ -629,7 +671,7 @@ class RepoItem(RefreshableItem):
             iface.messageBar().pushMessage(
                 tr("Apply patch"),
                 tr("Patch was correctly applied to working copy"),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
 
@@ -691,7 +733,11 @@ class DatasetItem(QTreeWidgetItem):
                         icons.commitIcon,
                     ),
                     ("divider", None, None),
-                    (tr("Remove from repository"), self.removeFromRepo, icons.removeIcon),
+                    (
+                        tr("Remove from repository"),
+                        self.removeFromRepo,
+                        icons.removeIcon,
+                    ),
                 ]
             )
 
@@ -702,7 +748,7 @@ class DatasetItem(QTreeWidgetItem):
         changes = self.repo.changes().get(self.name)
         if changes is None:
             iface.messageBar().pushMessage(
-                tr("Commit"), tr("Nothing to commit"), level=Qgis.Warning
+                tr("Commit"), tr("Nothing to commit"), level=Qgis.MessageLevel.Warning
             )
         else:
             msg, ok = QInputDialog.getMultiLineText(
@@ -711,11 +757,15 @@ class DatasetItem(QTreeWidgetItem):
             if ok and msg:
                 if self.repo.commit(msg, dataset=self.name):
                     iface.messageBar().pushMessage(
-                        tr("Commit"), tr("Changes correctly committed"), level=Qgis.Info
+                        tr("Commit"),
+                        tr("Changes correctly committed"),
+                        level=Qgis.MessageLevel.Info,
                     )
                 else:
                     iface.messageBar().pushMessage(
-                        tr("Commit"), tr("Changes could not be commited"), level=Qgis.Warning
+                        tr("Commit"),
+                        tr("Changes could not be commited"),
+                        level=Qgis.MessageLevel.Warning,
                     )
 
     @executeskart
@@ -724,8 +774,10 @@ class DatasetItem(QTreeWidgetItem):
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 tr("Changes"),
-                tr("There are schema changes in the working copy and changes cannot be shown"),
-                level=Qgis.Warning,
+                tr(
+                    "There are schema changes in the working copy and changes cannot be shown"
+                ),
+                level=Qgis.MessageLevel.Warning,
             )
             return
         diff = self.repo.diff(dataset=self.name)
@@ -738,19 +790,21 @@ class DatasetItem(QTreeWidgetItem):
             iface.messageBar().pushMessage(
                 tr("Changes"),
                 tr("There are no changes in the working copy for this dataset"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
 
     @executeskart
     def discardChanges(self):
         if confirm(
-            tr("Are you sure you want to discard the working copy changes for this dataset?")
+            tr(
+                "Are you sure you want to discard the working copy changes for this dataset?"
+            )
         ):
             self.repo.restore("HEAD", self.name)
             iface.messageBar().pushMessage(
                 tr("Discard changes"),
                 tr("Working copy changes have been discarded"),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
 
     @executeskart
@@ -764,7 +818,7 @@ class DatasetItem(QTreeWidgetItem):
             iface.messageBar().pushMessage(
                 tr("Add layer"),
                 tr("Dataset could not be added"),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
         else:
             QgsProject.instance().addMapLayer(layer)
@@ -778,7 +832,7 @@ class DatasetItem(QTreeWidgetItem):
                     "There are pending changes in the working copy. "
                     "Commit them before deleting this dataset"
                 ),
-                level=Qgis.Warning,
+                level=Qgis.MessageLevel.Warning,
             )
             return
         source = self.repo.workingCopyLayer(self.name).source()
@@ -796,14 +850,17 @@ class DatasetItem(QTreeWidgetItem):
             )
 
         ret = QMessageBox.warning(
-            iface.mainWindow(), tr("Remove dataset"), msg, QMessageBox.Yes | QMessageBox.No
+            iface.mainWindow(),
+            tr("Remove dataset"),
+            msg,
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
         )
-        if ret == QMessageBox.Yes:
+        if ret == QMessageBox.StandardButton.Yes:
             self.repo.deleteDataset(self.name)
             iface.messageBar().pushMessage(
                 tr("Remove dataset"),
                 tr("Dataset correctly removed"),
-                level=Qgis.Info,
+                level=Qgis.MessageLevel.Info,
             )
             self.parent().refreshContent()
             if layer:

@@ -23,12 +23,12 @@ class RemotesDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
-        
+
         # Initialize translations for UI elements defined in the .ui file
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.listWidget.itemClicked.connect(self.itemClicked)
@@ -55,7 +55,7 @@ class RemotesDialog(BASE, WIDGET):
             self.bar.pushMessage(
                 "",
                 tr("Values for both remote name and url must be provided"),
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
                 duration=5,
             )
         else:
@@ -76,7 +76,10 @@ class RemotesDialog(BASE, WIDGET):
         item = self.itemFromName(name)
         if item is None:
             self.bar.pushMessage(
-                "", tr("A remote with that name does not exist"), Qgis.Warning, duration=5
+                "",
+                tr("A remote with that name does not exist"),
+                Qgis.MessageLevel.Warning,
+                duration=5,
             )
         else:
             self._removeRemote(name)

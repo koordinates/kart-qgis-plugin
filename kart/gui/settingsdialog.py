@@ -6,7 +6,15 @@ from qgis.PyQt import uic
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
-from kart.utils import setting, setSetting, KARTPATH, HELPERMODE, AUTOCOMMIT, DIFFSTYLES, tr
+from kart.utils import (
+    setting,
+    setSetting,
+    KARTPATH,
+    HELPERMODE,
+    AUTOCOMMIT,
+    DIFFSTYLES,
+    tr,
+)
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "settingsdialog.ui")
@@ -23,7 +31,7 @@ class SettingsDialog(BASE, WIDGET):
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.btnBrowsePath.clicked.connect(lambda: self.browse(self.txtKartPath))

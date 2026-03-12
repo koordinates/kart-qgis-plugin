@@ -58,11 +58,11 @@ class ExtentSelectionPanel(BASE, WIDGET):
         useLayerExtentAction.triggered.connect(self.useLayerExtent)
         useCanvasExtentAction.triggered.connect(self.useCanvasExtent)
 
-        popupmenu.exec_(QCursor.pos())
+        popupmenu.exec(QCursor.pos())
 
     def useLayerExtent(self):
         dlg = LayerSelectionDialog(self)
-        if dlg.exec_():
+        if dlg.exec():
             layer = dlg.selected_layer()
             self.setValueFromRect(QgsReferencedRectangle(layer.extent(), layer.crs()))
 

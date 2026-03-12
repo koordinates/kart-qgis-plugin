@@ -8,6 +8,7 @@ from kart.gui import icons
 from .base import KartAlgorithm
 from kart.utils import tr
 
+
 class RepoImportData(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
     REPO_DATA_PATH = "REPO_DATA_PATH"
@@ -28,7 +29,7 @@ class RepoImportData(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -36,7 +37,7 @@ class RepoImportData(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_DATA_PATH,
                 tr("Data Path"),
-                behavior=QgsProcessingParameterFile.File,
+                behavior=QgsProcessingParameterFile.Behavior.File,
             )
         )
 

@@ -24,10 +24,7 @@ class KartPlugin(object):
 
         # Adds support for internationalization
         locale = QSettings().value("locale/userLocale")
-        locale_path = os.path.join(
-            pluginPath, "i18n",
-            f"kart_{locale}.qm"
-        )
+        locale_path = os.path.join(pluginPath, "i18n", f"kart_{locale}.qm")
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -40,7 +37,7 @@ class KartPlugin(object):
     def initGui(self):
 
         self.dock = KartDockWidget()
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dock)
+        self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
 
         self.explorerAction = QAction(tr("Repositories..."), self.iface.mainWindow())
         self.iface.addPluginToMenu(tr("Kart"), self.explorerAction)
@@ -102,12 +99,12 @@ class KartPlugin(object):
             label_os=tr("Operating system"),
             os_info=osInfo,
             label_kart=tr("Kart version"),
-            kart_ver=kartVersion
+            kart_ver=kartVersion,
         )
 
         dlg = QgsMessageOutput.createMessageOutput()
         dlg.setTitle(tr("About Kart"))
-        dlg.setMessage(html, QgsMessageOutput.MessageHtml)
+        dlg.setMessage(html, QgsMessageOutput.MessageType.MessageHtml)
         dlg.showMessage()
 
     def unload(self):

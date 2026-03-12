@@ -21,7 +21,6 @@ WIDGET, BASE = uic.loadUiType(
 )
 
 
-
 class DbConnectionDialog(BASE, WIDGET):
     def __init__(self, parent=None):
         parent = parent or iface.mainWindow()
@@ -31,7 +30,7 @@ class DbConnectionDialog(BASE, WIDGET):
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar, 10, 0, 1, 3)
 
         self.authWidget = QgsAuthSettingsWidget()
@@ -65,7 +64,7 @@ class DbConnectionDialog(BASE, WIDGET):
         except Exception:
             self.bar.pushMessage(
                 tr("Cannot connect to the provided database table(s)"),
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
                 duration=5,
             )
             return
@@ -73,7 +72,9 @@ class DbConnectionDialog(BASE, WIDGET):
             table = table.replace(".", "/")
             self.comboTable.addItem(table, table)
         self.bar.pushMessage(
-            tr("Tables correctly loaded into tables list"), Qgis.Success, duration=5
+            tr("Tables correctly loaded into tables list"),
+            Qgis.MessageLevel.Success,
+            duration=5,
         )
 
     def okClicked(self):
@@ -83,7 +84,7 @@ class DbConnectionDialog(BASE, WIDGET):
         except Exception:
             self.bar.pushMessage(
                 tr("Cannot connect to the provided database table(s)"),
-                Qgis.Warning,
+                Qgis.MessageLevel.Warning,
                 duration=5,
             )
             return
@@ -129,4 +130,3 @@ class DbConnectionDialog(BASE, WIDGET):
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
         self.setWindowTitle(tr("Import from Database"))
-

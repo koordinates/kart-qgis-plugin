@@ -23,14 +23,14 @@ class RepoPropertiesDialog(BASE, WIDGET):
     def __init__(self, repo):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
-        
+
         # Initialize translations for UI elements defined in the .ui file
         self.retranslateUi()
 
         self.repo = repo
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.buttonBox.accepted.connect(self.okClicked)
@@ -66,7 +66,9 @@ class RepoPropertiesDialog(BASE, WIDGET):
         if self.grpFilter.isChecked():
             extent = self.extentPanel.getExtent()
             if extent is None:
-                self.bar.pushMessage(tr("Invalid extent value"), Qgis.Warning, duration=5)
+                self.bar.pushMessage(
+                    tr("Invalid extent value"), Qgis.MessageLevel.Warning, duration=5
+                )
                 return
         else:
             extent = None

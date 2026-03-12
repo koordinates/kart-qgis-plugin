@@ -4,6 +4,7 @@ from kart.gui import icons
 from .base import KartAlgorithm
 from kart.utils import tr
 
+
 class RepoCreateBranch(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
     REPO_BRANCH_NAME = "REPO_BRANCH_NAME"
@@ -23,7 +24,7 @@ class RepoCreateBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -67,7 +68,7 @@ class RepoSwitchBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -111,7 +112,7 @@ class RepoDeleteBranch(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 

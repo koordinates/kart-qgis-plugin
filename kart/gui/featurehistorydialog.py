@@ -46,11 +46,11 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.setupUi(self)
 
         self.retranslateUi()
-        
-        self.setWindowFlags(Qt.Window)
+
+        self.setWindowFlags(Qt.WindowType.Window)
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().insertWidget(0, self.bar)
 
         self.listCommits.currentRowChanged.connect(self.currentCommitChanged)
@@ -60,7 +60,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         horizontalLayout.setSpacing(0)
         horizontalLayout.setMargin(0)
         self.canvas = QgsMapCanvas()
-        self.canvas.setCanvasColor(Qt.white)
+        self.canvas.setCanvasColor(Qt.GlobalColor.white)
         horizontalLayout.addWidget(self.canvas)
         self.canvasWidget.setLayout(horizontalLayout)
         self.panTool = QgsMapToolPan(self.canvas)
@@ -130,7 +130,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.layer.setExtent(self.layer.boundingBoxOfSelected())
         self.layer.invertSelection()
         symbol = QgsSymbol.defaultSymbol(self.layer.geometryType())
-        symbol.setColor(Qt.green)
+        symbol.setColor(Qt.GlobalColor.green)
         symbol.setOpacity(0.5)
         self.layer.setRenderer(QgsSingleSymbolRenderer(symbol))
         self.canvas.setRenderFlag(False)
@@ -159,7 +159,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.bar.pushMessage(
             tr("Feature history"),
             tr("Working copy has been correctly modified"),
-            Qgis.Success,
+            Qgis.MessageLevel.Success,
             5,
         )
 
@@ -177,10 +177,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.setWindowTitle(tr("Feature history"))
 
         # Table columns
-        self.attributesTable.setHorizontalHeaderLabels([
-            tr("ATTRIBUTE"),
-            tr("Value")
-        ])
+        self.attributesTable.setHorizontalHeaderLabels([tr("ATTRIBUTE"), tr("Value")])
 
         # Button
         self.btnRecover.setText(tr("Recover this version into working copy"))

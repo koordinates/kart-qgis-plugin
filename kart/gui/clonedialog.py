@@ -28,7 +28,7 @@ class CloneDialog(BASE, WIDGET):
         self.retranslateUi()
 
         self.bar = QgsMessageBar()
-        self.bar.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Fixed)
+        self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         self.layout().addWidget(self.bar)
 
         self.btnBrowseSrc.clicked.connect(lambda: self.browse(self.txtSrc))
@@ -59,7 +59,7 @@ class CloneDialog(BASE, WIDGET):
 
         self.show()
         self.raise_()
-        self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+        self.setWindowState(self.windowState() & ~Qt.WindowState.WindowMinimized)
         self.activateWindow()
 
     def okClicked(self):
@@ -67,7 +67,7 @@ class CloneDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                tr("Invalid location definition"), Qgis.Warning, duration=5
+                tr("Invalid location definition"), Qgis.MessageLevel.Warning, duration=5
             )
             return
         self.src = self.txtSrc.text()
@@ -75,7 +75,9 @@ class CloneDialog(BASE, WIDGET):
         if self.grpFilter.isChecked():
             self.extent = self.extentPanel.getExtent()
             if self.extent is None:
-                self.bar.pushMessage(tr("Invalid extent value"), Qgis.Warning, duration=5)
+                self.bar.pushMessage(
+                    tr("Invalid extent value"), Qgis.MessageLevel.Warning, duration=5
+                )
                 return
         else:
             self.extent = None
@@ -87,10 +89,11 @@ class CloneDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                tr("Text fields must not be empty"), Qgis.Warning, duration=5
+                tr("Text fields must not be empty"),
+                Qgis.MessageLevel.Warning,
+                duration=5,
             )
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
         self.setWindowTitle(tr("Clone"))
-

@@ -4,6 +4,7 @@ from kart.gui import icons
 from .base import KartAlgorithm
 from kart.utils import tr
 
+
 class RepoPushToRemote(KartAlgorithm):
     REPO_PATH = "REPO_PATH"
     REPO_BRANCH_NAME = "REPO_BRANCH_NAME"
@@ -24,7 +25,7 @@ class RepoPushToRemote(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
@@ -78,7 +79,7 @@ class RepoPullFromRemote(KartAlgorithm):
             QgsProcessingParameterFile(
                 self.REPO_PATH,
                 tr("Repo Path"),
-                behavior=QgsProcessingParameterFile.Folder,
+                behavior=QgsProcessingParameterFile.Behavior.Folder,
             )
         )
 
