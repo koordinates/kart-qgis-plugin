@@ -2,9 +2,11 @@ import os
 
 from qgis.utils import iface
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QInputDialog
 
 from kart.kartapi import executeskart
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
@@ -17,6 +19,9 @@ class SwitchDialog(BASE, WIDGET):
         super().__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
+        
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.comboBranch.addItems(repo.branches())
 
@@ -33,10 +38,14 @@ class SwitchDialog(BASE, WIDGET):
     @executeskart
     def createNewClicked(self, item):
         name, ok = QInputDialog.getText(
-            self, "Create branch", "Enter name of branch to create"
+            self, tr("Create branch"), tr("Enter name of branch to create")
         )
         if ok and name:
             self.repo.createBranch(name)
             self.branch = name
             self.force = False
             self.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Switch/Checkout"))

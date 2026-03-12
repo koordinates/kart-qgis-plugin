@@ -1,6 +1,12 @@
 import os
 
-from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings
+from qgis.PyQt.QtCore import (
+    Qt,
+    QCoreApplication,
+    QSettings,
+    QTranslator,
+    QT_TRANSLATE_NOOP,
+)
 from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox, QApplication
 from qgis.core import QgsProject, Qgis
 from qgis.utils import iface as qgisiface
@@ -14,6 +20,13 @@ if iface is None:
     from qgis.testing.mocked import get_iface
 
     iface = get_iface()
+
+
+def tr(string):
+    # Does the function not return the context?
+    # return QCoreApplication.translate("Kart", string)
+    # Using @default as a fallback
+    return QCoreApplication.translate("@default", string)
 
 
 class ProgressBar:

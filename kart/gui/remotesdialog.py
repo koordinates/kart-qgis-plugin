@@ -5,9 +5,11 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 from kart.kartapi import executeskart
+from kart.utils import tr
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -21,6 +23,9 @@ class RemotesDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
+
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -49,7 +54,7 @@ class RemotesDialog(BASE, WIDGET):
         if not name or not url:
             self.bar.pushMessage(
                 "",
-                "Values for both remote name and url must be provided",
+                tr("Values for both remote name and url must be provided"),
                 Qgis.MessageLevel.Warning,
                 duration=5,
             )
@@ -72,7 +77,7 @@ class RemotesDialog(BASE, WIDGET):
         if item is None:
             self.bar.pushMessage(
                 "",
-                "A remote with that name does not exist",
+                tr("A remote with that name does not exist"),
                 Qgis.MessageLevel.Warning,
                 duration=5,
             )
@@ -89,3 +94,7 @@ class RemotesDialog(BASE, WIDGET):
             item = self.listWidget.item(i)
             if item.text() == name:
                 return item
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Manage Remotes"))

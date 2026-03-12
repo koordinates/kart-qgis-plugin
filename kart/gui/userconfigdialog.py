@@ -5,7 +5,10 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
+
+from kart.utils import tr
 
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -19,6 +22,9 @@ class UserConfigDialog(BASE, WIDGET):
     def __init__(self, existingConfigDict):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -37,7 +43,11 @@ class UserConfigDialog(BASE, WIDGET):
         else:
             self.bar.pushMessage(
                 "",
-                "Username and email must not be empty",
+                tr("Username and email must not be empty"),
                 Qgis.MessageLevel.Warning,
                 duration=5,
             )
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("User Configuration"))

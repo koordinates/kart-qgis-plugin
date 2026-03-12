@@ -26,7 +26,7 @@ class KartProvider(QgsProcessingProvider):
         return "Kart"
 
     def name(self, *args, **kwargs):
-        return self.tr("Kart")
+        return "Kart"
 
     def icon(self):
         return icons.kartIcon
