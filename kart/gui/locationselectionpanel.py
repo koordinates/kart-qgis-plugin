@@ -44,3 +44,11 @@ class LocationSelectionPanel(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Location Selection"))
+        self.label.setText(tr("Storage type"))
+        self.comboStorageType.setItemText(0, tr("Geopackage in repository folder"))
+        self.comboStorageType.setItemText(1, tr("PostGIS database"))
+        self.grpPostgis.setTitle(tr("PostGIS parameters"))
+        self.label_2.setText(tr("Host"))
+        self.label_3.setText(tr("Port"))
+        self.label_4.setText(tr("Database"))
+        self.label_5.setText(tr("Schema"))
