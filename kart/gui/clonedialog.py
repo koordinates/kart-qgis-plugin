@@ -99,3 +99,11 @@ class CloneDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Clone"))
+        self.groupBox.setTitle(tr("Clone existing repository"))
+        self.label.setText(tr("URL of repository to clone:"))
+        self.label_2.setText(tr("Folder to clone to:"))
+        self.groupBox_2.setTitle(tr("Credentials (leave blank if not needed)"))
+        self.label_3.setText(tr("Username"))
+        self.label_4.setText(tr("Password"))
+        self.grpLocation.setTitle(tr("Working copy location"))
+        self.grpFilter.setTitle(tr("Spatial filter"))
