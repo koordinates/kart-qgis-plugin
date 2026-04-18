@@ -56,7 +56,7 @@ class SwitchDialog(BASE, WIDGET):
         # GroupBox "Switch to"
         self.groupBox.setTitle(tr("Switch to"))
         self.label.setText(tr("Branch"))
-        #self.btnCreateNew.setText(tr("Create New"))
+        self.btnCreateNew.setText(tr("Create New"))
 
         # GroupBox "Options"
         self.grpOptions.setTitle(tr("Options"))
