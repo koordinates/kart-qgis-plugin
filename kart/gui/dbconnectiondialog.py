@@ -132,3 +132,11 @@ class DbConnectionDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Import from Database"))
+        self.label.setText(tr("DB type"))
+        self.label_8.setText(tr("Host"))
+        self.label_10.setText(tr("Port"))
+        self.label_12.setText(tr("Database"))
+        self.label_11.setText(tr("Schema [optional]"))
+        self.label_13.setText(tr("Credentials"))
+        self.label_9.setText(tr("Table"))
+        self.btnLoadTables.setText(tr("Load tables"))
