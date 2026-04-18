@@ -639,11 +639,9 @@ class DiffViewerWidget(WIDGET, BASE):
             [tr("Old Value"), tr("New Value"), tr("Change type")]
         )
 
-        # Geometry tab labels
-        self.widgetDiffConfig.layout().itemAt(0).widget().setText(
-            tr("Additional layers:")
-        )
-        self.widgetDiffConfig.layout().itemAt(2).widget().setText(tr("Diff type:"))
+        # Geometry tab labels (named widgets from diffviewerwidget.ui)
+        self.label.setText(tr("Additional layers:"))
+        self.label_2.setText(tr("Diff type:"))
 
         # Additional layers combo options
         self.comboAdditionalLayers.setItemText(PROJECT_LAYERS, tr("Project layers"))
@@ -657,8 +655,8 @@ class DiffViewerWidget(WIDGET, BASE):
 
         # Transparency group and labels
         self.grpTransparency.setTitle(tr("Transparency"))
-        self.grpTransparency.layout().itemAt(1).widget().setText(tr("Old version"))
-        self.grpTransparency.layout().itemAt(2).widget().setText(tr("New version"))
+        self.label_3.setText(tr("Old version"))
+        self.label_4.setText(tr("New version"))
 
         # Buttons
         self.btnRecoverOldVersion.setText(tr("Restore old version"))
