@@ -74,3 +74,9 @@ class PushDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Push"))
+        self.groupBox.setTitle(tr("Branches"))
+        self.chkPushAll.setText(tr("Push all branches"))
+        self.label.setText(tr("Branch to push:"))
+        self.groupBox_2.setTitle(tr("Destination"))
+        self.label_3.setText(tr("Remote:"))
+        self.btnManageRemotes.setText(tr("Manage remotes"))
