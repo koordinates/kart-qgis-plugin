@@ -21,6 +21,7 @@ class KartPlugin(object):
     def __init__(self, iface):
         self.iface = iface
         self.provider = None
+        self.translator = None
 
         # Adds support for internationalization
         locale = QSettings().value("locale/userLocale")
@@ -118,3 +119,6 @@ class KartPlugin(object):
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)
 
         QgsApplication.processingRegistry().removeProvider(self.provider)
+
+        if self.translator:
+            QCoreApplication.removeTranslator(self.translator)
