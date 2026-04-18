@@ -313,6 +313,10 @@ class ConflictsDialog(BASE, WIDGET):
             else:
                 self.resolvedFeatures = None
 
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        self.setWindowTitle(tr("Merge Conflicts"))
+
 
 class ValueItem(QTableWidgetItem):
     def __init__(self, value, conflicted):
@@ -364,6 +368,3 @@ class ConflictItem(QTreeWidgetItem):
         self.fid = fid
         self.path = path
 
-    def retranslateUi(self, *args):
-        """Update translations for UI elements from the .ui file"""
-        self.setWindowTitle(tr("Merge Conflicts"))
