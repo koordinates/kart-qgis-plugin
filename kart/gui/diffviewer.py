@@ -231,7 +231,7 @@ class DiffViewerWidget(WIDGET, BASE):
             Qt.GlobalColor.red,
             Qt.GlobalColor.white,
         ]
-        changeTypeName = ["Added", "Modified", "Removed", "Unchanged"]
+        changeTypeName = [tr("Added"), tr("Modified"), tr("Removed"), tr("Unchanged")]
         self.attributesTable.clear()
         self.attributesTable.verticalHeader().show()
         self.attributesTable.horizontalHeader().show()
@@ -239,7 +239,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.attributesTable.setRowCount(len(labels))
         self.attributesTable.setVerticalHeaderLabels(labels)
         self.attributesTable.setHorizontalHeaderLabels(
-            ["Old value", "New value", "Change type"]
+            [tr("Old value"), tr("New value"), tr("Change type")]
         )
         for i, attrib in enumerate(fields):
             try:
@@ -313,13 +313,13 @@ class DiffViewerWidget(WIDGET, BASE):
             crs = self.workingCopyLayerCrs[dataset]
             datasetItem = DatasetItem(dataset, crs is None)
             addedItem = QTreeWidgetItem()
-            addedItem.setText(0, "Added")
+            addedItem.setText(0, tr("Added"))
             addedItem.setIcon(0, icons.addedIcon)
             removedItem = QTreeWidgetItem()
-            removedItem.setText(0, "Removed")
+            removedItem.setText(0, tr("Removed"))
             removedItem.setIcon(0, icons.removeIcon)
             modifiedItem = QTreeWidgetItem()
-            modifiedItem.setText(0, "Modified")
+            modifiedItem.setText(0, tr("Modified"))
             modifiedItem.setIcon(0, icons.modifiedIcon)
 
             subItems = {"I": addedItem, "U": modifiedItem, "D": removedItem}
@@ -626,37 +626,6 @@ class DiffViewerWidget(WIDGET, BASE):
         self.repo.updateCanvas()
         self.workingLayerChanged.emit()
 
-
-class FeatureItem(QTreeWidgetItem):
-    def __init__(self, fid, old, new, dataset):
-        QTreeWidgetItem.__init__(self)
-        self.setIcon(0, icons.featureIcon)
-        self.setText(0, fid)
-        self.old = old
-        self.new = new
-        self.dataset = dataset
-        self.fid = fid
-
-
-class DatasetItem(QTreeWidgetItem):
-    def __init__(self, dataset, isTable):
-        QTreeWidgetItem.__init__(self)
-        self.dataset = dataset
-        self.setIcon(0, icons.tableIcon if isTable else icons.vectorDatasetIcon)
-        self.setText(0, dataset)
-
-
-class DiffItem(QTableWidgetItem):
-    def __init__(self, value):
-        self.value = value
-        if value is None:
-            s = ""
-        elif isinstance(value, dict):
-            s = value["type"]
-        else:
-            s = str(value)
-        QTableWidgetItem.__init__(self, s)
-
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
         # Tab titles
@@ -692,3 +661,34 @@ class DiffItem(QTableWidgetItem):
         # Buttons
         self.btnRecoverOldVersion.setText(tr("Restore old version"))
         self.btnRecoverNewVersion.setText(tr("Restore new version"))
+
+
+class FeatureItem(QTreeWidgetItem):
+    def __init__(self, fid, old, new, dataset):
+        QTreeWidgetItem.__init__(self)
+        self.setIcon(0, icons.featureIcon)
+        self.setText(0, fid)
+        self.old = old
+        self.new = new
+        self.dataset = dataset
+        self.fid = fid
+
+
+class DatasetItem(QTreeWidgetItem):
+    def __init__(self, dataset, isTable):
+        QTreeWidgetItem.__init__(self)
+        self.dataset = dataset
+        self.setIcon(0, icons.tableIcon if isTable else icons.vectorDatasetIcon)
+        self.setText(0, dataset)
+
+
+class DiffItem(QTableWidgetItem):
+    def __init__(self, value):
+        self.value = value
+        if value is None:
+            s = ""
+        elif isinstance(value, dict):
+            s = value["type"]
+        else:
+            s = str(value)
+        QTableWidgetItem.__init__(self, s)
