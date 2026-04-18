@@ -84,3 +84,10 @@ class RepoPropertiesDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Repository Properties"))
+        self.groupBox.setTitle(tr("Basic properties"))
+        self.label.setText(tr("Title:"))
+        self.label_2.setText(tr("Repository location:"))
+        self.label_3.setText(tr("Working copy location:"))
+        self.grpFilter.setTitle(tr("Spatial filter"))
+        self.chkShowBoundingBox.setText(tr("Show bounding box in canvas"))
+        self.label_4.setText(tr("Bounding box color:"))
