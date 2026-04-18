@@ -520,11 +520,6 @@ WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "historyviewer.ui")
 )
 
-
-def tr(string):
-    return QCoreApplication.translate("Kart", string)
-
-
 class ShallowCloneWarningItem(QTreeWidgetItem):
     def __init__(self, parent):
         QTreeWidgetItem.__init__(self, parent)
@@ -586,8 +581,7 @@ class HistoryDialog(WIDGET, BASE):
         # Window title
         self.setWindowTitle(tr("History"))
 
-        # Date filter labels
-        layout = self.frameHistory.parent().layout().itemAt(0).widget().layout()
-        layout.itemAt(0).widget().setText(tr("From:"))
-        layout.itemAt(2).widget().setText(tr("To:"))
-        layout.itemAt(4).widget().setText(tr("Filter:"))
+        # Date filter labels (named widgets from historyviewer.ui)
+        self.label_2.setText(tr("From:"))
+        self.label.setText(tr("To:"))
+        self.label_3.setText(tr("Filter:"))
