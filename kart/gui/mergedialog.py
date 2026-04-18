@@ -47,3 +47,10 @@ class MergeDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Merge"))
+        self.groupBox.setTitle(tr("From"))
+        self.radioTag.setText(tr("Tag"))
+        self.radioBranch.setText(tr("Branch"))
+        self.grpOptions.setTitle(tr("Options"))
+        self.chkFastForwardOnly.setText(tr("Fast Forward Only"))
+        self.chkNoFastForward.setText(tr("No Fast Forward"))
+        self.grpMessage.setTitle(tr("Merge message"))
