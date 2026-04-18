@@ -53,3 +53,18 @@ class UserConfigDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("User Configuration"))
+        self.label.setText(tr("User name"))
+        self.label_2.setText(tr("User email"))
+        html = (
+            "<html><head/><body>"
+            "<p>{line1}</p>"
+            "<p>{line2}</p>"
+            "</body></html>"
+        ).format(
+            line1=tr("A user is needed to commit changes to a Kart repository."),
+            line2=tr(
+                "No user is currently configured. Please configure it "
+                "entering the following information."
+            ),
+        )
+        self.label_3.setText(html)
