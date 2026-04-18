@@ -28,7 +28,7 @@ from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
 from kart.kartapi import executeskart
-from kart.utils import setting, AUTOCOMMIT
+from kart.utils import setting, AUTOCOMMIT, tr
 from kart.core import RepoManager
 
 
@@ -62,14 +62,14 @@ class LayerTracker:
         self.mapTool.canvasClicked.connect(self.canvasClicked)
         self.mapToolLayer = None
 
-        self.showLogAction = QAction(icons.logIcon, "Show Log...", iface)
+        self.showLogAction = QAction(icons.logIcon, tr("Show Log..."), iface)
         self.showLogAction.triggered.connect(_f(self.showLog))
         iface.addCustomActionForLayerType(
             self.showLogAction, "Kart", QgsMapLayer.LayerType.VectorLayer, False
         )
 
         self.showWorkingTreeChangesAction = QAction(
-            icons.diffIcon, "Show working copy changes...", iface
+            icons.diffIcon, tr("Show working copy changes..."), iface
         )
         self.showWorkingTreeChangesAction.triggered.connect(
             _f(self.showWorkingTreeChanges)
@@ -82,7 +82,7 @@ class LayerTracker:
         )
 
         self.discardWorkingTreeChangesAction = QAction(
-            icons.discardIcon, "Discard working copy changes...", iface
+            icons.discardIcon, tr("Discard working copy changes..."), iface
         )
         self.discardWorkingTreeChangesAction.triggered.connect(
             _f(self.discardWorkingTreeChanges)
@@ -95,7 +95,7 @@ class LayerTracker:
         )
 
         self.commitWorkingTreeChangesAction = QAction(
-            icons.commitIcon, "Commit working copy changes...", iface
+            icons.commitIcon, tr("Commit working copy changes..."), iface
         )
         self.commitWorkingTreeChangesAction.triggered.connect(
             _f(self.commitWorkingTreeChanges)
@@ -108,7 +108,7 @@ class LayerTracker:
         )
 
         self.setMapToolAction = QAction(
-            icons.crossIcon, "Activate 'show feature history' map tool", iface
+            icons.crossIcon, tr("Activate 'show feature history' map tool"), iface
         )
         self.setMapToolAction.triggered.connect(_f(self.setMapTool))
         iface.addCustomActionForLayerType(
@@ -125,7 +125,7 @@ class LayerTracker:
         if len(layers) > 1:
             iface.pushMessage(
                 "Kart",
-                "There are more than one Kart layers selected",
+                tr("There are more than one Kart layers selected"),
                 level=Qgis.MessageLevel.Warning,
             )
             return None, None
@@ -261,7 +261,7 @@ class LayerTracker:
         except StopIteration:
             iface.messageBar().pushMessage(
                 "Kart",
-                "No feature was found at the selected point.",
+                tr("No feature was found at the selected point."),
                 level=Qgis.MessageLevel.Warning,
             )
 
@@ -281,8 +281,8 @@ class LayerTracker:
             hasSchemaChanges = repo.diffHasSchemaChanges(dataset=dataset)
             if hasSchemaChanges:
                 iface.messageBar().pushMessage(
-                    "Changes",
-                    "There are schema changes in the working tree and changes cannot be shown",
+                    tr("Changes"),
+                    tr("There are schema changes in the working tree and changes cannot be shown"),
                     level=Qgis.MessageLevel.Warning,
                 )
                 return
@@ -294,8 +294,8 @@ class LayerTracker:
                 dialog.exec()
             else:
                 iface.messageBar().pushMessage(
-                    "Changes",
-                    "There are no changes in the working copy",
+                    tr("Changes"),
+                    tr("There are no changes in the working copy"),
                     level=Qgis.MessageLevel.Warning,
                 )
 
@@ -306,8 +306,8 @@ class LayerTracker:
             dataset = repo.datasetNameFromLayer(layer)
             repo.restore("HEAD", dataset)
             iface.messageBar().pushMessage(
-                "Discard changes",
-                f"Working copy changes for layer '{layer.name()}' have been discarded",
+                tr("Discard changes"),
+                tr("Working copy changes for layer '{}' have been discarded").format(layer.name()),
                 level=Qgis.MessageLevel.Info,
             )
 
@@ -319,24 +319,24 @@ class LayerTracker:
             changes = repo.changes().get(dataset, {})
             if changes:
                 msg, ok = QInputDialog.getMultiLineText(
-                    iface.mainWindow(), "Commit", "Enter commit message:"
+                    iface.mainWindow(), tr("Commit"), tr("Enter commit message:")
                 )
                 if ok and msg:
                     if repo.commit(msg, dataset=dataset):
                         iface.messageBar().pushMessage(
-                            "Commit",
-                            "Changes correctly committed",
+                            tr("Commit"),
+                            tr("Changes correctly committed"),
                             level=Qgis.MessageLevel.Info,
                         )
                     else:
                         iface.messageBar().pushMessage(
-                            "Commit",
-                            "Changes could not be commited",
+                            tr("Commit"),
+                            tr("Changes could not be committed"),
                             level=Qgis.MessageLevel.Warning,
                         )
             else:
                 iface.messageBar().pushMessage(
-                    "Commit", "Nothing to commit", level=Qgis.MessageLevel.Warning
+                    tr("Commit"), tr("Nothing to commit"), level=Qgis.MessageLevel.Warning
                 )
 
     def layerRemoved(self, layerid):
@@ -351,8 +351,8 @@ class LayerTracker:
                 dataset = repo.datasetNameFromLayer(layer)
                 repo.commit(f"Changed dataset '{dataset}'", dataset=dataset)
                 iface.messageBar().pushMessage(
-                    "Commit",
-                    "Changes correctly committed",
+                    tr("Commit"),
+                    tr("Changes correctly committed"),
                     level=Qgis.MessageLevel.Info,
                 )
 
