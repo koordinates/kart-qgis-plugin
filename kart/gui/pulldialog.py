@@ -69,3 +69,7 @@ class PullDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Pull"))
+        self.groupBox.setTitle(tr("Remote"))
+        self.label.setText(tr("Remote:"))
+        self.label_2.setText(tr("Remote branch:"))
+        self.btnManageRemotes.setText(tr("Manage remotes"))
