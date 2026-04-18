@@ -118,3 +118,10 @@ class ExtentSelectionPanel(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Extent Selection"))
+        self.label_6.setText(tr("Extent:"))
+        self.label_5.setText(tr("CRS:"))
+        self.label.setText(tr("North"))
+        self.label_2.setText(tr("West"))
+        self.label_3.setText(tr("East"))
+        self.label_4.setText(tr("South"))
+        self.btnSetFrom.setText(tr("Set from..."))
