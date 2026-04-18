@@ -40,16 +40,16 @@ class KartPlugin(object):
         self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
 
         self.explorerAction = QAction(tr("Repositories..."), self.iface.mainWindow())
-        self.iface.addPluginToMenu(tr("Kart"), self.explorerAction)
+        self.iface.addPluginToMenu("Kart", self.explorerAction)
         self.explorerAction.triggered.connect(self.showDock)
         self.dock.hide()
 
         self.settingsAction = QAction(tr("Settings..."), self.iface.mainWindow())
-        self.iface.addPluginToMenu(tr("Kart"), self.settingsAction)
+        self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
         self.aboutAction = QAction(tr("About..."), self.iface.mainWindow())
-        self.iface.addPluginToMenu(tr("Kart"), self.aboutAction)
+        self.iface.addPluginToMenu("Kart", self.aboutAction)
         self.aboutAction.triggered.connect(self.openAbout)
 
         self.tracker = LayerTracker.instance()
