@@ -67,3 +67,6 @@ class InitDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("New Repository"))
+        self.groupBox.setTitle(tr("Repository location"))
+        self.label_2.setText(tr("Repository folder"))
+        self.grpLocation.setTitle(tr("Working copy location"))
