@@ -2,6 +2,7 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QWidget
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
