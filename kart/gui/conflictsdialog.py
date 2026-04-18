@@ -318,6 +318,23 @@ class ConflictsDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Merge Conflicts"))
+        self.label.setText(tr("Resolve all conflicts with:"))
+        self.btnSolveAllOurs.setText(tr("Ours"))
+        self.btnSolveAllTheirs.setText(tr("Theirs"))
+        self.label_2.setText(tr("Click on a value to use it in the merged feature"))
+        self.btnSolveOurs.setText(tr("Use values from ours"))
+        self.btnSolveTheirs.setText(tr("Use values from theirs"))
+        self.tableAttributes.setHorizontalHeaderLabels([
+            tr("Ancestor"), tr("Theirs"), tr("Ours"), tr("ATTRIBUTE"), tr("Merged")
+        ])
+        self.btnSolveFeature.setText(tr("Solve feature with table values above"))
+        self.btnDeleteFeature.setText(tr("Delete feature"))
+        self.btnUseAncestor.setText(tr("Use ancestor feature"))
+        self.btnUseModified.setText(tr("Use modified feature"))
+        self.label_3.setText(tr(
+            "This feature has been modified in one of the branches.\n\n"
+            "Select how you want to solve this conflict:"
+        ))
 
 
 class ValueItem(QTableWidgetItem):
