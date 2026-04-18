@@ -148,3 +148,6 @@ class InstallationWarningDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Kart Installation"))
+        self.btnInstall.setText(tr("Install"))
+        self.btnOpenSettings.setText(tr("Open settings"))
+        self.btnClose.setText(tr("Close"))
