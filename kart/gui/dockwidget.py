@@ -156,6 +156,8 @@ class KartDockWidget(BASE, WIDGET):
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
         self.setWindowTitle(tr("Kart repositories"))
         self.label_2.setText(tr("Tip: right-click on items for available actions"))
 

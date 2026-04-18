@@ -628,6 +628,8 @@ class DiffViewerWidget(WIDGET, BASE):
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
         # Tab titles
         self.tabWidget.setTabText(TAB_ATTRIBUTES, tr("Attributes"))
         self.tabWidget.setTabText(TAB_GEOMETRY, tr("Geometries"))

@@ -2,7 +2,7 @@ import os
 
 from qgis.utils import iface
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
+#from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QInputDialog
 
 from kart.kartapi import executeskart
@@ -48,4 +48,16 @@ class SwitchDialog(BASE, WIDGET):
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        # Window Title
         self.setWindowTitle(tr("Switch/Checkout"))
+
+        # GroupBox "Switch to"
+        self.groupBox.setTitle(tr("Switch to"))
+        self.label.setText(tr("Branch"))
+        #self.btnCreateNew.setText(tr("Create New"))
+
+        # GroupBox "Options"
+        self.grpOptions.setTitle(tr("Options"))
+        self.chkForce.setText(tr("Overwrite working copy changes (force)"))

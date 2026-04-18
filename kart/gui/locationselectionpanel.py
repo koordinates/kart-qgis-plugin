@@ -41,4 +41,6 @@ class LocationSelectionPanel(BASE, WIDGET):
 
     def retranslateUi(self, *args):
         """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
         self.setWindowTitle(tr("Location Selection"))
