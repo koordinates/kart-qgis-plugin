@@ -14,6 +14,7 @@ from qgis.utils import iface
 
 from kart.gui.settingsdialog import SettingsDialog
 from kart import logging
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "installationwarningdialog.ui")
