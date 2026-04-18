@@ -627,14 +627,20 @@ class RepoItem(RefreshableItem):
         dialog = PushDialog(self.repo)
         if dialog.exec() == QDialog.DialogCode.Accepted:
             self.repo.push(dialog.remote, dialog.branch, dialog.pushAll)
+
+            if dialog.pushAll:
+                template = tr("Repo changes have been pushed to all branches at {remote}")
+                hint_text = template.format(remote=dialog.remote)
+            else:
+                template = tr("Repo changes have been pushed to {remote}/{branch}")
+                hint_text = template.format(
+                    remote=dialog.remote,
+                    branch=dialog.branch
+                )
+
             iface.messageBar().pushMessage(
                 tr("Push"),
-                tr("Repo changes have been pushed to ")
-                + (
-                    tr(f"all branches at {dialog.remote}")
-                    if dialog.pushAll
-                    else tr(f"{dialog.remote}/{dialog.branch}")
-                ),
+                hint_text,
                 level=Qgis.MessageLevel.Info,
             )
 
