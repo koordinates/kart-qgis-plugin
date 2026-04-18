@@ -100,3 +100,8 @@ class RemotesDialog(BASE, WIDGET):
         super().retranslateUi(self)
 
         self.setWindowTitle(tr("Manage Remotes"))
+        self.label.setText(tr("Remote:"))
+        self.label_2.setText(tr("Remote:"))
+        self.label_3.setText(tr("URL:"))
+        self.btnRemove.setText(tr("Remove"))
+        self.btnAdd.setText(tr("Add New / Save"))
