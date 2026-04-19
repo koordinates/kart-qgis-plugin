@@ -1,18 +1,19 @@
 from qgis.core import (
     QgsProcessingContext,
-    QgsProcessingParameterFile,
+    QgsProcessingOutputMultipleLayers,
     QgsProcessingParameterBoolean,
+    QgsProcessingParameterExtent,
+    QgsProcessingParameterFile,
+    QgsProcessingParameterFolderDestination,
     QgsProcessingParameterNumber,
     QgsProcessingParameterString,
-    QgsProcessingParameterExtent,
-    QgsProcessingParameterFolderDestination,
-    QgsProcessingOutputMultipleLayers,
     QgsReferencedRectangle,
 )
+
 from kart.gui import icons
+from kart.utils import tr
 
 from .base import KartAlgorithm
-from kart.utils import tr
 
 
 class RepoInit(KartAlgorithm):
@@ -28,7 +29,6 @@ class RepoInit(KartAlgorithm):
         return icons.createRepoIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
@@ -67,7 +67,6 @@ class RepoClone(KartAlgorithm):
         return icons.cloneRepoIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterString(
                 self.REPO_CLONE_URL,
@@ -102,15 +101,11 @@ class RepoClone(KartAlgorithm):
         )
 
         self.addParameter(
-            QgsProcessingParameterFolderDestination(
-                self.REPO_OUTPUT_FOLDER, tr("Output folder")
-            )
+            QgsProcessingParameterFolderDestination(self.REPO_OUTPUT_FOLDER, tr("Output folder"))
         )
 
         self.addParameter(
-            QgsProcessingParameterBoolean(
-                self.REPO_ADD_TO_MAP, tr("Add layers to the Map")
-            )
+            QgsProcessingParameterBoolean(self.REPO_ADD_TO_MAP, tr("Add layers to the Map"))
         )
 
         self.addOutput(
@@ -130,9 +125,7 @@ class RepoClone(KartAlgorithm):
         add_layers = self.parameterAsBool(parameters, self.REPO_ADD_TO_MAP, context)
 
         extent_rect = self.parameterAsExtent(parameters, self.REPO_CLONE_DEPTH, context)
-        extent_crs = self.parameterAsExtentCrs(
-            parameters, self.REPO_CLONE_SPATIAL_EXTENT, context
-        )
+        extent_crs = self.parameterAsExtentCrs(parameters, self.REPO_CLONE_SPATIAL_EXTENT, context)
         extent = None
         if parameters.get(self.REPO_CLONE_SPATIAL_EXTENT):
             extent = QgsReferencedRectangle(extent_rect, extent_crs)
@@ -150,9 +143,7 @@ class RepoClone(KartAlgorithm):
 
         if add_layers:
             for layer in layers:
-                context.addLayerToLoadOnCompletion(
-                    layer.id(), QgsProcessingContext.LayerDetails()
-                )
+                context.addLayerToLoadOnCompletion(layer.id(), QgsProcessingContext.LayerDetails())
 
         return {
             self.REPO_OUTPUT_FOLDER: folder,

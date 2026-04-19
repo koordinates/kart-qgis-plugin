@@ -1,4 +1,4 @@
-from qgis.core import QgsMessageLog, Qgis
+from qgis.core import Qgis, QgsMessageLog
 
 DEBUG = True
 MAX_LINES = 20

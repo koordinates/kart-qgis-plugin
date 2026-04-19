@@ -1,21 +1,17 @@
 import os
 
 from qgis.core import Qgis
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.kartapi import executeskart
 from kart.utils import tr
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "remotesdialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "remotesdialog.ui"))
 
 
 class RemotesDialog(BASE, WIDGET):

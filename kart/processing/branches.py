@@ -1,8 +1,9 @@
 from qgis.core import QgsProcessingParameterFile, QgsProcessingParameterString
+
 from kart.gui import icons
+from kart.utils import tr
 
 from .base import KartAlgorithm
-from kart.utils import tr
 
 
 class RepoCreateBranch(KartAlgorithm):
@@ -19,7 +20,6 @@ class RepoCreateBranch(KartAlgorithm):
         return icons.createBranchIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
@@ -63,7 +63,6 @@ class RepoSwitchBranch(KartAlgorithm):
         return icons.checkoutIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
@@ -107,7 +106,6 @@ class RepoDeleteBranch(KartAlgorithm):
         return icons.deleteIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,

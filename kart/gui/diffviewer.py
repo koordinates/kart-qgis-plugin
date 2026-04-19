@@ -1,43 +1,41 @@
 # -*- coding: utf-8 -*-
 
-import os
-import json
 import difflib
-
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal, QCoreApplication
-from qgis.PyQt.QtGui import QColor, QBrush
-from qgis.PyQt.QtWidgets import (
-    QVBoxLayout,
-    QTableWidgetItem,
-    QHeaderView,
-    QTreeWidgetItem,
-    QDialog,
-    QTreeWidgetItemIterator,
-    QSizePolicy,
-)
+import json
+import os
 
 from qgis.core import (
-    edit,
-    QgsProject,
-    QgsFeature,
-    QgsRasterLayer,
-    QgsVectorLayer,
-    QgsJsonUtils,
-    QgsSymbol,
     Qgis,
+    QgsFeature,
     QgsGeometry,
+    QgsJsonUtils,
     QgsPointXY,
+    QgsProject,
+    QgsRasterLayer,
+    QgsSymbol,
+    QgsVectorLayer,
     QgsWkbTypes,
+    edit,
 )
-
+from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtGui import QBrush, QColor
+from qgis.PyQt.QtWidgets import (
+    QDialog,
+    QHeaderView,
+    QSizePolicy,
+    QTableWidgetItem,
+    QTreeWidgetItem,
+    QTreeWidgetItemIterator,
+    QVBoxLayout,
+)
 from qgis.utils import iface
-from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
-
-from .mapswipetool import MapSwipeTool
 
 from kart.gui import icons
-from kart.utils import setting, DIFFSTYLES, tr
+from kart.utils import DIFFSTYLES, setting, tr
+
+from .mapswipetool import MapSwipeTool
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
@@ -55,13 +53,9 @@ TAB_GEOMETRY = 1
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
 
-pointsStyle = os.path.join(
-    pluginPath, "resources", "diff_styles", "geomdiff_points.qml"
-)
+pointsStyle = os.path.join(pluginPath, "resources", "diff_styles", "geomdiff_points.qml")
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui"))
 
 
 class DiffViewerDialog(QDialog):
@@ -94,7 +88,6 @@ class DiffViewerDialog(QDialog):
 
 
 class DiffViewerWidget(WIDGET, BASE):
-
     workingLayerChanged = pyqtSignal()
 
     def __init__(self, diff, repo, showRecoverNewButton):
@@ -307,9 +300,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.featuresTree.clear()
         for dataset, changes in self.diff.items():
             if dataset not in self.workingCopyLayerCrs:
-                self.workingCopyLayerCrs[dataset] = self.repo.workingCopyLayerCrs(
-                    dataset
-                )
+                self.workingCopyLayerCrs[dataset] = self.repo.workingCopyLayerCrs(dataset)
             crs = self.workingCopyLayerCrs[dataset]
             datasetItem = DatasetItem(dataset, crs is None)
             addedItem = QTreeWidgetItem()
@@ -365,12 +356,8 @@ class DiffViewerWidget(WIDGET, BASE):
                     geom = ref["geometry"]
                     if geom is not None:
                         geomtype = geom["type"]
-                        oldLayer = QgsVectorLayer(
-                            f"{geomtype}?crs={crs}", "old", "memory"
-                        )
-                        newLayer = QgsVectorLayer(
-                            f"{geomtype}?crs={crs}", "new", "memory"
-                        )
+                        oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory")
+                        newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory")
                     else:
                         oldLayer = QgsVectorLayer("None", "old", "memory")
                         newLayer = QgsVectorLayer("None", "new", "memory")
@@ -406,9 +393,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.mapTool = QgsMapToolPan(self.canvas)
 
         styleName = setting(DIFFSTYLES) or "standard"
-        typeString = QgsWkbTypes.geometryDisplayString(
-            self.oldLayer.geometryType()
-        ).lower()
+        typeString = QgsWkbTypes.geometryDisplayString(self.oldLayer.geometryType()).lower()
         styleFolder = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
             "resources",
@@ -453,9 +438,7 @@ class DiffViewerWidget(WIDGET, BASE):
             self.sliderTransparency.setValue(50)
             self.setTransparency()
 
-        self.grpTransparency.setVisible(
-            self.comboDiffType.currentIndex() == TRANSPARENCY
-        )
+        self.grpTransparency.setVisible(self.comboDiffType.currentIndex() == TRANSPARENCY)
 
         self.canvas.setMapTool(self.mapTool)
         self.canvas.setLayers(layers)
@@ -495,9 +478,7 @@ class DiffViewerWidget(WIDGET, BASE):
             self.workingCopyLayers[dataset] = self.repo.workingCopyLayer(dataset)
         layer = self.workingCopyLayers[dataset]
         if dataset not in self.workingCopyLayersIdFields:
-            self.workingCopyLayersIdFields[dataset] = self.repo.workingCopyLayerIdField(
-                dataset
-            )
+            self.workingCopyLayersIdFields[dataset] = self.repo.workingCopyLayerIdField(dataset)
         crs = self.workingCopyLayerCrs[dataset]
         idField = self.workingCopyLayersIdFields[dataset]
         ref = new or old
@@ -506,12 +487,8 @@ class DiffViewerWidget(WIDGET, BASE):
         options.skipCrsValidation = True
         if refGeom is not None:
             geomtype = refGeom["type"]
-            self.oldLayer = QgsVectorLayer(
-                f"{geomtype}?crs={crs}", "old", "memory", options
-            )
-            self.newLayer = QgsVectorLayer(
-                f"{geomtype}?crs={crs}", "new", "memory", options
-            )
+            self.oldLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "old", "memory", options)
+            self.newLayer = QgsVectorLayer(f"{geomtype}?crs={crs}", "new", "memory", options)
         else:
             self.oldLayer = QgsVectorLayer("None", "old", "memory", options)
             self.newLayer = QgsVectorLayer("None", "new", "memory", options)
@@ -617,9 +594,7 @@ class DiffViewerWidget(WIDGET, BASE):
         layer = self.workingCopyLayers[self.currentFeatureItem.dataset]
         idField = self.workingCopyLayersIdFields[self.currentFeatureItem.dataset]
         with edit(layer):
-            old = list(
-                layer.getFeatures(f'"{idField}" = {self.currentFeatureItem.fid}')
-            )
+            old = list(layer.getFeatures(f'"{idField}" = {self.currentFeatureItem.fid}'))
             if old:
                 layer.deleteFeature(old[0].id())
             layer.addFeature(new)

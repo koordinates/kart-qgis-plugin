@@ -1,8 +1,9 @@
 from qgis.core import QgsProcessingParameterFile, QgsProcessingParameterString
+
 from kart.gui import icons
+from kart.utils import tr
 
 from .base import KartAlgorithm
-from kart.utils import tr
 
 
 class RepoCreateTag(KartAlgorithm):
@@ -19,7 +20,6 @@ class RepoCreateTag(KartAlgorithm):
         return icons.propertiesIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,

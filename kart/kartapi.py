@@ -5,37 +5,32 @@ import re
 import subprocess
 import sys
 import tempfile
-
-from typing import Optional, List, Callable
 from functools import wraps
-
+from typing import Callable, List, Optional
 from urllib.parse import urlparse
 
+from qgis.core import (
+    Qgis,
+    QgsCoordinateReferenceSystem,
+    QgsDataSourceUri,
+    QgsMessageOutput,
+    QgsProject,
+    QgsRectangle,
+    QgsReferencedRectangle,
+    QgsVectorLayer,
+)
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtWidgets import (
     QApplication,
     QDialog,
 )
-
-from qgis.core import (
-    QgsDataSourceUri,
-    QgsMessageOutput,
-    QgsProject,
-    QgsCoordinateReferenceSystem,
-    QgsRectangle,
-    QgsReferencedRectangle,
-    QgsVectorLayer,
-    Qgis,
-)
 from qgis.utils import iface
 
-from kart.gui.userconfigdialog import UserConfigDialog
-from kart.gui.installationwarningdialog import InstallationWarningDialog
-
-from kart.utils import setting, setSetting, KARTPATH, HELPERMODE, tr
 from kart import logging
-
+from kart.gui.installationwarningdialog import InstallationWarningDialog
+from kart.gui.userconfigdialog import UserConfigDialog
+from kart.utils import HELPERMODE, KARTPATH, setSetting, setting, tr
 
 MINIMUM_SUPPORTED_VERSION = "0.14.0"
 CURRENT_VERSION = "0.17.0"
@@ -70,9 +65,7 @@ def executeskart(f):
                     msglines.append(line)
             errors = "<br>".join(msglines)
             if "You have uncommitted changes" in errors:
-                html_template = (
-                    "<p><b>{text}</b></p>"
-                )
+                html_template = "<p><b>{text}</b></p>"
                 msg = html_template.format(
                     text=tr(
                         "This operation requires a clean working tree. "
@@ -80,9 +73,7 @@ def executeskart(f):
                     )
                 )
             else:
-                html_template = (
-                    "<p><b>{text}</b></p><p style='color:red'>{errors}</p>"
-                )
+                html_template = "<p><b>{text}</b></p><p style='color:red'>{errors}</p>"
                 msg = html_template.format(
                     text=tr("Kart failed with the following message:"),
                     errors=errors,
@@ -113,9 +104,7 @@ def kartExecutable() -> str:
 
 def checkKartInstalled(showMessage=True, useCache=True):
     version = installedVersion(useCache)
-    supported_version_tuple = tuple(
-        int(p) for p in MINIMUM_SUPPORTED_VERSION.split(".")[:3]
-    )
+    supported_version_tuple = tuple(int(p) for p in MINIMUM_SUPPORTED_VERSION.split(".")[:3])
 
     msg = ""
     html_template = (
@@ -123,22 +112,26 @@ def checkKartInstalled(showMessage=True, useCache=True):
         "<p>{hint_text} <a href='https://kartproject.org'>https://kartproject.org</a>.</p>"
     )
 
-    hint_text = tr("Click Install to download and install the latest Kart release. You can also download releases from")
+    hint_text = tr(
+        "Click Install to download and install the latest Kart release. You can also download releases from"
+    )
 
     if version is None:
         msg = html_template.format(
-            main_text=tr("Kart is not installed or your Kart installation location is not correctly configured."),
-            hint_text=hint_text
+            main_text=tr(
+                "Kart is not installed or your Kart installation location is not correctly configured."
+            ),
+            hint_text=hint_text,
         )
     else:
         version_tuple = tuple(int(p) for p in version.split(".")[:3])
         versionOk = version_tuple >= supported_version_tuple
         if not versionOk:
             msg = html_template.format(
-                main_text=tr("The installed Kart version ({version}) is not supported by the plugin. Only versions {min_version} and later are supported.").format(
-                    version=version, min_version=MINIMUM_SUPPORTED_VERSION
-                ),
-                hint_text=hint_text
+                main_text=tr(
+                    "The installed Kart version ({version}) is not supported by the plugin. Only versions {min_version} and later are supported."
+                ).format(version=version, min_version=MINIMUM_SUPPORTED_VERSION),
+                hint_text=hint_text,
             )
 
     if msg:
@@ -183,9 +176,7 @@ def installedVersion(useCache=True):
             if not version.startswith("Kart v"):
                 raise Exception()
             else:
-                versionnum = "".join(
-                    [c for c in version.split(" ")[1] if c.isdigit() or c == "."]
-                )
+                versionnum = "".join([c for c in version.split(" ")[1] if c.isdigit() or c == "."])
                 kartVersion = versionnum
                 kartPath = path
                 return versionnum
@@ -580,8 +571,7 @@ class Repository:
         ret = self.executeKart(commands, True)
         changes = list(ret.values())[0]
         schemaChanges = list(
-            changes.get(name, {}).get("meta", {}).get("schema.json", None)
-            for name in changes
+            changes.get(name, {}).get("meta", {}).get("schema.json", None) for name in changes
         )
         return any(s is not None for s in schemaChanges)
 
@@ -746,9 +736,9 @@ class Repository:
             return layer
 
     def workingCopyLayerIdField(self, dataset):
-        schema = self.executeKart(["meta", "get", dataset, "schema.json"], True)[
-            dataset
-        ]["schema.json"]
+        schema = self.executeKart(["meta", "get", dataset, "schema.json"], True)[dataset][
+            "schema.json"
+        ]
         for attr in schema:
             if attr.get("primaryKeyIndex") == 0:
                 return attr["name"]

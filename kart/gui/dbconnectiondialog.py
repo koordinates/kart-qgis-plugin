@@ -1,24 +1,19 @@
 import os
 
-from qgis.utils import iface
-
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 from qgis.core import (
     Qgis,
     QgsApplication,
     QgsAuthMethodConfig,
 )
-
 from qgis.gui import QgsAuthSettingsWidget, QgsMessageBar
+from qgis.PyQt import uic
+from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.kartapi import Repository
-from kart.utils import waitcursor, tr
+from kart.utils import tr, waitcursor
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "dbconnectiondialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dbconnectiondialog.ui"))
 
 
 class DbConnectionDialog(BASE, WIDGET):
@@ -103,9 +98,7 @@ class DbConnectionDialog(BASE, WIDGET):
             authid = self.authWidget.configId()
             if authid:
                 authConfig = QgsAuthMethodConfig()
-                QgsApplication.authManager().loadAuthenticationConfig(
-                    authid, authConfig, True
-                )
+                QgsApplication.authManager().loadAuthenticationConfig(authid, authConfig, True)
                 username = authConfig.config("username")
                 password = authConfig.config("password")
             else:

@@ -2,11 +2,10 @@
 # (C) 2015 by Hirofumi Hayashi and Luiz Motta
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
-from qgis.PyQt.QtCore import QRect, QLine, Qt, QSize
-from qgis.PyQt.QtGui import QColor, QImage, QPainter
-
 from qgis.core import QgsMapRendererCustomPainterJob, QgsMapSettings
 from qgis.gui import QgsMapCanvasItem
+from qgis.PyQt.QtCore import QLine, QRect, QSize, Qt
+from qgis.PyQt.QtGui import QColor, QImage, QPainter
 
 
 class SwipeMap(QgsMapCanvasItem):

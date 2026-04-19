@@ -1,12 +1,13 @@
 from qgis.core import (
+    QgsProcessingOutputFolder,
     QgsProcessingParameterFile,
     QgsProcessingParameterString,
-    QgsProcessingOutputFolder,
 )
+
 from kart.gui import icons
+from kart.utils import tr
 
 from .base import KartAlgorithm
-from kart.utils import tr
 
 
 class RepoImportData(KartAlgorithm):
@@ -24,7 +25,6 @@ class RepoImportData(KartAlgorithm):
         return icons.importIcon
 
     def initAlgorithm(self, config=None):
-
         self.addParameter(
             QgsProcessingParameterFile(
                 self.REPO_PATH,
@@ -61,9 +61,7 @@ class RepoImportData(KartAlgorithm):
 
         repo_path = self.parameterAsFile(parameters, self.REPO_PATH, context)
         data_path = self.parameterAsFile(parameters, self.REPO_DATA_PATH, context)
-        dataset_name = self.parameterAsString(
-            parameters, self.REPO_DATASET_NAME, context
-        )
+        dataset_name = self.parameterAsString(parameters, self.REPO_DATASET_NAME, context)
 
         repo = Repository(repo_path)
         repo.importIntoRepo(data_path, dataset_name)

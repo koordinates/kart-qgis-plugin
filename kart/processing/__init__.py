@@ -11,7 +11,6 @@ from .tags import RepoCreateTag
 
 class KartProvider(QgsProcessingProvider):
     def loadAlgorithms(self, *args, **kwargs):
-
         self.addAlgorithm(RepoInit())
         self.addAlgorithm(RepoClone())
         self.addAlgorithm(RepoCreateTag())

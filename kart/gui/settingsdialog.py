@@ -1,24 +1,21 @@
 import os
-from qgis.utils import iface
-from qgis.gui import QgsMessageBar
 
+from qgis.gui import QgsMessageBar
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.utils import (
-    setting,
-    setSetting,
-    KARTPATH,
-    HELPERMODE,
     AUTOCOMMIT,
     DIFFSTYLES,
+    HELPERMODE,
+    KARTPATH,
+    setSetting,
+    setting,
     tr,
 )
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "settingsdialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "settingsdialog.ui"))
 
 DIFF_STYLES = ["Standard", "GeoInt"]
 
@@ -50,9 +47,7 @@ class SettingsDialog(BASE, WIDGET):
         self.txtKartPath.setText(setting(KARTPATH))
 
     def browse(self, textbox):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), tr("Select Folder"), ""
-        )
+        folder = QFileDialog.getExistingDirectory(iface.mainWindow(), tr("Select Folder"), "")
         if folder:
             textbox.setText(folder)
 

@@ -1,21 +1,11 @@
-from typing import (
-    Optional,
-    List
-)
-
-from qgis.PyQt.QtCore import (
-    QObject,
-    pyqtSignal
-)
+from typing import List, Optional
 
 from qgis.core import QgsMapLayer
+from qgis.PyQt.QtCore import QObject, pyqtSignal
 
-from kart.utils import setting, setSetting
+from kart.utils import setSetting, setting
 
-from ..kartapi import (
-    Repository,
-    KartException
-)
+from ..kartapi import KartException, Repository
 
 
 class RepoManager(QObject):
@@ -23,13 +13,13 @@ class RepoManager(QObject):
     Manages the local repositories
     """
 
-    _instance: Optional['RepoManager'] = None
+    _instance: Optional["RepoManager"] = None
 
     repo_added = pyqtSignal(Repository)
     repo_removed = pyqtSignal(Repository)
 
     @classmethod
-    def instance(cls) -> 'RepoManager':
+    def instance(cls) -> "RepoManager":
         """
         Returns the repo manager instance
         """

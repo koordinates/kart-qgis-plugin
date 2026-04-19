@@ -2,12 +2,10 @@ import os
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QWidget
+
 from kart.utils import tr
 
-
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "locationselectionpanel.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "locationselectionpanel.ui"))
 
 
 class InvalidLocationException(Exception):

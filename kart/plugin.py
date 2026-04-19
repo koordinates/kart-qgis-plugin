@@ -2,9 +2,8 @@ import configparser
 import os
 import platform
 
-from qgis.core import QgsApplication, QgsProject, Qgis, QgsMessageOutput
-
-from qgis.PyQt.QtCore import Qt, QCoreApplication, QSettings, QTranslator
+from qgis.core import Qgis, QgsApplication, QgsMessageOutput, QgsProject
+from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt, QTranslator
 from qgis.PyQt.QtWidgets import QAction
 
 from kart.gui.dockwidget import KartDockWidget
@@ -36,7 +35,6 @@ class KartPlugin(object):
         QgsApplication.processingRegistry().addProvider(self.provider)
 
     def initGui(self):
-
         self.dock = KartDockWidget()
         self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
 

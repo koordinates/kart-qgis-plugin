@@ -1,18 +1,15 @@
 import os
 
 from qgis.core import Qgis
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.gui.locationselectionpanel import (
-    LocationSelectionPanel,
     InvalidLocationException,
+    LocationSelectionPanel,
 )
-
 from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "initdialog.ui"))
@@ -38,9 +35,7 @@ class InitDialog(BASE, WIDGET):
         self.grpLocation.layout().addWidget(self.locationPanel, 1, 0)
 
     def browse(self):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), tr("Select Folder"), ""
-        )
+        folder = QFileDialog.getExistingDirectory(iface.mainWindow(), tr("Select Folder"), "")
         if folder:
             self.txtFolder.setText(folder)
 
