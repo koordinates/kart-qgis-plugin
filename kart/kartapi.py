@@ -33,7 +33,7 @@ from qgis.utils import iface
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 
-from kart.utils import setting, setSetting, KARTPATH, HELPERMODE
+from kart.utils import setting, setSetting, KARTPATH, HELPERMODE, tr
 from kart import logging
 
 
@@ -70,14 +70,23 @@ def executeskart(f):
                     msglines.append(line)
             errors = "<br>".join(msglines)
             if "You have uncommitted changes" in errors:
-                msg = """<p><b>This operation requires a clean working tree.<br>
-                    Commit or discard your working tree changes and then retry.</b></p>
-                    """
+                html_template = (
+                    "<p><b>{text}</b></p>"
+                )
+                msg = html_template.format(
+                    text=tr(
+                        "This operation requires a clean working tree. "
+                        "Commit or discard your working tree changes and then retry."
+                    )
+                )
             else:
-                msg = f"""
-                    <p><b>Kart failed with the following message:</b></p>
-                    <p style="color:red">{errors}</p>
-                    """
+                html_template = (
+                    "<p><b>{text}</b></p><p style='color:red'>{errors}</p>"
+                )
+                msg = html_template.format(
+                    text=tr("Kart failed with the following message:"),
+                    errors=errors,
+                )
             dlg.setMessage(msg, QgsMessageOutput.MessageType.MessageHtml)
             dlg.showMessage()
 
@@ -107,27 +116,31 @@ def checkKartInstalled(showMessage=True, useCache=True):
     supported_version_tuple = tuple(
         int(p) for p in MINIMUM_SUPPORTED_VERSION.split(".")[:3]
     )
+
     msg = ""
+    html_template = (
+        "<p><b>{main_text}</b></p>"
+        "<p>{hint_text} <a href='https://kartproject.org'>https://kartproject.org</a>.</p>"
+    )
+
+    hint_text = tr("Click Install to download and install the latest Kart release. You can also download releases from")
+
     if version is None:
-        msg = (
-            "<p><b>Kart is not installed or your Kart installation "
-            "location is not correctly configured.</b></p>"
-            "<p>Click Install to download and install the latest Kart release. "
-            "You can also download releases from <a href='https://kartproject.org'>"
-            "https://kartproject.org</a>.</p>"
+        msg = html_template.format(
+            main_text=tr("Kart is not installed or your Kart installation location is not correctly configured."),
+            hint_text=hint_text
         )
     else:
         version_tuple = tuple(int(p) for p in version.split(".")[:3])
         versionOk = version_tuple >= supported_version_tuple
         if not versionOk:
-            msg = (
-                f"<p><b>The installed Kart version ({version}) is not"
-                " supported by the plugin. Only versions "
-                f"{MINIMUM_SUPPORTED_VERSION} and later are supported.<b><p>"
-                "<p>Click Install to download and install the latest Kart release. "
-                "You can also download releases from <a href='https://kartproject.org'>"
-                "https://kartproject.org</a>.</p>"
+            msg = html_template.format(
+                main_text=tr("The installed Kart version ({version}) is not supported by the plugin. Only versions {min_version} and later are supported.").format(
+                    version=version, min_version=MINIMUM_SUPPORTED_VERSION
+                ),
+                hint_text=hint_text
             )
+
     if msg:
         if showMessage:
             dlg = InstallationWarningDialog(msg, CURRENT_VERSION)
@@ -136,15 +149,15 @@ def checkKartInstalled(showMessage=True, useCache=True):
             if installed:
                 setSetting(KARTPATH, "")
                 iface.messageBar().pushMessage(
-                    "Install",
-                    "Kart has been correctly installed",
+                    tr("Install"),
+                    tr("Kart has been correctly installed"),
                     level=Qgis.MessageLevel.Success,
                 )
                 return True
             else:
                 iface.messageBar().pushMessage(
-                    "Install",
-                    "Kart was not installed. Please install it manually.",
+                    tr("Install"),
+                    tr("Kart was not installed. Please install it manually."),
                     level=Qgis.MessageLevel.Warning,
                 )
         return False
@@ -184,9 +197,9 @@ def installedVersion(useCache=True):
 
 def kartVersionDetails():
     path = setting(KARTPATH)
-    errtxt = (
-        f"Kart is not correctly configured or installed. [Kart folder setting: {path}]"
-    )
+    errtxt = tr(
+        "Kart is not correctly configured or installed. [Kart folder setting: {path}]"
+    ).format(path=path)
     try:
         version = executeKart(["--version"], os.path.dirname(__file__))
         if not version.startswith("Kart v"):

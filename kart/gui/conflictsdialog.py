@@ -5,7 +5,7 @@ from qgis.core import Qgis
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QSize, Qt
+from qgis.PyQt.QtCore import QSize, Qt, QCoreApplication
 from qgis.PyQt.QtGui import QFont
 from qgis.PyQt.QtWidgets import (
     QDialog,
@@ -18,6 +18,7 @@ from qgis.PyQt.QtWidgets import (
 )
 
 from kart.gui import icons
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(
@@ -31,6 +32,8 @@ class ConflictsDialog(BASE, WIDGET):
         self.okToMerge = False
         self.conflicts = conflicts
         self.setupUi(self)
+
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -118,8 +121,10 @@ class ConflictsDialog(BASE, WIDGET):
     def solveAllOurs(self):
         ret = QMessageBox.warning(
             self,
-            "Solve conflicts",
-            "Are you sure you want to solve all conflicts using the 'ours' version?",
+            tr("Solve conflicts"),
+            tr(
+                "Are you sure you want to solve all conflicts using the 'ours' version?"
+            ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )
@@ -129,8 +134,10 @@ class ConflictsDialog(BASE, WIDGET):
     def solveAllTheirs(self):
         ret = QMessageBox.warning(
             self,
-            "Solve conflicts",
-            "Are you sure you want to solve all conflicts using the 'theirs' version?",
+            tr("Solve conflicts"),
+            tr(
+                "Are you sure you want to solve all conflicts using the 'theirs' version?"
+            ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes,
         )
@@ -153,7 +160,7 @@ class ConflictsDialog(BASE, WIDGET):
             else:
                 self.bar.pushMessage(
                     "",
-                    "There are still conflicts in the current feature",
+                    tr("There are still conflicts in the current feature"),
                     Qgis.MessageLevel.Warning,
                 )
                 return
@@ -164,7 +171,7 @@ class ConflictsDialog(BASE, WIDGET):
             else:
                 self.bar.pushMessage(
                     "",
-                    "There are still conflicts in the current feature",
+                    tr("There are still conflicts in the current feature"),
                     Qgis.MessageLevel.Warning,
                 )
                 return
@@ -183,8 +190,10 @@ class ConflictsDialog(BASE, WIDGET):
             if not self.treeConflicts.topLevelItemCount():
                 QMessageBox.warning(
                     self,
-                    "Solve conflicts",
-                    "All conflicts are solved. The merge operation will now be closed",
+                    tr("Solve conflicts"),
+                    tr(
+                        "All conflicts are solved. The merge operation will now be closed"
+                    ),
                     QMessageBox.StandardButton.Ok,
                     QMessageBox.StandardButton.Ok,
                 )
@@ -295,14 +304,37 @@ class ConflictsDialog(BASE, WIDGET):
         if not self.okToMerge:
             ret = QMessageBox.warning(
                 self,
-                "Conflict resolution",
-                "Do you really want to exit without resolving conflicts?",
+                tr("Conflict resolution"),
+                tr("Do you really want to exit without resolving conflicts?"),
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             )
             if ret == QMessageBox.StandardButton.No:
                 evnt.ignore()
             else:
                 self.resolvedFeatures = None
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Merge Conflicts"))
+        self.label.setText(tr("Resolve all conflicts with:"))
+        self.btnSolveAllOurs.setText(tr("Ours"))
+        self.btnSolveAllTheirs.setText(tr("Theirs"))
+        self.label_2.setText(tr("Click on a value to use it in the merged feature"))
+        self.btnSolveOurs.setText(tr("Use values from ours"))
+        self.btnSolveTheirs.setText(tr("Use values from theirs"))
+        self.tableAttributes.setHorizontalHeaderLabels([
+            tr("Ancestor"), tr("Theirs"), tr("Ours"), tr("ATTRIBUTE"), tr("Merged")
+        ])
+        self.btnSolveFeature.setText(tr("Solve feature with table values above"))
+        self.btnDeleteFeature.setText(tr("Delete feature"))
+        self.btnUseAncestor.setText(tr("Use ancestor feature"))
+        self.btnUseModified.setText(tr("Use modified feature"))
+        self.label_3.setText(tr(
+            "This feature has been modified in one of the branches.\n\n"
+            "Select how you want to solve this conflict:"
+        ))
 
 
 class ValueItem(QTableWidgetItem):
@@ -354,3 +386,4 @@ class ConflictItem(QTreeWidgetItem):
         self.conflict = conflict
         self.fid = fid
         self.path = path
+

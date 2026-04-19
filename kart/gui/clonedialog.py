@@ -5,7 +5,7 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
 
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
@@ -13,6 +13,8 @@ from kart.gui.locationselectionpanel import (
     LocationSelectionPanel,
     InvalidLocationException,
 )
+
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
 
@@ -22,6 +24,8 @@ class CloneDialog(BASE, WIDGET):
         parent = parent or iface.mainWindow()
         super(QDialog, self).__init__(parent)
         self.setupUi(self)
+
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -48,7 +52,7 @@ class CloneDialog(BASE, WIDGET):
 
     def browse(self, textbox):
         folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), "Select Folder", ""
+            iface.mainWindow(), tr("Select Folder"), ""
         )
         if folder:
             textbox.setText(folder)
@@ -63,7 +67,7 @@ class CloneDialog(BASE, WIDGET):
             self.location = self.locationPanel.location()
         except InvalidLocationException:
             self.bar.pushMessage(
-                "Invalid location definition", Qgis.MessageLevel.Warning, duration=5
+                tr("Invalid location definition"), Qgis.MessageLevel.Warning, duration=5
             )
             return
         self.src = self.txtSrc.text()
@@ -72,7 +76,7 @@ class CloneDialog(BASE, WIDGET):
             self.extent = self.extentPanel.getExtent()
             if self.extent is None:
                 self.bar.pushMessage(
-                    "Invalid extent value", Qgis.MessageLevel.Warning, duration=5
+                    tr("Invalid extent value"), Qgis.MessageLevel.Warning, duration=5
                 )
                 return
         else:
@@ -85,5 +89,21 @@ class CloneDialog(BASE, WIDGET):
             self.accept()
         else:
             self.bar.pushMessage(
-                "Text fields must not be empty", Qgis.MessageLevel.Warning, duration=5
+                tr("Text fields must not be empty"),
+                Qgis.MessageLevel.Warning,
+                duration=5,
             )
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Clone"))
+        self.groupBox.setTitle(tr("Clone existing repository"))
+        self.label.setText(tr("URL of repository to clone:"))
+        self.label_2.setText(tr("Folder to clone to:"))
+        self.groupBox_2.setTitle(tr("Credentials (leave blank if not needed)"))
+        self.label_3.setText(tr("Username"))
+        self.label_4.setText(tr("Password"))
+        self.grpLocation.setTitle(tr("Working copy location"))
+        self.grpFilter.setTitle(tr("Spatial filter"))

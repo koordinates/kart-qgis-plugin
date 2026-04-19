@@ -5,7 +5,7 @@ import json
 import difflib
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, pyqtSignal
+from qgis.PyQt.QtCore import Qt, pyqtSignal, QCoreApplication
 from qgis.PyQt.QtGui import QColor, QBrush
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
@@ -37,7 +37,7 @@ from qgis.gui import QgsMapCanvas, QgsMessageBar, QgsMapToolPan
 from .mapswipetool import MapSwipeTool
 
 from kart.gui import icons
-from kart.utils import setting, DIFFSTYLES
+from kart.utils import setting, DIFFSTYLES, tr
 
 ADDED, MODIFIED, REMOVED, UNCHANGED = 0, 1, 2, 3
 
@@ -78,11 +78,14 @@ class DiffViewerDialog(QDialog):
         layout.addWidget(self.history)
         self.setLayout(layout)
         self.resize(1024, 768)
-        self.setWindowTitle("Diff viewer")
+        self.setWindowTitle(tr("Diff viewer"))
 
     def workingLayerChanged(self):
         self.bar.pushMessage(
-            "Diff", "Working copy has been updated", Qgis.MessageLevel.Success, 5
+            tr("Diff"),
+            tr("Working copy has been updated"),
+            Qgis.MessageLevel.Success,
+            5,
         )
 
     def closeEvent(self, evt):
@@ -113,6 +116,8 @@ class DiffViewerWidget(WIDGET, BASE):
         self.mostRecentTabIndex = None
 
         self.setupUi(self)
+
+        self.retranslateUi()
 
         self.setWindowFlags(self.windowFlags() | Qt.WindowType.WindowSystemMenuHint)
 
@@ -226,7 +231,7 @@ class DiffViewerWidget(WIDGET, BASE):
             Qt.GlobalColor.red,
             Qt.GlobalColor.white,
         ]
-        changeTypeName = ["Added", "Modified", "Removed", "Unchanged"]
+        changeTypeName = [tr("Added"), tr("Modified"), tr("Removed"), tr("Unchanged")]
         self.attributesTable.clear()
         self.attributesTable.verticalHeader().show()
         self.attributesTable.horizontalHeader().show()
@@ -234,7 +239,7 @@ class DiffViewerWidget(WIDGET, BASE):
         self.attributesTable.setRowCount(len(labels))
         self.attributesTable.setVerticalHeaderLabels(labels)
         self.attributesTable.setHorizontalHeaderLabels(
-            ["Old value", "New value", "Change type"]
+            [tr("Old value"), tr("New value"), tr("Change type")]
         )
         for i, attrib in enumerate(fields):
             try:
@@ -308,13 +313,13 @@ class DiffViewerWidget(WIDGET, BASE):
             crs = self.workingCopyLayerCrs[dataset]
             datasetItem = DatasetItem(dataset, crs is None)
             addedItem = QTreeWidgetItem()
-            addedItem.setText(0, "Added")
+            addedItem.setText(0, tr("Added"))
             addedItem.setIcon(0, icons.addedIcon)
             removedItem = QTreeWidgetItem()
-            removedItem.setText(0, "Removed")
+            removedItem.setText(0, tr("Removed"))
             removedItem.setIcon(0, icons.removeIcon)
             modifiedItem = QTreeWidgetItem()
-            modifiedItem.setText(0, "Modified")
+            modifiedItem.setText(0, tr("Modified"))
             modifiedItem.setIcon(0, icons.modifiedIcon)
 
             subItems = {"I": addedItem, "U": modifiedItem, "D": removedItem}
@@ -620,6 +625,42 @@ class DiffViewerWidget(WIDGET, BASE):
             layer.addFeature(new)
         self.repo.updateCanvas()
         self.workingLayerChanged.emit()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        # Tab titles
+        self.tabWidget.setTabText(TAB_ATTRIBUTES, tr("Attributes"))
+        self.tabWidget.setTabText(TAB_GEOMETRY, tr("Geometries"))
+
+        # Table columns
+        self.attributesTable.setHorizontalHeaderLabels(
+            [tr("Old Value"), tr("New Value"), tr("Change type")]
+        )
+
+        # Geometry tab labels (named widgets from diffviewerwidget.ui)
+        self.label.setText(tr("Additional layers:"))
+        self.label_2.setText(tr("Diff type:"))
+
+        # Additional layers combo options
+        self.comboAdditionalLayers.setItemText(PROJECT_LAYERS, tr("Project layers"))
+        self.comboAdditionalLayers.setItemText(OSM_BASEMAP, tr("OSM basemap"))
+        self.comboAdditionalLayers.setItemText(NO_LAYERS, tr("No additional layers"))
+
+        # Diff type combo options
+        self.comboDiffType.setItemText(TRANSPARENCY, tr("Transparency"))
+        self.comboDiffType.setItemText(SWIPE, tr("Swipe"))
+        self.comboDiffType.setItemText(VERTEX_DIFF, tr("Per-vertex diff"))
+
+        # Transparency group and labels
+        self.grpTransparency.setTitle(tr("Transparency"))
+        self.label_3.setText(tr("Old version"))
+        self.label_4.setText(tr("New version"))
+
+        # Buttons
+        self.btnRecoverOldVersion.setText(tr("Restore old version"))
+        self.btnRecoverNewVersion.setText(tr("Restore new version"))
 
 
 class FeatureItem(QTreeWidgetItem):

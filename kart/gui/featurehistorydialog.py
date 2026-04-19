@@ -2,7 +2,7 @@ import os
 import json
 
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import (
     QHBoxLayout,
     QTableWidgetItem,
@@ -24,6 +24,8 @@ from qgis.core import (
 from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
 from qgis.utils import iface
 
+from kart.utils import tr
+
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "featurehistorydialog.ui")
@@ -42,6 +44,9 @@ class FeatureHistoryDialog(BASE, WIDGET):
         self.workingCopyLayerIdField = None
         self.workingCopyLayerCrs = None
         self.setupUi(self)
+
+        self.retranslateUi()
+
         self.setWindowFlags(Qt.WindowType.Window)
 
         self.bar = QgsMessageBar()
@@ -152,8 +157,8 @@ class FeatureHistoryDialog(BASE, WIDGET):
         provider.addFeatures([new])
         self.repo.updateCanvas()
         self.bar.pushMessage(
-            "Feature history",
-            "Working copy has been correctly modified",
+            tr("Feature history"),
+            tr("Working copy has been correctly modified"),
             Qgis.MessageLevel.Success,
             5,
         )
@@ -165,6 +170,19 @@ class FeatureHistoryDialog(BASE, WIDGET):
     def closeEvent(self, evt):
         self.removeLayer()
         evt.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        # Window title
+        self.setWindowTitle(tr("Feature history"))
+
+        # Table columns
+        self.attributesTable.setHorizontalHeaderLabels([tr("ATTRIBUTE"), tr("Value")])
+
+        # Button
+        self.btnRecover.setText(tr("Recover this version into working copy"))
 
 
 class CommitListItem(QListWidgetItem):

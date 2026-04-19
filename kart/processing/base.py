@@ -9,8 +9,5 @@ class KartAlgorithm(QgsProcessingAlgorithm):
     def name(self):
         return f"kart_{self.__class__.__name__.lower()}"
 
-    def tr(self, string):
-        return QCoreApplication.translate("Processing", string)
-
     def initAlgorithm(self, config=None):
         return {}

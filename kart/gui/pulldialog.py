@@ -5,10 +5,12 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 from kart.kartapi import executeskart
 from kart.gui.remotesdialog import RemotesDialog
+from kart.utils import tr
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
@@ -20,6 +22,9 @@ class PullDialog(BASE, WIDGET):
         super(QDialog, self).__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
+
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.bar = QgsMessageBar()
         self.bar.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
@@ -52,9 +57,19 @@ class PullDialog(BASE, WIDGET):
         if not self.remote:
             self.bar.pushMessage(
                 "",
-                "Branch and remote must not be empty",
+                tr("Branch and remote must not be empty"),
                 Qgis.MessageLevel.Warning,
                 duration=5,
             )
         else:
             self.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Pull"))
+        self.groupBox.setTitle(tr("Remote"))
+        self.label.setText(tr("Remote:"))
+        self.label_2.setText(tr("Remote branch:"))
+        self.btnManageRemotes.setText(tr("Manage remotes"))

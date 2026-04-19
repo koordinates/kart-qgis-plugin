@@ -4,6 +4,7 @@ from qgis.utils import iface
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog
+from kart.utils import tr
 
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "mergedialog.ui"))
@@ -13,6 +14,8 @@ class MergeDialog(BASE, WIDGET):
     def __init__(self, repo):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.retranslateUi()
 
         self.comboTag.addItems(repo.tags())
         self.comboBranch.addItems(repo.branches())
@@ -38,3 +41,16 @@ class MergeDialog(BASE, WIDGET):
         self.ffonly = self.chkFastForwardOnly.isChecked()
         self.message = self.txtMessage.toPlainText().strip()
         self.accept()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Merge"))
+        self.groupBox.setTitle(tr("From"))
+        self.radioTag.setText(tr("Tag"))
+        self.radioBranch.setText(tr("Branch"))
+        self.grpOptions.setTitle(tr("Options"))
+        self.chkFastForwardOnly.setText(tr("Fast Forward Only"))
+        self.chkNoFastForward.setText(tr("No Fast Forward"))
+        self.grpMessage.setTitle(tr("Merge message"))

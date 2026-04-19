@@ -4,7 +4,7 @@ import os
 from kart.kartapi import executeskart
 from kart.gui import icons
 from kart.gui.diffviewer import DiffViewerDialog
-from kart.utils import setting, DIFFSTYLES
+from kart.utils import setting, DIFFSTYLES, tr
 
 from qgis.core import Qgis, QgsProject, QgsVectorLayer, QgsWkbTypes
 from qgis.utils import iface
@@ -16,6 +16,7 @@ from qgis.PyQt.QtCore import (
     QPoint,
     QRectF,
     QDateTime,
+    QCoreApplication,
 )
 from qgis.PyQt.QtGui import (
     QPixmap,
@@ -76,7 +77,14 @@ class HistoryTree(QTreeWidget):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         # self.header().setStretchLastSection(True)
         self.setHeaderLabels(
-            ["Graph", "Refs", "Description", "Author", "Date", "CommitID"]
+            [
+                tr("Graph"),
+                tr("Refs"),
+                tr("Description"),
+                tr("Author"),
+                tr("Date"),
+                tr("CommitID"),
+            ]
         )
         self.customContextMenuRequested.connect(self._showPopupMenu)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -98,7 +106,7 @@ class HistoryTree(QTreeWidget):
             actions = {}
             parents = item.commit["parents"]
             if len(parents) == 1:
-                actions["Show changes introduced by this commit..."] = (
+                actions[tr("Show changes introduced by this commit...")] = (
                     _f(
                         self.showChangesBetweenCommits,
                         item.commit["commit"],
@@ -106,21 +114,21 @@ class HistoryTree(QTreeWidget):
                     ),
                     icons.diffIcon,
                 )
-                actions["Save changes as patch..."] = (
+                actions[tr("Save changes as patch...")] = (
                     _f(
                         self.savePatch,
                         item.commit["commit"],
                     ),
                     icons.patchIcon,
                 )
-                actions["Add changes to current QGIS project as vector layer"] = (
+                actions[tr("Add changes to current QGIS project as vector layer")] = (
                     _f(self.saveAsLayer, item.commit["commit"], parents[0]),
                     icons.addtoQgisIcon,
                 )
             elif len(parents) > 1:
                 for parent in parents:
                     actions[
-                        f"Show diff between this commit and parent {parent[:7]}..."
+                        tr(f"Show diff between this commit and parent {parent[:7]}...")
                     ] = (
                         _f(
                             self.showChangesBetweenCommits,
@@ -131,19 +139,19 @@ class HistoryTree(QTreeWidget):
                     )
             actions.update(
                 {
-                    "Reset current branch to this commit": (
+                    tr("Reset current branch to this commit"): (
                         _f(self.resetBranch, item),
                         icons.resetIcon,
                     ),
-                    "Create branch at this commit...": (
+                    tr("Create branch at this commit..."): (
                         _f(self.createBranch, item),
                         icons.createBranchIcon,
                     ),
-                    "Create tag at this commit...": (
+                    tr("Create tag at this commit..."): (
                         _f(self.createTag, item),
                         icons.createTagIcon,
                     ),
-                    "Restore working tree datasets to this version...": (
+                    tr("Restore working tree datasets to this version..."): (
                         _f(self.restoreDatasets, item),
                         icons.restoreIcon,
                     ),
@@ -155,16 +163,16 @@ class HistoryTree(QTreeWidget):
                     continue
                 elif "tag:" in ref:
                     tag = ref[4:].strip()
-                    actions[f"Delete tag '{tag}'"] = (
+                    actions[tr(f"Delete tag '{tag}'")] = (
                         _f(self.deleteTag, tag),
                         icons.deleteIcon,
                     )
                 else:
-                    actions[f"Switch to branch '{ref}'"] = (
+                    actions[tr(f"Switch to branch '{ref}'")] = (
                         _f(self.switchBranch, ref),
                         icons.checkoutIcon,
                     )
-                    actions[f"Delete branch '{ref}'"] = (
+                    actions[tr(f"Delete branch '{ref}'")] = (
                         _f(self.deleteBranch, ref),
                         icons.deleteIcon,
                     )
@@ -172,7 +180,7 @@ class HistoryTree(QTreeWidget):
             itema = selected[0]
             itemb = selected[1]
             actions = {
-                "Show changes between these commits...": (
+                tr("Show changes between these commits..."): (
                     _f(
                         self.showChangesBetweenCommits,
                         itema.commit["commit"],
@@ -195,39 +203,41 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def createTag(self, item):
         name, ok = QInputDialog.getText(
-            self, "Create tag", "Enter name of tag to create"
+            self, tr("Create tag"), tr("Enter name of tag to create")
         )
         if ok and name:
             self.repo.createTag(name, item.commit["commit"])
-            self.message("Tag correctly created", Qgis.MessageLevel.Info)
+            self.message(tr("Tag correctly created"), Qgis.MessageLevel.Info)
             self.populate()
 
     @executeskart
     def deleteTag(self, tag):
         self.repo.deleteTag(tag)
-        self.message(f"Correctly deleted tag '{tag}'", Qgis.MessageLevel.Info)
+        self.message(tr(f"Correctly deleted tag '{tag}'"), Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
     def switchBranch(self, branch):
         self.repo.checkoutBranch(branch)
-        self.message(f"Correctly switched to branch '{branch}'", Qgis.MessageLevel.Info)
+        self.message(
+            tr(f"Correctly switched to branch '{branch}'"), Qgis.MessageLevel.Info
+        )
         self.populate()
 
     @executeskart
     def deleteBranch(self, branch):
         self.repo.deleteBranch(branch)
-        self.message(f"Correctly deleted branch '{branch}'", Qgis.MessageLevel.Info)
+        self.message(tr(f"Correctly deleted branch '{branch}'"), Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
     def createBranch(self, item):
         name, ok = QInputDialog.getText(
-            self, "Create branch", "Enter name of branch to create"
+            self, tr("Create branch"), tr("Enter name of branch to create")
         )
         if ok and name:
             self.repo.createBranch(name, item.commit["commit"])
-            self.message("Branch correctly created", Qgis.MessageLevel.Info)
+            self.message(tr("Branch correctly created"), Qgis.MessageLevel.Info)
             self.populate()
 
     @executeskart
@@ -236,7 +246,9 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, parent)
         if hasSchemaChanges:
             self.message(
-                "There are schema changes in the selected commit and changes cannot be shown",
+                tr(
+                    "There are schema changes in the selected commit and changes cannot be shown"
+                ),
                 Qgis.MessageLevel.Warning,
             )
             return
@@ -249,8 +261,10 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, refb)
         if hasSchemaChanges:
             self.message(
-                "There are schema changes between the selected commits "
-                "and changes cannot be shown",
+                tr(
+                    "There are schema changes between the selected commits "
+                    "and changes cannot be shown"
+                ),
                 Qgis.MessageLevel.Warning,
             )
             return
@@ -262,9 +276,9 @@ class HistoryTree(QTreeWidget):
     def savePatch(self, ref):
         filename, _ = QFileDialog.getSaveFileName(
             iface.mainWindow(),
-            "Patch file",
+            tr("Patch file"),
             "",
-            "Patch files (*.patch);;All files (*.*)",
+            tr("Patch files (*.patch);;All files (*.*)"),
         )
         self.repo.createPatch(ref, filename)
 
@@ -273,8 +287,10 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refb, refa)
         if hasSchemaChanges:
             self.message(
-                "There are schema changes between the selected commits "
-                "and changes cannot be saved as a layer",
+                tr(
+                    "There are schema changes between the selected commits "
+                    "and changes cannot be saved as a layer"
+                ),
                 Qgis.MessageLevel.Warning,
             )
             return
@@ -300,21 +316,21 @@ class HistoryTree(QTreeWidget):
     def resetBranch(self, item):
         self.repo.reset(item.commit["commit"])
         self.message(
-            "Branch correctly reset to selected commit", Qgis.MessageLevel.Info
+            tr("Branch correctly reset to selected commit"), Qgis.MessageLevel.Info
         )
         self.populate()
 
     @executeskart
     def restoreDatasets(self, item):
-        ALL_DATASETS = "Restore all datasets"
+        ALL_DATASETS = tr("Restore all datasets")
         vectorLayers, tables = self.repo.datasets()
         datasets = [ALL_DATASETS]
         datasets.extend(vectorLayers)
         datasets.extend(tables)
         dataset, ok = QInputDialog.getItem(
             iface.mainWindow(),
-            "Restore",
-            "Select dataset to restore:",
+            tr("Restore"),
+            tr("Select dataset to restore:"),
             datasets,
             editable=False,
         )
@@ -323,7 +339,7 @@ class HistoryTree(QTreeWidget):
                 dataset = None
             self.repo.restore(item.commit["commit"], dataset)
             self.message(
-                "Selected dataset(s) correctly restored in working copy",
+                tr("Selected dataset(s) correctly restored in working copy"),
                 Qgis.MessageLevel.Info,
             )
 
@@ -504,11 +520,10 @@ WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "historyviewer.ui")
 )
 
-
 class ShallowCloneWarningItem(QTreeWidgetItem):
     def __init__(self, parent):
         QTreeWidgetItem.__init__(self, parent)
-        message = (
+        message = tr(
             "This repository is a shallow clone, "
             "history past this point is not available locally"
         )
@@ -520,6 +535,9 @@ class HistoryDialog(WIDGET, BASE):
     def __init__(self, repo, dataset=None):
         super(HistoryDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.retranslateUi()
+
         self.setWindowFlags(Qt.WindowType.Window)
 
         self.dateEditStart.setDateTime(QDateTime.fromSecsSinceEpoch(0))
@@ -555,3 +573,15 @@ class HistoryDialog(WIDGET, BASE):
         startDate = self.dateEditStart.date()
         endDate = self.dateEditEnd.date()
         self.history.filterCommits(self.txtFilter.text(), startDate, endDate)
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        # Window title
+        self.setWindowTitle(tr("History"))
+
+        # Date filter labels (named widgets from historyviewer.ui)
+        self.label_2.setText(tr("From:"))
+        self.label.setText(tr("To:"))
+        self.label_3.setText(tr("Filter:"))

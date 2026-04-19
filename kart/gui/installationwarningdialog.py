@@ -14,6 +14,7 @@ from qgis.utils import iface
 
 from kart.gui.settingsdialog import SettingsDialog
 from kart import logging
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "installationwarningdialog.ui")
@@ -107,6 +108,8 @@ class InstallationWarningDialog(BASE, WIDGET):
     def __init__(self, msg: str, version: str):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        self.retranslateUi()
         self.version = version
         self.widgetDownload.setVisible(False)
         self.btnInstall.clicked.connect(self.install)
@@ -139,3 +142,12 @@ class InstallationWarningDialog(BASE, WIDGET):
         self.accept()
         dlg = SettingsDialog()
         dlg.exec()
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Kart Installation"))
+        self.btnInstall.setText(tr("Install"))
+        self.btnOpenSettings.setText(tr("Open settings"))
+        self.btnClose.setText(tr("Close"))

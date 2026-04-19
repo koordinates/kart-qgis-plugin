@@ -5,12 +5,14 @@ from qgis.utils import iface
 from qgis.gui import QgsMessageBar
 
 from qgis.PyQt import uic
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
 
 
 from kart.layers import LayerTracker
 from kart.kartapi import executeskart
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui")
@@ -21,6 +23,9 @@ class RepoPropertiesDialog(BASE, WIDGET):
     def __init__(self, repo):
         super(QDialog, self).__init__(iface.mainWindow())
         self.setupUi(self)
+
+        # Initialize translations for UI elements defined in the .ui file
+        self.retranslateUi()
 
         self.repo = repo
 
@@ -62,7 +67,7 @@ class RepoPropertiesDialog(BASE, WIDGET):
             extent = self.extentPanel.getExtent()
             if extent is None:
                 self.bar.pushMessage(
-                    "Invalid extent value", Qgis.MessageLevel.Warning, duration=5
+                    tr("Invalid extent value"), Qgis.MessageLevel.Warning, duration=5
                 )
                 return
         else:
@@ -73,3 +78,16 @@ class RepoPropertiesDialog(BASE, WIDGET):
 
     def showBoundingBoxStateChanged(self, _):
         self.btnColor.setEnabled(self.chkShowBoundingBox.isChecked())
+
+    def retranslateUi(self, *args):
+        """Update translations for UI elements from the .ui file"""
+        super().retranslateUi(self)
+
+        self.setWindowTitle(tr("Repository Properties"))
+        self.groupBox.setTitle(tr("Basic properties"))
+        self.label.setText(tr("Title:"))
+        self.label_2.setText(tr("Repository location:"))
+        self.label_3.setText(tr("Working copy location:"))
+        self.grpFilter.setTitle(tr("Spatial filter"))
+        self.chkShowBoundingBox.setText(tr("Show bounding box in canvas"))
+        self.label_4.setText(tr("Bounding box color:"))
