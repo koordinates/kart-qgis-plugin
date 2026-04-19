@@ -3,12 +3,21 @@
 ---
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        # Qt translation files must preserve source strings byte-for-byte
+        # (they're keyed off the exact Python string, including trailing
+        # spaces before \n).
+        exclude: '^kart/i18n/.*\.ts$'
       - id: check-yaml
       - id: check-json
-  - repo: https://github.com/psf/black
-    rev: "22.6.0"
+
+  # NOTE: keep this version in sync with .github/workflows/lint.yml
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
     hooks:
-      - id: black
+      - id: ruff-check
+        # Run both the linter (with --fix) and formatter via a custom script
+        # so autofixes are committed automatically.
+        entry: ".hooks/kx-ruff.py"

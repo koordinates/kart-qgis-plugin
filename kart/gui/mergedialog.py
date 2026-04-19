@@ -1,11 +1,10 @@
 import os
 
-from qgis.utils import iface
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtWidgets import QDialog
-from kart.utils import tr
+from qgis.utils import iface
 
+from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "mergedialog.ui"))
 

@@ -1,0 +1,10 @@
+[tool.ruff]
+line-length = 99
+extend-exclude = ["helper.py"]
+
+[tool.ruff.lint]
+# Default ruff rules are a subset of flake8 (E4, E7, E9, F). Keep it close to
+# the previous flake8 config so this swap doesn't broaden scope.
+# "I" enables ruff's isort-equivalent import sorting.
+extend-select = ["I"]
+extend-ignore = ["E203"]

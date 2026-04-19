@@ -1,18 +1,14 @@
 import os
-
-from qgis.PyQt.QtCore import (
-    Qt,
-    QCoreApplication,
-    QSettings,
-    QTranslator,
-    QT_TRANSLATE_NOOP,
-)
-from qgis.PyQt.QtWidgets import QProgressBar, QLabel, QMessageBox, QApplication
-from qgis.core import QgsProject, Qgis
-from qgis.utils import iface as qgisiface
-
 from contextlib import contextmanager
 
+from qgis.core import Qgis, QgsProject
+from qgis.PyQt.QtCore import (
+    QCoreApplication,
+    QSettings,
+    Qt,
+)
+from qgis.PyQt.QtWidgets import QApplication, QLabel, QMessageBox, QProgressBar
+from qgis.utils import iface as qgisiface
 
 # This can be further patched using the test.utils module
 iface = qgisiface
@@ -37,9 +33,7 @@ class ProgressBar:
         self.progress = QProgressBar()
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
-        self.progress.setAlignment(
-            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
-        )
+        self.progress.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.progressMessageBar.layout().addWidget(self.progress)
         iface.messageBar().pushWidget(self.progressMessageBar, Qgis.MessageLevel.Info)
         QCoreApplication.processEvents()
@@ -112,7 +106,7 @@ def setSetting(name, value):
 
 def setting(name):
     v = QSettings().value(f"{NAMESPACE}/{name}", None)
-    if setting_types.get(name, str) == bool:
+    if setting_types.get(name, str) is bool:
         return str(v).lower() == str(True).lower()
     else:
         return v

@@ -1,68 +1,65 @@
+import math
 import os
 import re
-import math
 import tempfile
 from functools import partial
 
+from qgis.core import (
+    Qgis,
+    QgsMimeDataUtils,
+    QgsProject,
+    QgsVectorFileWriter,
+    QgsVectorLayer,
+)
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    Qt,
-    QMimeData,
     QByteArray,
     QDataStream,
     QIODevice,
-    QCoreApplication,
+    QMimeData,
+    Qt,
 )
-
 from qgis.PyQt.QtWidgets import (
-    QDockWidget,
-    QTreeWidgetItem,
     QAbstractItemView,
-    QFileDialog,
     QAction,
-    QMenu,
-    QInputDialog,
-    QMessageBox,
     QDialog,
+    QDockWidget,
+    QFileDialog,
+    QInputDialog,
+    QMenu,
+    QMessageBox,
+    QTreeWidgetItem,
 )
-
 from qgis.utils import iface
-from qgis.core import (
-    Qgis,
-    QgsVectorLayer,
-    QgsVectorFileWriter,
-    QgsProject,
-    QgsMimeDataUtils,
-)
 
 from kart.core import RepoManager
-from kart.kartapi import (
-    Repository,
-    executeskart,
-    KartException,
-    checkKartInstalled,
-)
 from kart.gui import icons
+from kart.gui.clonedialog import CloneDialog
+from kart.gui.conflictsdialog import ConflictsDialog
+from kart.gui.dbconnectiondialog import DbConnectionDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
-from kart.gui.conflictsdialog import ConflictsDialog
-from kart.gui.clonedialog import CloneDialog
-from kart.gui.pushdialog import PushDialog
-from kart.gui.pulldialog import PullDialog
 from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
-from kart.gui.switchdialog import SwitchDialog
+from kart.gui.pulldialog import PullDialog
+from kart.gui.pushdialog import PushDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
-from kart.gui.dbconnectiondialog import DbConnectionDialog
+from kart.gui.switchdialog import SwitchDialog
+from kart.kartapi import (
+    KartException,
+    Repository,
+    checkKartInstalled,
+    executeskart,
+)
 from kart.utils import (
-    layerFromSource,
-    confirm,
-    setting,
-    setSetting,
     LASTREPO,
-    waitcursor,
+    confirm,
+    layerFromSource,
     progressBar,
+    setSetting,
+    setting,
     tr,
+    waitcursor,
 )
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -203,9 +200,7 @@ class ReposItem(RefreshableItem):
         return actions
 
     def addRepo(self):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), tr("Repository Folder"), ""
-        )
+        folder = QFileDialog.getExistingDirectory(iface.mainWindow(), tr("Repository Folder"), "")
         if folder:
             repo = Repository(folder)
             if repo.isInitialized():
@@ -257,14 +252,10 @@ class ReposItem(RefreshableItem):
             if "Writing dataset" in line:
                 datasetname = line.split(":")[-1].strip()
                 bar.setText(tr(f"Checking out layer '{datasetname}'"))
-            elif line.startswith("Receiving objects: ") or line.startswith(
-                "Writing objects: "
-            ):
+            elif line.startswith("Receiving objects: ") or line.startswith("Writing objects: "):
                 tokens = line.split(": ")
                 bar.setText(tokens[0])
-                bar.setValue(
-                    math.floor(float(tokens[1][1 : tokens[1].find("%")].strip()))
-                )
+                bar.setValue(math.floor(float(tokens[1][1 : tokens[1].find("%")].strip())))
             else:
                 msg = line.split(" - ")[-1]
                 if "%" in msg:
@@ -505,9 +496,7 @@ class RepoItem(RefreshableItem):
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 tr("Changes"),
-                tr(
-                    "There are schema changes in the working copy and changes cannot be shown"
-                ),
+                tr("There are schema changes in the working copy and changes cannot be shown"),
                 level=Qgis.MessageLevel.Warning,
             )
             return
@@ -633,10 +622,7 @@ class RepoItem(RefreshableItem):
                 hint_text = template.format(remote=dialog.remote)
             else:
                 template = tr("Repo changes have been pushed to {remote}/{branch}")
-                hint_text = template.format(
-                    remote=dialog.remote,
-                    branch=dialog.branch
-                )
+                hint_text = template.format(remote=dialog.remote, branch=dialog.branch)
 
             iface.messageBar().pushMessage(
                 tr("Push"),
@@ -782,9 +768,7 @@ class DatasetItem(QTreeWidgetItem):
         if hasSchemaChanges:
             iface.messageBar().pushMessage(
                 tr("Changes"),
-                tr(
-                    "There are schema changes in the working copy and changes cannot be shown"
-                ),
+                tr("There are schema changes in the working copy and changes cannot be shown"),
                 level=Qgis.MessageLevel.Warning,
             )
             return
@@ -804,9 +788,7 @@ class DatasetItem(QTreeWidgetItem):
     @executeskart
     def discardChanges(self):
         if confirm(
-            tr(
-                "Are you sure you want to discard the working copy changes for this dataset?"
-            )
+            tr("Are you sure you want to discard the working copy changes for this dataset?")
         ):
             self.repo.restore("HEAD", self.name)
             iface.messageBar().pushMessage(
@@ -852,10 +834,7 @@ class DatasetItem(QTreeWidgetItem):
                 "Do you want to continue?"
             )
         else:
-            msg = tr(
-                "The dataset will be removed from the repository.\n"
-                "Do you want to continue?"
-            )
+            msg = tr("The dataset will be removed from the repository.\nDo you want to continue?")
 
         ret = QMessageBox.warning(
             iface.mainWindow(),

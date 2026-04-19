@@ -2,10 +2,9 @@
 # (C) 2015 by Hirofumi Hayashi and Luiz Motta
 # email: hayashi@apptec.co.jp and motta.luiz@gmail.com
 
-from qgis.PyQt.QtCore import Qt, QPoint
-from qgis.PyQt.QtGui import QCursor
-
 from qgis.gui import QgsMapTool
+from qgis.PyQt.QtCore import QPoint, Qt
+from qgis.PyQt.QtGui import QCursor
 
 from .swipemap import SwipeMap
 
@@ -68,15 +67,9 @@ class MapSwipeTool(QgsMapTool):
 
             self.swipe.setLength(e.x(), e.y())
         else:
-            length = (
-                e.x()
-                if self.swipe.isVertical
-                else self.swipe.boundingRect().height() - e.y()
-            )
+            length = e.x() if self.swipe.isVertical else self.swipe.boundingRect().height() - e.y()
             if self.swipe.length != 0 and abs(self.swipe.length - length) < THRESHOLD:
-                self.canvas().setCursor(
-                    self.cursorH if self.swipe.isVertical else self.cursorV
-                )
+                self.canvas().setCursor(self.cursorH if self.swipe.isVertical else self.cursorV)
             else:
                 self.canvas().setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
 

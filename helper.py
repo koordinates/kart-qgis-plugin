@@ -6,12 +6,10 @@ import os
 import re
 import shutil
 import sys
-import urllib.parse
 import xmlrpc.client
 import zipfile
 import subprocess
 import glob
-import re
 from configparser import ConfigParser
 from io import StringIO
 
@@ -142,7 +140,7 @@ def publish(archive):
     with open(archive, "rb") as fd:
         blob = xmlrpc.client.Binary(fd.read())
     conn.plugin.upload(blob)
-    print(f"Upload complete")
+    print("Upload complete")
 
 
 def usage():

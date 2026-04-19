@@ -1,19 +1,18 @@
 import os
-import requests
 import shutil
 import subprocess
 import sys
 import tempfile
 import webbrowser
 
-from qgis.PyQt.QtWidgets import QDialog
-from qgis.PyQt.QtCore import QThread, Qt, pyqtSignal, QEventLoop
+import requests
 from qgis.PyQt import uic
-
+from qgis.PyQt.QtCore import QEventLoop, Qt, QThread, pyqtSignal
+from qgis.PyQt.QtWidgets import QDialog
 from qgis.utils import iface
 
-from kart.gui.settingsdialog import SettingsDialog
 from kart import logging
+from kart.gui.settingsdialog import SettingsDialog
 from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(
@@ -28,7 +27,6 @@ MACOS_FILE = "Kart-{version}-macOS-{arch}.pkg"
 
 
 class DownloadAndInstallThread(QThread):
-
     downloadProgressChanged = pyqtSignal(int)
     downloadFinished = pyqtSignal()
     finished = pyqtSignal()

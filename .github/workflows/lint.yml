@@ -3,7 +3,7 @@ name: Linting
 on: [push, pull_request]
 
 jobs:
-  flake8-lint:
+  ruff-lint:
     name: Lint
     runs-on: ubuntu-latest
 
@@ -11,10 +11,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # NOTE: keep these versions in sync with .pre-commmit-config.yaml
+      - name: ruff check
+        uses: astral-sh/ruff-action@v4.0.0
         with:
-          python-version: "3.11"
-
-      - name: flake8 Lint
-        uses: py-actions/flake8@v1
+          version: "0.15.11"
+          args: "check"
+      - name: ruff format
+        uses: astral-sh/ruff-action@v4.0.0
+        with:
+          version: "0.15.11"
+          args: "format --check"

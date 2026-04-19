@@ -1,35 +1,31 @@
-import os
 import json
-
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QCoreApplication
-from qgis.PyQt.QtWidgets import (
-    QHBoxLayout,
-    QTableWidgetItem,
-    QListWidgetItem,
-    QSizePolicy,
-)
-from qgis.PyQt.QtGui import QFont
+import os
 
 from qgis.core import (
-    edit,
     Qgis,
-    QgsSymbol,
-    QgsSingleSymbolRenderer,
-    QgsWkbTypes,
-    QgsProject,
     QgsJsonUtils,
+    QgsProject,
+    QgsSingleSymbolRenderer,
+    QgsSymbol,
     QgsVectorLayer,
+    QgsWkbTypes,
+    edit,
 )
 from qgis.gui import QgsMapCanvas, QgsMapToolPan, QgsMessageBar
+from qgis.PyQt import uic
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtGui import QFont
+from qgis.PyQt.QtWidgets import (
+    QHBoxLayout,
+    QListWidgetItem,
+    QSizePolicy,
+    QTableWidgetItem,
+)
 from qgis.utils import iface
 
 from kart.utils import tr
 
-
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "featurehistorydialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "featurehistorydialog.ui"))
 
 
 class FeatureHistoryDialog(BASE, WIDGET):
@@ -118,9 +114,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         geomtype = QgsWkbTypes.displayString(geom.wkbType())
         if self.workingCopyLayerCrs is None:
             self.workingCopyLayerCrs = self.repo.workingCopyLayerCrs(self.dataset)
-        self.layer = QgsVectorLayer(
-            f"{geomtype}?crs={self.workingCopyLayerCrs}", "temp", "memory"
-        )
+        self.layer = QgsVectorLayer(f"{geomtype}?crs={self.workingCopyLayerCrs}", "temp", "memory")
         self.layer.dataProvider().addAttributes(self.workingCopyLayer.fields().toList())
         self.layer.updateFields()
         with edit(self.layer):
@@ -143,14 +137,10 @@ class FeatureHistoryDialog(BASE, WIDGET):
     def recoverVersion(self):
         new = list(self.layer.getFeatures())[0]
         if self.workingCopyLayerIdField is None:
-            self.workingCopyLayerIdField = self.repo.workingCopyLayerIdField(
-                self.dataset
-            )
+            self.workingCopyLayerIdField = self.repo.workingCopyLayerIdField(self.dataset)
         provider = self.workingCopyLayer.dataProvider()
         old = list(
-            self.workingCopyLayer.getFeatures(
-                f'"{self.workingCopyLayerIdField}" = {self.fid}'
-            )
+            self.workingCopyLayer.getFeatures(f'"{self.workingCopyLayerIdField}" = {self.fid}')
         )
         if old:
             provider.deleteFeatures([old[0].id()])
@@ -195,7 +185,7 @@ class CommitListItem(QListWidgetItem):
         self.fid = fid
         self._feature = None
         self._oldFeature = None
-        self.setText(f'{commit["message"].splitlines()[0]}')
+        self.setText(f"{commit['message'].splitlines()[0]}")
 
     def feature(self):
         self._createFeatures()

@@ -1,17 +1,15 @@
 import os
 
-from qgis.utils import iface
 from qgis.PyQt import uic
-#from qgis.PyQt.QtCore import QCoreApplication
+
+# from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QInputDialog
+from qgis.utils import iface
 
 from kart.kartapi import executeskart
 from kart.utils import tr
 
-
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "switchdialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "switchdialog.ui"))
 
 
 class SwitchDialog(BASE, WIDGET):
@@ -19,7 +17,7 @@ class SwitchDialog(BASE, WIDGET):
         super().__init__(iface.mainWindow())
         self.repo = repo
         self.setupUi(self)
-        
+
         # Initialize translations for UI elements defined in the .ui file
         self.retranslateUi()
 

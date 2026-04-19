@@ -1,29 +1,24 @@
 import os
 
-from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
-from qgis.PyQt.QtWidgets import (
-    QMenu,
-    QAction,
-)
-from qgis.PyQt.QtGui import QCursor
-
-from qgis.utils import iface
+from processing.gui.ExtentSelectionPanel import LayerSelectionDialog
+from processing.gui.RectangleMapTool import RectangleMapTool
 from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsProject,
     QgsRectangle,
     QgsReferencedRectangle,
 )
-
-from processing.gui.ExtentSelectionPanel import LayerSelectionDialog
-from processing.gui.RectangleMapTool import RectangleMapTool
+from qgis.PyQt import uic
+from qgis.PyQt.QtGui import QCursor
+from qgis.PyQt.QtWidgets import (
+    QAction,
+    QMenu,
+)
+from qgis.utils import iface
 
 from kart.utils import tr
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "extentselectionpanel.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "extentselectionpanel.ui"))
 
 
 class ExtentSelectionPanel(BASE, WIDGET):

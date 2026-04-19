@@ -1,35 +1,34 @@
 import os
 from functools import partial
 
-from qgis.utils import iface
 from qgis.core import (
     Qgis,
-    QgsMapLayer,
-    QgsVectorLayer,
-    QgsFeatureRequest,
-    QgsRectangle,
-    QgsWkbTypes,
     QgsCoordinateTransform,
-    QgsProject,
+    QgsFeatureRequest,
+    QgsFillSymbol,
     QgsGeometry,
-    QgsTextAnnotation,
+    QgsMapLayer,
     QgsMarkerSymbol,
     QgsPointXY,
-    QgsFillSymbol,
+    QgsProject,
+    QgsRectangle,
+    QgsTextAnnotation,
+    QgsVectorLayer,
+    QgsWkbTypes,
 )
 from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand
-
-from qgis.PyQt.QtCore import Qt, QSizeF, QPointF
+from qgis.PyQt.QtCore import QPointF, QSizeF, Qt
 from qgis.PyQt.QtGui import QColor, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
+from qgis.utils import iface
 
+from kart.core import RepoManager
 from kart.gui import icons
-from kart.gui.historyviewer import HistoryDialog
 from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.featurehistorydialog import FeatureHistoryDialog
+from kart.gui.historyviewer import HistoryDialog
 from kart.kartapi import executeskart
-from kart.utils import setting, AUTOCOMMIT, tr
-from kart.core import RepoManager
+from kart.utils import AUTOCOMMIT, setting, tr
 
 
 def _f(f, *args):
@@ -40,7 +39,6 @@ def _f(f, *args):
 
 
 class LayerTracker:
-
     __instance = None
 
     @staticmethod
@@ -71,9 +69,7 @@ class LayerTracker:
         self.showWorkingTreeChangesAction = QAction(
             icons.diffIcon, tr("Show working copy changes..."), iface
         )
-        self.showWorkingTreeChangesAction.triggered.connect(
-            _f(self.showWorkingTreeChanges)
-        )
+        self.showWorkingTreeChangesAction.triggered.connect(_f(self.showWorkingTreeChanges))
         iface.addCustomActionForLayerType(
             self.showWorkingTreeChangesAction,
             "Kart",
@@ -84,9 +80,7 @@ class LayerTracker:
         self.discardWorkingTreeChangesAction = QAction(
             icons.discardIcon, tr("Discard working copy changes..."), iface
         )
-        self.discardWorkingTreeChangesAction.triggered.connect(
-            _f(self.discardWorkingTreeChanges)
-        )
+        self.discardWorkingTreeChangesAction.triggered.connect(_f(self.discardWorkingTreeChanges))
         iface.addCustomActionForLayerType(
             self.discardWorkingTreeChangesAction,
             "Kart",
@@ -97,9 +91,7 @@ class LayerTracker:
         self.commitWorkingTreeChangesAction = QAction(
             icons.commitIcon, tr("Commit working copy changes..."), iface
         )
-        self.commitWorkingTreeChangesAction.triggered.connect(
-            _f(self.commitWorkingTreeChanges)
-        )
+        self.commitWorkingTreeChangesAction.triggered.connect(_f(self.commitWorkingTreeChanges))
         iface.addCustomActionForLayerType(
             self.commitWorkingTreeChangesAction,
             "Kart",
@@ -141,12 +133,8 @@ class LayerTracker:
                 self.connected[layer] = func
                 iface.addCustomActionForLayer(self.showLogAction, layer)
                 iface.addCustomActionForLayer(self.showWorkingTreeChangesAction, layer)
-                iface.addCustomActionForLayer(
-                    self.commitWorkingTreeChangesAction, layer
-                )
-                iface.addCustomActionForLayer(
-                    self.discardWorkingTreeChangesAction, layer
-                )
+                iface.addCustomActionForLayer(self.commitWorkingTreeChangesAction, layer)
+                iface.addCustomActionForLayer(self.discardWorkingTreeChangesAction, layer)
                 if layer.wkbType() != QgsWkbTypes.Type.NoGeometry:
                     iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
@@ -180,9 +168,7 @@ class LayerTracker:
         annotation.setMarkerSymbol(symbol)
         annotation.setObjectName(f"kart:{layer.id()}")
         PT_MM = 25.4 / 72.0
-        annotation.setFrameOffsetFromReferencePointMm(
-            QPointF(-doc.size().width() * PT_MM, -5)
-        )
+        annotation.setFrameOffsetFromReferencePointMm(QPointF(-doc.size().width() * PT_MM, -5))
         QgsProject.instance().annotationManager().addAnnotation(annotation)
 
     def updateRubberBands(self):
@@ -224,9 +210,7 @@ class LayerTracker:
                 annotation, QgsTextAnnotation
             ) and annotation.document().toPlainText().startswith("kart:"):
                 try:
-                    QgsProject.instance().annotationManager().removeAnnotation(
-                        annotation
-                    )
+                    QgsProject.instance().annotationManager().removeAnnotation(annotation)
                 except Exception:
                     pass
 
@@ -244,9 +228,7 @@ class LayerTracker:
         r = self.mapTool.toLayerCoordinates(self.mapToolLayer, r)
 
         feats = self.mapToolLayer.getFeatures(
-            QgsFeatureRequest()
-            .setFilterRect(r)
-            .setFlags(QgsFeatureRequest.Flag.ExactIntersect)
+            QgsFeatureRequest().setFilterRect(r).setFlags(QgsFeatureRequest.Flag.ExactIntersect)
         )
         dataset = self.mapToolRepo.datasetNameFromLayer(self.mapToolLayer)
         idField = self.mapToolRepo.workingCopyLayerIdField(dataset)
@@ -254,9 +236,7 @@ class LayerTracker:
             feature = next(feats)
             fid = feature[idField]
             history = self.mapToolRepo.log(dataset=dataset, featureid=fid)
-            dlg = FeatureHistoryDialog(
-                history, self.mapToolLayer, dataset, fid, self.mapToolRepo
-            )
+            dlg = FeatureHistoryDialog(history, self.mapToolLayer, dataset, fid, self.mapToolRepo)
             dlg.exec()
         except StopIteration:
             iface.messageBar().pushMessage(

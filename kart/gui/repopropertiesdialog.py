@@ -1,22 +1,17 @@
 import os
 
 from qgis.core import Qgis
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
+from qgis.utils import iface
 
-
-from kart.layers import LayerTracker
-from kart.kartapi import executeskart
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
+from kart.kartapi import executeskart
+from kart.layers import LayerTracker
 from kart.utils import tr
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "repopropertiesdialog.ui"))
 
 
 class RepoPropertiesDialog(BASE, WIDGET):

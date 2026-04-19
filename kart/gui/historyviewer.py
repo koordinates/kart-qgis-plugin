@@ -1,47 +1,44 @@
 import json
 import os
 
-from kart.kartapi import executeskart
-from kart.gui import icons
-from kart.gui.diffviewer import DiffViewerDialog
-from kart.utils import setting, DIFFSTYLES, tr
-
 from qgis.core import Qgis, QgsProject, QgsVectorLayer, QgsWkbTypes
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
-    Qt,
+    QDateTime,
     QPoint,
     QRectF,
-    QDateTime,
-    QCoreApplication,
+    Qt,
 )
 from qgis.PyQt.QtGui import (
-    QPixmap,
-    QPainter,
-    QColor,
-    QPainterPath,
-    QPen,
-    QPalette,
     QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QPalette,
+    QPen,
+    QPixmap,
 )
-
 from qgis.PyQt.QtWidgets import (
-    QTreeWidget,
     QAbstractItemView,
     QAction,
-    QMenu,
-    QTreeWidgetItem,
-    QWidget,
-    QVBoxLayout,
-    QSizePolicy,
-    QLabel,
-    QInputDialog,
-    QHeaderView,
     QFileDialog,
+    QHeaderView,
+    QInputDialog,
+    QLabel,
+    QMenu,
+    QSizePolicy,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QVBoxLayout,
+    QWidget,
 )
+from qgis.utils import iface
+
+from kart.gui import icons
+from kart.gui.diffviewer import DiffViewerDialog
+from kart.kartapi import executeskart
+from kart.utils import DIFFSTYLES, setting, tr
 
 COMMIT_GRAPH_HEIGHT = 20
 RADIUS = 4
@@ -127,9 +124,7 @@ class HistoryTree(QTreeWidget):
                 )
             elif len(parents) > 1:
                 for parent in parents:
-                    actions[
-                        tr(f"Show diff between this commit and parent {parent[:7]}...")
-                    ] = (
+                    actions[tr(f"Show diff between this commit and parent {parent[:7]}...")] = (
                         _f(
                             self.showChangesBetweenCommits,
                             item.commit["commit"],
@@ -202,9 +197,7 @@ class HistoryTree(QTreeWidget):
 
     @executeskart
     def createTag(self, item):
-        name, ok = QInputDialog.getText(
-            self, tr("Create tag"), tr("Enter name of tag to create")
-        )
+        name, ok = QInputDialog.getText(self, tr("Create tag"), tr("Enter name of tag to create"))
         if ok and name:
             self.repo.createTag(name, item.commit["commit"])
             self.message(tr("Tag correctly created"), Qgis.MessageLevel.Info)
@@ -219,9 +212,7 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def switchBranch(self, branch):
         self.repo.checkoutBranch(branch)
-        self.message(
-            tr(f"Correctly switched to branch '{branch}'"), Qgis.MessageLevel.Info
-        )
+        self.message(tr(f"Correctly switched to branch '{branch}'"), Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
@@ -246,9 +237,7 @@ class HistoryTree(QTreeWidget):
         hasSchemaChanges = self.repo.diffHasSchemaChanges(refa, parent)
         if hasSchemaChanges:
             self.message(
-                tr(
-                    "There are schema changes in the selected commit and changes cannot be shown"
-                ),
+                tr("There are schema changes in the selected commit and changes cannot be shown"),
                 Qgis.MessageLevel.Warning,
             )
             return
@@ -297,9 +286,7 @@ class HistoryTree(QTreeWidget):
         diff = self.repo.diff(refb, refa)
         for dataset in diff:
             geojson = {"type": "FeatureCollection", "features": diff[dataset]}
-            layer = QgsVectorLayer(
-                json.dumps(geojson), f"{dataset}_diff_{refa[:7]}", "ogr"
-            )
+            layer = QgsVectorLayer(json.dumps(geojson), f"{dataset}_diff_{refa[:7]}", "ogr")
             styleName = setting(DIFFSTYLES) or "standard"
             typeString = QgsWkbTypes.geometryDisplayString(layer.geometryType()).lower()
             styleFolder = os.path.join(
@@ -315,9 +302,7 @@ class HistoryTree(QTreeWidget):
     @executeskart
     def resetBranch(self, item):
         self.repo.reset(item.commit["commit"])
-        self.message(
-            tr("Branch correctly reset to selected commit"), Qgis.MessageLevel.Info
-        )
+        self.message(tr("Branch correctly reset to selected commit"), Qgis.MessageLevel.Info)
         self.populate()
 
     @executeskart
@@ -489,7 +474,7 @@ class CommitTreeItem(QTreeWidgetItem):
                 if "HEAD ->" in label:
                     labelslist.append(
                         '<span style="background-color:crimson; color:white"> '
-                        f'&nbsp;&nbsp;{label.split("->")[-1].strip()}&nbsp;&nbsp;</span>'
+                        f"&nbsp;&nbsp;{label.split('->')[-1].strip()}&nbsp;&nbsp;</span>"
                     )
                 elif "tag:" in label:
                     labelslist.append(
@@ -516,16 +501,14 @@ class CommitTreeItem(QTreeWidgetItem):
         self.setText(5, commit["abbrevCommit"])
 
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "historyviewer.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "historyviewer.ui"))
+
 
 class ShallowCloneWarningItem(QTreeWidgetItem):
     def __init__(self, parent):
         QTreeWidgetItem.__init__(self, parent)
         message = tr(
-            "This repository is a shallow clone, "
-            "history past this point is not available locally"
+            "This repository is a shallow clone, history past this point is not available locally"
         )
         self.setText(2, message)
         self.setForeground(2, QBrush(QColor(100, 100, 100)))

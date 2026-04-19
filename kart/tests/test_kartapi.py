@@ -4,29 +4,27 @@ import shutil
 import tempfile
 
 from qgis.core import (
-    edit,
-    QgsRectangle,
-    QgsReferencedRectangle,
     QgsCoordinateReferenceSystem,
     QgsFeature,
     QgsGeometry,
     QgsPointXY,
+    QgsRectangle,
+    QgsReferencedRectangle,
+    edit,
 )
-from qgis.testing import unittest, start_app
-
 from qgis.PyQt.QtTest import QSignalSpy
+from qgis.testing import start_app, unittest
 
-from kart.kartapi import (
-    kartVersionDetails,
-    Repository,
-    installedVersion,
-    KartException,
-    executeKart,
-)
 from kart.core import RepoManager
-
-from kart.utils import HELPERMODE, setSetting, KARTPATH
+from kart.kartapi import (
+    KartException,
+    Repository,
+    executeKart,
+    installedVersion,
+    kartVersionDetails,
+)
 from kart.tests.utils import patch_iface
+from kart.utils import HELPERMODE, KARTPATH, setSetting
 
 start_app()
 
@@ -65,7 +63,7 @@ class TestKartapi(unittest.TestCase):
     def testEnableUseHelper(self):
         setSetting(HELPERMODE, True)
         kartVersionDetails()  # called to set up environment var
-        assert executeKart.env['KART_USE_HELPER'] == '1', "Helper mode was not enabled"
+        assert executeKart.env["KART_USE_HELPER"] == "1", "Helper mode was not enabled"
 
     def testChangeHelperMode(self):
         """
@@ -76,11 +74,11 @@ class TestKartapi(unittest.TestCase):
         kartVersionDetails()  # called to set up environment var
         setSetting(HELPERMODE, False)
         kartVersionDetails()  # called to set up environment var
-        assert executeKart.env['KART_USE_HELPER'] == '', "Helper mode was not disabled"
+        assert executeKart.env["KART_USE_HELPER"] == "", "Helper mode was not disabled"
 
     def testKartVersion(self):
         version = installedVersion()
-        assert re.match(r'\d+\.\d+\.\d+', version)
+        assert re.match(r"\d+\.\d+\.\d+", version)
 
     def testStoreReposInSettings(self):
         manager = RepoManager()
@@ -121,9 +119,7 @@ class TestKartapi(unittest.TestCase):
             repo.init()
             assert repo.isInitialized()
             repo.configureUser("user", "user@user.use")
-            gkpgPath = os.path.join(
-                os.path.dirname(__file__), "data", "layers", "testlayer.gpkg"
-            )
+            gkpgPath = os.path.join(os.path.dirname(__file__), "data", "layers", "testlayer.gpkg")
             repo.importIntoRepo(gkpgPath)
             vectorLayers, tables = repo.datasets()
             assert vectorLayers == ["testlayer"]

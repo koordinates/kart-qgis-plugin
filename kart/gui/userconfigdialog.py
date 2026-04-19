@@ -1,21 +1,16 @@
 import os
 
 from qgis.core import Qgis
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.utils import tr
 
-
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 
-WIDGET, BASE = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "userconfigdialog.ui")
-)
+WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "userconfigdialog.ui"))
 
 
 class UserConfigDialog(BASE, WIDGET):
@@ -55,12 +50,7 @@ class UserConfigDialog(BASE, WIDGET):
         self.setWindowTitle(tr("User Configuration"))
         self.label.setText(tr("User name"))
         self.label_2.setText(tr("User email"))
-        html = (
-            "<html><head/><body>"
-            "<p>{line1}</p>"
-            "<p>{line2}</p>"
-            "</body></html>"
-        ).format(
+        html = ("<html><head/><body><p>{line1}</p><p>{line2}</p></body></html>").format(
             line1=tr("A user is needed to commit changes to a Kart repository."),
             line2=tr(
                 "No user is currently configured. Please configure it "

@@ -1,19 +1,17 @@
 import os
 
 from qgis.core import Qgis
-from qgis.utils import iface
 from qgis.gui import QgsMessageBar
-
 from qgis.PyQt import uic
-from qgis.PyQt.QtCore import Qt, QCoreApplication
-from qgis.PyQt.QtWidgets import QDialog, QSizePolicy, QFileDialog
+from qgis.PyQt.QtCore import Qt
+from qgis.PyQt.QtWidgets import QDialog, QFileDialog, QSizePolicy
+from qgis.utils import iface
 
 from kart.gui.extentselectionpanel import ExtentSelectionPanel
 from kart.gui.locationselectionpanel import (
-    LocationSelectionPanel,
     InvalidLocationException,
+    LocationSelectionPanel,
 )
-
 from kart.utils import tr
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "clonedialog.ui"))
@@ -51,9 +49,7 @@ class CloneDialog(BASE, WIDGET):
         self.txtSrc.setText(src)
 
     def browse(self, textbox):
-        folder = QFileDialog.getExistingDirectory(
-            iface.mainWindow(), tr("Select Folder"), ""
-        )
+        folder = QFileDialog.getExistingDirectory(iface.mainWindow(), tr("Select Folder"), "")
         if folder:
             textbox.setText(folder)
 
