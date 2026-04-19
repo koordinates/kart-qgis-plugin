@@ -79,6 +79,12 @@ class KartDockWidget(BASE, WIDGET):
 
         self.tree.itemExpanded.connect(onItemExpanded)
 
+        def onItemDoubleClicked(item, column):
+            if isinstance(item, DatasetItem):
+                item.addToProject()
+
+        self.tree.itemDoubleClicked.connect(onItemDoubleClicked)
+
         def mimeTypes():
             return ["application/x-vnd.qgis.qgis.uri"]
 
