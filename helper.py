@@ -6,10 +6,12 @@ import os
 import re
 import shutil
 import sys
+import urllib.parse
 import xmlrpc.client
 import zipfile
 import subprocess
 import glob
+import re
 from configparser import ConfigParser
 from io import StringIO
 
@@ -47,6 +49,53 @@ def translate():
     except Exception as e:
         print(f"Unexpected error: {e}")
 
+
+def _qgis_pythonpath():
+    """Return a PYTHONPATH suitable for running tests against the local QGIS install."""
+    entries = ["."]
+
+    if os.name == "nt":
+        # Windows: QGIS installs Python alongside the app
+        program_files = os.environ.get("PROGRAMFILES", r"C:\Program Files")
+        for qgis_dir in glob.glob(os.path.join(program_files, "QGIS*")):
+            entries.append(os.path.join(qgis_dir, "apps", "qgis", "python"))
+            entries.append(os.path.join(qgis_dir, "apps", "qgis", "python", "plugins"))
+    elif sys.platform == "darwin":
+        # macOS: QGIS.app bundle
+        entries += [
+            "/Applications/QGIS.app/Contents/MacOS/Python",
+            "/Applications/QGIS.app/Contents/MacOS/Python/plugins",
+        ]
+    else:
+        # Linux: check Flatpak first, fall back to system install
+        flatpak_python = "/app/share/qgis/python"
+        if os.path.exists(flatpak_python):
+            entries += [flatpak_python, f"{flatpak_python}/plugins"]
+        else:
+            entries += [
+                "/usr/share/qgis/python",
+                "/usr/share/qgis/python/plugins",
+                "/usr/lib/python3/dist-packages",
+            ]
+
+    return os.pathsep.join(entries)
+
+
+def run_tests(test_path=None):
+    """Run the plugin test suite with the correct QGIS PYTHONPATH."""
+    test_path = test_path or "kart/tests/test_kartapi.py"
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = _qgis_pythonpath()
+
+    print(f"PYTHONPATH={env['PYTHONPATH']}")
+    print(f"Running: python3 -m unittest {test_path} -v\n")
+
+    result = subprocess.run(
+        [sys.executable, "-m", "unittest", test_path, "-v"],
+        env=env,
+    )
+    sys.exit(result.returncode)
 
 def package(version=None):
     # Always update translations before packaging
@@ -95,21 +144,30 @@ def package(version=None):
     print(f"Build complete: {archive}")
 
 
-def install():
+def install(qgis_version):
     src = os.path.join(os.path.dirname(__file__), "kart")
+
+    qgis_folder = f"QGIS{qgis_version}"
+
     if os.name == "nt":
         default_profile_plugins = (
-            "~/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins"
+            f"~/AppData/Roaming/QGIS/{qgis_folder}/profiles/default/python/plugins"
         )
     elif sys.platform == "darwin":
         default_profile_plugins = (
-            "~/Library/Application Support/QGIS/QGIS3"
+            f"~/Library/Application Support/QGIS/{qgis_folder}"
             "/profiles/default/python/plugins"
         )
     else:
-        default_profile_plugins = (
-            "~/.local/share/QGIS/QGIS3/profiles/default/python/plugins"
-        )
+        flatpak_path = os.path.expanduser(
+            f"~/.var/app/org.qgis.qgis/data/QGIS/{qgis_folder}/profiles/default/python/plugins")
+
+        if os.path.exists(os.path.dirname(flatpak_path)):
+            default_profile_plugins = flatpak_path
+        else:
+            default_profile_plugins = (
+                f"~/.local/share/QGIS/{qgis_folder}/profiles/default/python/plugins"
+            )
 
     dst_plugins = os.path.expanduser(default_profile_plugins)
     os.makedirs(dst_plugins, exist_ok=True)
@@ -140,29 +198,33 @@ def publish(archive):
     with open(archive, "rb") as fd:
         blob = xmlrpc.client.Binary(fd.read())
     conn.plugin.upload(blob)
-    print("Upload complete")
+    print(f"Upload complete")
 
 
 def usage():
     print(
         (
             "Usage:\n"
-            f"  {sys.argv[0]} package [VERSION]    Build a QGIS plugin zip file\n"
-            f"  {sys.argv[0]} install              Install in your local QGIS (for development)\n"
-            f"  {sys.argv[0]} translate            Update and compile translation files (.ts -> .qm)\n"
-            f"  {sys.argv[0]} publish [ARCHIVE]    Upload to QGIS Python Plugins Repository\n"
+            f"  {sys.argv[0]} package [VERSION]      Build a QGIS plugin zip file\n"
+            f"  {sys.argv[0]} install [3|4]          Install in your local QGIS 3 or 4 (default: 3)\n"
+            f"  {sys.argv[0]} translate              Update and compile translation files (.ts -> .qm)\n"
+            f"  {sys.argv[0]} unittest [TEST_PATH]   Run tests (default:test_kartapi)\n"
+            f"  {sys.argv[0]} publish [ARCHIVE]      Upload to QGIS Python Plugins Repository\n"
         ),
         file=sys.stderr,
     )
     sys.exit(2)
 
 
-if len(sys.argv) == 2 and sys.argv[1] == "install":
-    install()
+if len(sys.argv) >= 2 and sys.argv[1] == "install":
+    qgis_ver = sys.argv[2] if len(sys.argv) > 2 else "3"
+    install(qgis_ver)
 elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
     package(*sys.argv[2:])
 elif len(sys.argv) == 2 and sys.argv[1] == "translate":
     translate()
+elif len(sys.argv) in [2, 3] and sys.argv[1] == "unittest":
+    run_tests(*sys.argv[2:])
 elif len(sys.argv) == 3 and sys.argv[1] == "publish":
     publish(sys.argv[2])
 else:
