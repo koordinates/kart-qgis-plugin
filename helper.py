@@ -205,10 +205,10 @@ def usage():
     print(
         (
             "Usage:\n"
-            f"  {sys.argv[0]} package [VERSION]      Build a QGIS plugin zip file\n"
             f"  {sys.argv[0]} install [3|4]          Install in your local QGIS 3 or 4 (default: 3)\n"
             f"  {sys.argv[0]} translate              Update and compile translation files (.ts -> .qm)\n"
             f"  {sys.argv[0]} unittest [TEST_PATH]   Run tests (default:test_kartapi)\n"
+            f"  {sys.argv[0]} package [VERSION]      Build a QGIS plugin zip file\n"
             f"  {sys.argv[0]} publish [ARCHIVE]      Upload to QGIS Python Plugins Repository\n"
         ),
         file=sys.stderr,
@@ -219,12 +219,12 @@ def usage():
 if len(sys.argv) >= 2 and sys.argv[1] == "install":
     qgis_ver = sys.argv[2] if len(sys.argv) > 2 else "3"
     install(qgis_ver)
-elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
-    package(*sys.argv[2:])
 elif len(sys.argv) == 2 and sys.argv[1] == "translate":
     translate()
 elif len(sys.argv) in [2, 3] and sys.argv[1] == "unittest":
     run_tests(*sys.argv[2:])
+elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
+    package(*sys.argv[2:])
 elif len(sys.argv) == 3 and sys.argv[1] == "publish":
     publish(sys.argv[2])
 else:
