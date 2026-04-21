@@ -20,14 +20,26 @@ QGIS_MAXIMUM_VERSION = "stable-questing"  # qgisMaximumVersion=4.99
 KART_VERSION = "0.15.3"
 
 
-def translate():
-    """Update translation sources (.ts), force 'Kart' context, and compile (.qm)"""
+def translate(locale=None):
+    """
+    Update translation sources (.ts) and compile them to .qm files.
+
+    :param locale: Locale to update and compile (e.g., 'en', 'pt_BR'). If not specified, all locales are processed.
+    """
+
     print("Updating translation files...")
 
     # Define paths
     src_dir = os.path.join(os.path.dirname(__file__), "kart")
     i18n_dir = os.path.join(src_dir, "i18n")
-    ts_files = glob.glob(os.path.join(i18n_dir, "*.ts"))
+
+    if locale:
+        ts_files = glob.glob(os.path.join(i18n_dir, f"kart_{locale}.ts"))
+        if not ts_files:
+            print(f"Error: No .ts file found for locale '{locale}' in {i18n_dir}")
+            return
+    else:
+        ts_files = glob.glob(os.path.join(i18n_dir, "*.ts"))
 
     if not ts_files:
         print(f"Error: No .ts files found in {i18n_dir}")
@@ -48,11 +60,10 @@ def translate():
         subprocess.run(["lrelease"] + ts_files, check=True)
         print(f"Success: {len(ts_files)} translation files updated.")
 
+    except FileNotFoundError as e:
+        print(f"Error: '{e.filename}' not found. Please install it before running this command.")
     except subprocess.CalledProcessError as e:
         print(f"Error during translation process (Qt Tools): {e}")
-    except Exception as e:
-        print(f"Unexpected error: {e}")
-
 
 
 def run_tests(qgis_version=QGIS_TEST_VERSION, *pytest_args):
@@ -207,7 +218,7 @@ def usage():
         (
             "Usage:\n"
             f"  {sys.argv[0]} install [3|4]                        Install in your local QGIS 3 or 4 (default: 3)\n"
-            f"  {sys.argv[0]} translate                            Update and compile translation files (.ts -> .qm)\n"
+            f"  {sys.argv[0]} translate [LOCALE]                   Update and compile translation files (.ts -> .qm)\n"
             f"  {sys.argv[0]} pytest [QGIS_VERSION] [PYTEST_ARGS]  Run tests in Docker (default: latest, all, docker tag)\n"
             f"  {sys.argv[0]} package [VERSION]                    Build a QGIS plugin zip file\n"
             f"  {sys.argv[0]} publish [ARCHIVE]                    Upload to QGIS Python Plugins Repository\n"
@@ -220,8 +231,8 @@ def usage():
 if len(sys.argv) >= 2 and sys.argv[1] == "install":
     qgis_ver = sys.argv[2] if len(sys.argv) > 2 else "3"
     install(qgis_ver)
-elif len(sys.argv) == 2 and sys.argv[1] == "translate":
-    translate()
+elif len(sys.argv) in [2, 3] and sys.argv[1] == "translate":
+    translate(*sys.argv[2:])
 elif len(sys.argv) >= 2 and sys.argv[1] == "pytest":
     run_tests(*sys.argv[2:])
 elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
