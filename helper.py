@@ -3,10 +3,8 @@
 
 import fnmatch
 import os
-import re
 import shutil
 import sys
-import urllib.parse
 import xmlrpc.client
 import zipfile
 import subprocess
