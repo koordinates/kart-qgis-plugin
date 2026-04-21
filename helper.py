@@ -13,6 +13,12 @@ import re
 from configparser import ConfigParser
 from io import StringIO
 
+# QGIS Docker image tags
+QGIS_TEST_VERSION = "latest"
+QGIS_MINIMUM_VERSION = "release-3_34"  # qgisMinimumVersion=3.16
+QGIS_MAXIMUM_VERSION = "stable-questing"  # qgisMaximumVersion=4.99
+KART_VERSION = "0.15.3"
+
 
 def translate():
     """Update translation sources (.ts), force 'Kart' context, and compile (.qm)"""
@@ -48,52 +54,49 @@ def translate():
         print(f"Unexpected error: {e}")
 
 
-def _qgis_pythonpath():
-    """Return a PYTHONPATH suitable for running tests against the local QGIS install."""
-    entries = ["."]
 
-    if os.name == "nt":
-        # Windows: QGIS installs Python alongside the app
-        program_files = os.environ.get("PROGRAMFILES", r"C:\Program Files")
-        for qgis_dir in glob.glob(os.path.join(program_files, "QGIS*")):
-            entries.append(os.path.join(qgis_dir, "apps", "qgis", "python"))
-            entries.append(os.path.join(qgis_dir, "apps", "qgis", "python", "plugins"))
-    elif sys.platform == "darwin":
-        # macOS: QGIS.app bundle
-        entries += [
-            "/Applications/QGIS.app/Contents/MacOS/Python",
-            "/Applications/QGIS.app/Contents/MacOS/Python/plugins",
-        ]
-    else:
-        # Linux: check Flatpak first, fall back to system install
-        flatpak_python = "/app/share/qgis/python"
-        if os.path.exists(flatpak_python):
-            entries += [flatpak_python, f"{flatpak_python}/plugins"]
-        else:
-            entries += [
-                "/usr/share/qgis/python",
-                "/usr/share/qgis/python/plugins",
-                "/usr/lib/python3/dist-packages",
+def run_tests(qgis_version=QGIS_TEST_VERSION, *pytest_args):
+    """
+        Run the test suite inside the QGIS Docker container.
+
+        :param qgis_version: Docker tag (e.g., 'latest', 'all', 'release-3_34')
+        :param pytest_args: Additional arguments forwarded directly to the pytest command.
+
+        Examples:
+          python helper.py pytest                          # Run with default version (defined in QGIS_TEST_VERSION)
+          python helper.py pytest release-3_34             # Run a specific version
+          python helper.py pytest all                      # Run the qgisMinimumVersion and qgisMaximumVersion
+          python helper.py pytest latest -k test_clone -vv # Run specific tests and pass extra pytest arguments
+    """
+
+    versions = [QGIS_MINIMUM_VERSION, QGIS_MAXIMUM_VERSION] if qgis_version == "all" else [qgis_version]
+
+    for version in versions:
+        env = {
+            **os.environ,
+            "QGIS_TEST_VERSION": version,
+            "KART_VERSION": KART_VERSION,
+            "GITHUB_WORKSPACE": os.path.abspath(os.path.dirname(__file__)),
+        }
+        print(f"Running tests in Docker (QGIS_TEST_VERSION={version}) ...")
+        result = subprocess.run(
+            [
+                "docker",
+                "compose",
+                "-f",
+                ".docker/docker-compose.gh.yml",
+                "run",
+                "--build",
+                "--rm",
+                "qgis",
+                "/usr/src/.docker/run-docker-tests.sh",
             ]
+            + list(pytest_args),
+            env=env,
+        )
+        if result.returncode != 0:
+            sys.exit(result.returncode)
 
-    return os.pathsep.join(entries)
-
-
-def run_tests(test_path=None):
-    """Run the plugin test suite with the correct QGIS PYTHONPATH."""
-    test_path = test_path or "kart/tests/test_kartapi.py"
-
-    env = os.environ.copy()
-    env["PYTHONPATH"] = _qgis_pythonpath()
-
-    print(f"PYTHONPATH={env['PYTHONPATH']}")
-    print(f"Running: python3 -m unittest {test_path} -v\n")
-
-    result = subprocess.run(
-        [sys.executable, "-m", "unittest", test_path, "-v"],
-        env=env,
-    )
-    sys.exit(result.returncode)
 
 def package(version=None):
     # Always update translations before packaging
@@ -203,11 +206,11 @@ def usage():
     print(
         (
             "Usage:\n"
-            f"  {sys.argv[0]} install [3|4]          Install in your local QGIS 3 or 4 (default: 3)\n"
-            f"  {sys.argv[0]} translate              Update and compile translation files (.ts -> .qm)\n"
-            f"  {sys.argv[0]} unittest [TEST_PATH]   Run tests (default:test_kartapi)\n"
-            f"  {sys.argv[0]} package [VERSION]      Build a QGIS plugin zip file\n"
-            f"  {sys.argv[0]} publish [ARCHIVE]      Upload to QGIS Python Plugins Repository\n"
+            f"  {sys.argv[0]} install [3|4]                        Install in your local QGIS 3 or 4 (default: 3)\n"
+            f"  {sys.argv[0]} translate                            Update and compile translation files (.ts -> .qm)\n"
+            f"  {sys.argv[0]} pytest [QGIS_VERSION] [PYTEST_ARGS]  Run tests in Docker (default: latest, all, docker tag)\n"
+            f"  {sys.argv[0]} package [VERSION]                    Build a QGIS plugin zip file\n"
+            f"  {sys.argv[0]} publish [ARCHIVE]                    Upload to QGIS Python Plugins Repository\n"
         ),
         file=sys.stderr,
     )
@@ -219,7 +222,7 @@ if len(sys.argv) >= 2 and sys.argv[1] == "install":
     install(qgis_ver)
 elif len(sys.argv) == 2 and sys.argv[1] == "translate":
     translate()
-elif len(sys.argv) in [2, 3] and sys.argv[1] == "unittest":
+elif len(sys.argv) >= 2 and sys.argv[1] == "pytest":
     run_tests(*sys.argv[2:])
 elif len(sys.argv) in [2, 3] and sys.argv[1] == "package":
     package(*sys.argv[2:])
