@@ -49,11 +49,11 @@ class KartPlugin(object):
 
         # Menu
         self.iface.addPluginToMenu("Kart", self.explorerAction)
-        self.settingsAction = QAction(tr("Settings"), self.iface.mainWindow())
+        self.settingsAction = QAction(tr("Settings") + "\u2026", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
-        self.aboutAction = QAction(tr("About"), self.iface.mainWindow())
+        self.aboutAction = QAction(tr("About") + "\u2026", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.aboutAction)
         self.aboutAction.triggered.connect(self.openAbout)
 
