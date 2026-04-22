@@ -14,10 +14,10 @@ from kart.layers import LayerTracker
 from kart.processing import KartProvider
 from kart.utils import tr
 
-pluginPath = os.path.dirname(__file__)
-
 
 class KartPlugin(object):
+    PLUGIN_PATH = os.path.dirname(__file__)
+
     def __init__(self, iface):
         self.iface = iface
         self.provider = None
@@ -27,7 +27,7 @@ class KartPlugin(object):
 
         # Adds support for internationalization
         locale = QSettings().value("locale/userLocale")
-        locale_path = os.path.join(pluginPath, "i18n", f"kart_{locale}.qm")
+        locale_path = os.path.join(self.PLUGIN_PATH, "i18n", f"kart_{locale}.qm")
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -39,11 +39,11 @@ class KartPlugin(object):
 
     def initGui(self):
         # Toolbar
-        self.toolbar = self.iface.addToolBar(tr("Kart ToolBar"))
+        self.toolbar = self.iface.addToolBar("Kart")
         self.toolbar.setObjectName("KartToolBar")
 
         self.explorerAction = QAction(kartIcon, tr("Repositories"), self.iface.mainWindow())
-        self.explorerAction.setToolTip(tr("Kart Repositories"))
+        self.explorerAction.setToolTip("Kart")
         self.explorerAction.setCheckable(True)
         self.toolbar.addAction(self.explorerAction)
 
@@ -93,9 +93,9 @@ class KartPlugin(object):
         dlg = SettingsDialog()
         dlg.exec()
 
-    def pluginVersion(add_commit=False):
+    def pluginVersion(self):
         config = configparser.ConfigParser()
-        path = os.path.join(os.path.dirname(__file__), "metadata.txt")
+        path = os.path.join(self.PLUGIN_PATH, "metadata.txt")
         config.read(path, encoding="utf-8")
         version = config.get("general", "version")
         return version
@@ -134,6 +134,7 @@ class KartPlugin(object):
         dlg.showMessage()
 
     def unload(self):
+        # initGui
         if self.dock is not None:
             self.dock.dockLocationChanged.disconnect(self.onDockLocationChanged)
             self.iface.removeDockWidget(self.dock)
@@ -146,8 +147,8 @@ class KartPlugin(object):
         QgsProject.instance().layerRemoved.disconnect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)
         QgsProject.instance().crsChanged.disconnect(self.tracker.updateRubberBands)
-
         QgsApplication.processingRegistry().removeProvider(self.provider)
 
+        # init
         if self.translator:
             QCoreApplication.removeTranslator(self.translator)
