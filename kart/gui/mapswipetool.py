@@ -22,8 +22,13 @@ class MapSwipeTool(QgsMapTool):
     def _connect(self, isConnect=True):
         if isConnect:
             self.canvas().mapCanvasRefreshed.connect(self.swipe.setMap)
+            self.layer.repaintRequested.connect(self.swipe.setMap)
         else:
             self.canvas().mapCanvasRefreshed.disconnect(self.swipe.setMap)
+            try:
+                self.layer.repaintRequested.disconnect(self.swipe.setMap)
+            except RuntimeError:
+                pass
 
     def activate(self):
         super().activate()
