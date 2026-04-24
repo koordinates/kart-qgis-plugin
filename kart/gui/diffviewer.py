@@ -12,6 +12,7 @@ from qgis.core import (
     QgsPointXY,
     QgsProject,
     QgsRasterLayer,
+    QgsSingleSymbolRenderer,
     QgsSymbol,
     QgsVectorLayer,
     QgsWkbTypes,
@@ -100,6 +101,8 @@ class DiffViewerWidget(WIDGET, BASE):
         self.showRecoverNewButton = showRecoverNewButton
         self.layerDiffLayers = {}
         self.vertexDiffLayer = None
+        self.vertexDiffNewOutline = None
+        self.vertexDiffOldOutline = None
         self.currentFeatureItem = None
         self.currentDatasetItem = None
         self.workingCopyLayers = {}
@@ -384,6 +387,13 @@ class DiffViewerWidget(WIDGET, BASE):
         self.featuresTree.expandAll()
 
     def fillCanvas(self):
+        # Cleanup clones of the previous VERTEX_DIFF, ensuring original layers are preserved
+        for clone in [self.vertexDiffNewOutline, self.vertexDiffOldOutline]:
+            if clone is not None:
+                QgsProject.instance().removeMapLayer(clone.id())
+        self.vertexDiffNewOutline = None
+        self.vertexDiffOldOutline = None
+
         layers = []
         self.canvas.setLayers([])
         crs = self.oldLayer.crs()
@@ -423,17 +433,29 @@ class DiffViewerWidget(WIDGET, BASE):
         if self.comboDiffType.currentIndex() == SWIPE:
             self.mapTool = MapSwipeTool(self.canvas, self.newLayer)
             layers.remove(self.newLayer)
-            self.newLayer.setOpacity(100)
-            self.oldLayer.setOpacity(100)
+            # The value should be in the range 0.0 to 1.0, where 0.0 is fully transparent and 1.0 is fully opaque.
+            self.newLayer.setOpacity(1)
+            self.oldLayer.setOpacity(1)
         elif self.comboDiffType.currentIndex() == VERTEX_DIFF:
+            # Clone layers to apply a transparent renderer, leaving the originals untouched.
             symbolType = type(QgsSymbol.defaultSymbol(self.oldLayer.geometryType()))
-            symbol = symbolType.createSimple({"color": "255,255,255,0"})
-            self.newLayer.renderer().setSymbol(symbol)
-            symbol = symbolType.createSimple({"color": "255,255,255,0"})
-            self.oldLayer.renderer().setSymbol(symbol)
+            transparent = {"color": "255,255,255,0"}
+
+            self.vertexDiffNewOutline = self.newLayer.clone()
+            self.vertexDiffNewOutline.setRenderer(
+                QgsSingleSymbolRenderer(symbolType.createSimple(transparent))
+            )
+            self.vertexDiffOldOutline = self.oldLayer.clone()
+            self.vertexDiffOldOutline.setRenderer(
+                QgsSingleSymbolRenderer(symbolType.createSimple(transparent))
+            )
+            QgsProject.instance().addMapLayer(self.vertexDiffNewOutline, False)
+            QgsProject.instance().addMapLayer(self.vertexDiffOldOutline, False)
+
+            layers.remove(self.newLayer)
+            layers.remove(self.oldLayer)
+            layers.extend([self.vertexDiffNewOutline, self.vertexDiffOldOutline])
             layers.insert(0, self.vertexDiffLayer)
-            self.newLayer.setOpacity(100)
-            self.oldLayer.setOpacity(100)
         elif self.comboDiffType.currentIndex() == TRANSPARENCY:
             self.sliderTransparency.setValue(50)
             self.setTransparency()
@@ -525,7 +547,9 @@ class DiffViewerWidget(WIDGET, BASE):
         self.btnRecoverNewVersion.setEnabled(
             bool(new) and self.showRecoverNewButton and noSchemaChange
         )
-        self.sliderTransparency.setEnabled(bool(old))
+        # Removed: disabling the slider when old is empty prevented added features
+        # from being visible in the diff view.
+        # self.sliderTransparency.setEnabled(bool(old))
 
     def _createVertexDiffLayer(self, geoms):
         textGeometries = []
@@ -574,7 +598,14 @@ class DiffViewerWidget(WIDGET, BASE):
         QgsProject.instance().addMapLayer(self.vertexDiffLayer, False)
 
     def removeMapLayers(self):
-        layers = [self.oldLayer, self.newLayer, self.osmLayer, self.vertexDiffLayer]
+        layers = [
+            self.oldLayer,
+            self.newLayer,
+            self.osmLayer,
+            self.vertexDiffLayer,
+            self.vertexDiffNewOutline,
+            self.vertexDiffOldOutline,
+        ]
         for layer in layers:
             if layer is not None:
                 QgsProject.instance().removeMapLayer(layer.id())
@@ -582,6 +613,8 @@ class DiffViewerWidget(WIDGET, BASE):
         self.newLayer = None
         self.osmLayer = None
         self.vertexDiffLayer = None
+        self.vertexDiffNewOutline = None
+        self.vertexDiffOldOutline = None
 
     def recoverOldVersion(self):
         self._recoverVersion(self.oldLayer)
