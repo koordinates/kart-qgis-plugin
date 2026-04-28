@@ -46,8 +46,8 @@ class MapSwipeTool(QgsMapTool):
 
     def canvasPressEvent(self, e):
         self.hasSwipe = True
-        self.firstPoint.setX(e.x())
-        self.firstPoint.setY(e.y())
+        self.firstPoint.setX(e.pos().x())
+        self.firstPoint.setY(e.pos().y())
         self.checkDirection = True
 
     def canvasReleaseEvent(self, e):
@@ -58,16 +58,19 @@ class MapSwipeTool(QgsMapTool):
         THRESHOLD = 10
         if self.hasSwipe:
             if self.checkDirection:
-                dX = abs(e.x() - self.firstPoint.x())
-                dY = abs(e.y() - self.firstPoint.y())
+                dX = abs(e.pos().x() - self.firstPoint.x())
+                dY = abs(e.pos().y() - self.firstPoint.y())
                 isVertical = dX > dY
                 self.swipe.setIsVertical(isVertical)
                 self.checkDirection = False
                 self.canvas().setCursor(self.cursorH if isVertical else self.cursorV)
-
-            self.swipe.setLength(e.x(), e.y())
+            self.swipe.setLength(e.pos().x(), e.pos().y())
         else:
-            length = e.x() if self.swipe.isVertical else self.swipe.boundingRect().height() - e.y()
+            length = (
+                e.pos().x()
+                if self.swipe.isVertical
+                else self.swipe.boundingRect().height() - e.pos().y()
+            )
             if self.swipe.length != 0 and abs(self.swipe.length - length) < THRESHOLD:
                 self.canvas().setCursor(self.cursorH if self.swipe.isVertical else self.cursorV)
             else:
