@@ -76,3 +76,4 @@ class SwipeMap(QgsMapCanvasItem):
         job.start()
         job.waitForFinished()
         p.end()
+        self.update()

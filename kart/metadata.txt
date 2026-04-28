@@ -1,6 +1,7 @@
 [general]
 name=Kart
 qgisMinimumVersion=3.16
+qgisMaximumVersion=4.99
 description=Work with Kart repositories directly from QGIS.
 about=<div style="max-width:33em"><a href="https://kartproject.org">Kart</a> provides modern, open source, distributed version-control for geospatial and tabular datasets.
 
