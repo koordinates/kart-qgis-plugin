@@ -9,7 +9,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="74"/>
+        <location filename="../gui/repopropertiesdialog.py" line="64"/>
         <source>Invalid extent value</source>
         <translation></translation>
     </message>
@@ -421,12 +421,12 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/historyviewer.py" line="226"/>
+        <location filename="../gui/switchdialog.py" line="38"/>
         <source>Create branch</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/historyviewer.py" line="226"/>
+        <location filename="../gui/switchdialog.py" line="38"/>
         <source>Enter name of branch to create</source>
         <translation></translation>
     </message>
@@ -601,7 +601,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/pulldialog.py" line="56"/>
+        <location filename="../gui/pushdialog.py" line="61"/>
         <source>Branch and remote must not be empty</source>
         <translation></translation>
     </message>
@@ -656,12 +656,12 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="65"/>
+        <location filename="../gui/initdialog.py" line="46"/>
         <source>Invalid location definition</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="87"/>
+        <location filename="../gui/initdialog.py" line="54"/>
         <source>Text fields must not be empty</source>
         <translation></translation>
     </message>
@@ -761,17 +761,17 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="75"/>
+        <location filename="../gui/diffviewer.py" line="76"/>
         <source>Diff viewer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="78"/>
+        <location filename="../gui/diffviewer.py" line="79"/>
         <source>Diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="78"/>
+        <location filename="../gui/diffviewer.py" line="79"/>
         <source>Working copy has been updated</source>
         <translation></translation>
     </message>
@@ -786,7 +786,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../processing/remotes.py" line="77"/>
+        <location filename="../processing/tags.py" line="23"/>
         <source>Repo Path</source>
         <translation></translation>
     </message>
@@ -1021,87 +1021,87 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="609"/>
+        <location filename="../gui/diffviewer.py" line="639"/>
         <source>Attributes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="610"/>
+        <location filename="../gui/diffviewer.py" line="640"/>
         <source>Geometries</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="613"/>
+        <location filename="../gui/diffviewer.py" line="643"/>
         <source>Old Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="613"/>
+        <location filename="../gui/diffviewer.py" line="643"/>
         <source>New Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="613"/>
+        <location filename="../gui/diffviewer.py" line="643"/>
         <source>Change type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="618"/>
+        <location filename="../gui/diffviewer.py" line="648"/>
         <source>Additional layers:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="619"/>
+        <location filename="../gui/diffviewer.py" line="649"/>
         <source>Diff type:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="622"/>
+        <location filename="../gui/diffviewer.py" line="652"/>
         <source>Project layers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="623"/>
+        <location filename="../gui/diffviewer.py" line="653"/>
         <source>OSM basemap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="624"/>
+        <location filename="../gui/diffviewer.py" line="654"/>
         <source>No additional layers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="632"/>
+        <location filename="../gui/diffviewer.py" line="662"/>
         <source>Transparency</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="628"/>
+        <location filename="../gui/diffviewer.py" line="658"/>
         <source>Swipe</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="629"/>
+        <location filename="../gui/diffviewer.py" line="659"/>
         <source>Per-vertex diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="633"/>
+        <location filename="../gui/diffviewer.py" line="663"/>
         <source>Old version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="634"/>
+        <location filename="../gui/diffviewer.py" line="664"/>
         <source>New version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="637"/>
+        <location filename="../gui/diffviewer.py" line="667"/>
         <source>Restore old version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="638"/>
+        <location filename="../gui/diffviewer.py" line="668"/>
         <source>Restore new version</source>
         <translation></translation>
     </message>
@@ -1191,32 +1191,32 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="307"/>
+        <location filename="../gui/diffviewer.py" line="310"/>
         <source>Added</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="313"/>
+        <location filename="../gui/diffviewer.py" line="316"/>
         <source>Modified</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="310"/>
+        <location filename="../gui/diffviewer.py" line="313"/>
         <source>Removed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="227"/>
+        <location filename="../gui/diffviewer.py" line="230"/>
         <source>Unchanged</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="234"/>
+        <location filename="../gui/diffviewer.py" line="237"/>
         <source>Old value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="234"/>
+        <location filename="../gui/diffviewer.py" line="237"/>
         <source>New value</source>
         <translation></translation>
     </message>
@@ -1246,7 +1246,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/mergedialog.py" line="51"/>
+        <location filename="../gui/switchdialog.py" line="56"/>
         <source>Branch</source>
         <translation></translation>
     </message>
@@ -1256,7 +1256,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/mergedialog.py" line="52"/>
+        <location filename="../gui/switchdialog.py" line="60"/>
         <source>Options</source>
         <translation></translation>
     </message>
@@ -1296,7 +1296,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="105"/>
+        <location filename="../gui/repopropertiesdialog.py" line="86"/>
         <source>Spatial filter</source>
         <translation></translation>
     </message>
@@ -1331,12 +1331,12 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/pulldialog.py" line="71"/>
+        <location filename="../gui/remotesdialog.py" line="100"/>
         <source>Remote:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/pulldialog.py" line="73"/>
+        <location filename="../gui/pushdialog.py" line="80"/>
         <source>Manage remotes</source>
         <translation></translation>
     </message>
@@ -1446,17 +1446,17 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="129"/>
+        <location filename="../gui/locationselectionpanel.py" line="49"/>
         <source>Host</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="130"/>
+        <location filename="../gui/locationselectionpanel.py" line="50"/>
         <source>Port</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/dbconnectiondialog.py" line="131"/>
+        <location filename="../gui/locationselectionpanel.py" line="51"/>
         <source>Database</source>
         <translation></translation>
     </message>
@@ -1476,7 +1476,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/clonedialog.py" line="104"/>
+        <location filename="../gui/initdialog.py" line="67"/>
         <source>Working copy location</source>
         <translation></translation>
     </message>

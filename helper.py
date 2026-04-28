@@ -49,7 +49,7 @@ def translate(locale=None):
     search_dirs = ["", "gui", "processing", "core"]
     source_files = []
     for d in search_dirs:
-        source_files.extend(glob.glob(os.path.join(src_dir, d, "*.py")))
+        source_files.extend(sorted(glob.glob(os.path.join(src_dir, d, "*.py"))))
 
     try:
         # Update .ts files from source code
