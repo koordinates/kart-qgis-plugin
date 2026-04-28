@@ -547,9 +547,6 @@ class DiffViewerWidget(WIDGET, BASE):
         self.btnRecoverNewVersion.setEnabled(
             bool(new) and self.showRecoverNewButton and noSchemaChange
         )
-        # Removed: disabling the slider when old is empty prevented added features
-        # from being visible in the diff view.
-        # self.sliderTransparency.setEnabled(bool(old))
 
     def _createVertexDiffLayer(self, geoms):
         textGeometries = []
