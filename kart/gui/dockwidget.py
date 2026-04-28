@@ -11,6 +11,7 @@ from qgis.core import (
     QgsVectorFileWriter,
     QgsVectorLayer,
 )
+from qgis.gui import QgsDockWidget
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QByteArray,
@@ -23,7 +24,6 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QAction,
     QDialog,
-    QDockWidget,
     QFileDialog,
     QInputDialog,
     QMenu,
@@ -67,9 +67,9 @@ pluginPath = os.path.split(os.path.dirname(__file__))[0]
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
 
-class KartDockWidget(BASE, WIDGET):
+class KartDockWidget(QgsDockWidget, WIDGET):
     def __init__(self):
-        super(QDockWidget, self).__init__(iface.mainWindow())
+        super().__init__(iface.mainWindow())
         self.setupUi(self)
 
         self.retranslateUi()

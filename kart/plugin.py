@@ -7,24 +7,27 @@ from qgis.PyQt.QtCore import QCoreApplication, QSettings, Qt, QTranslator
 from qgis.PyQt.QtWidgets import QAction
 
 from kart.gui.dockwidget import KartDockWidget
+from kart.gui.icons import kartIcon
 from kart.gui.settingsdialog import SettingsDialog
 from kart.kartapi import checkKartInstalled, kartVersionDetails
 from kart.layers import LayerTracker
 from kart.processing import KartProvider
 from kart.utils import tr
 
-pluginPath = os.path.dirname(__file__)
-
 
 class KartPlugin(object):
+    PLUGIN_PATH = os.path.dirname(__file__)
+
     def __init__(self, iface):
         self.iface = iface
         self.provider = None
         self.translator = None
+        self.dock = None
+        self.sideDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
 
         # Adds support for internationalization
         locale = QSettings().value("locale/userLocale")
-        locale_path = os.path.join(pluginPath, "i18n", f"kart_{locale}.qm")
+        locale_path = os.path.join(self.PLUGIN_PATH, "i18n", f"kart_{locale}.qm")
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -35,21 +38,31 @@ class KartPlugin(object):
         QgsApplication.processingRegistry().addProvider(self.provider)
 
     def initGui(self):
-        self.dock = KartDockWidget()
-        self.iface.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.dock)
+        # Toolbar
+        self.toolbar = self.iface.addToolBar("Kart")
+        self.toolbar.setObjectName("KartToolBar")
 
-        self.explorerAction = QAction(tr("Repositories..."), self.iface.mainWindow())
+        self.explorerAction = QAction(kartIcon, tr("Repositories"), self.iface.mainWindow())
+        self.explorerAction.setToolTip("Kart")
+        self.explorerAction.setCheckable(True)
+        self.toolbar.addAction(self.explorerAction)
+
+        # Menu
         self.iface.addPluginToMenu("Kart", self.explorerAction)
-        self.explorerAction.triggered.connect(self.showDock)
-        self.dock.hide()
-
-        self.settingsAction = QAction(tr("Settings..."), self.iface.mainWindow())
+        self.settingsAction = QAction(tr("Settings") + "\u2026", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.settingsAction)
         self.settingsAction.triggered.connect(self.openSettings)
 
-        self.aboutAction = QAction(tr("About..."), self.iface.mainWindow())
+        self.aboutAction = QAction(tr("About") + "\u2026", self.iface.mainWindow())
         self.iface.addPluginToMenu("Kart", self.aboutAction)
         self.aboutAction.triggered.connect(self.openAbout)
+
+        # Dock created at startup, hidden
+        self.createDockWidget()
+        self.dock.hide()
+
+        # Displays a warning to the user if Kart is not installed
+        checkKartInstalled()
 
         self.tracker = LayerTracker.instance()
         QgsProject.instance().layerRemoved.connect(self.tracker.layerRemoved)
@@ -58,17 +71,31 @@ class KartPlugin(object):
 
         self.initProcessing()
 
-    def showDock(self):
-        if checkKartInstalled():
-            self.dock.show()
+    def createDockWidget(self):
+        """Creates and registers the Kart dock widget."""
+        self.dock = KartDockWidget()
+        self.dock.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.dock.setFloating(False)
+        self.iface.addDockWidget(self.sideDockWidgetArea, self.dock)
+        self.iface.addTabifiedDockWidget(self.sideDockWidgetArea, self.dock, [], True)
+
+        # setToggleVisibilityAction automatically manages the show/hide and state of the button
+        self.dock.setToggleVisibilityAction(self.explorerAction)
+        self.dock.dockLocationChanged.connect(self.onDockLocationChanged)
+
+    def onDockLocationChanged(self, area):
+        """Tracks the dock widget's current location to restore it on recreation."""
+        self.sideDockWidgetArea = area
 
     def openSettings(self):
         dlg = SettingsDialog()
         dlg.exec()
 
-    def pluginVersion(add_commit=False):
+    def pluginVersion(self):
         config = configparser.ConfigParser()
-        path = os.path.join(os.path.dirname(__file__), "metadata.txt")
+        path = os.path.join(self.PLUGIN_PATH, "metadata.txt")
         config.read(path, encoding="utf-8")
         version = config.get("general", "version")
         return version
@@ -107,16 +134,21 @@ class KartPlugin(object):
         dlg.showMessage()
 
     def unload(self):
-        self.iface.removeDockWidget(self.dock)
-        self.dock = None
+        # initGui
+        if self.dock is not None:
+            self.dock.dockLocationChanged.disconnect(self.onDockLocationChanged)
+            self.iface.removeDockWidget(self.dock)
+            self.dock = None
         self.iface.removePluginMenu("Kart", self.explorerAction)
         self.iface.removePluginMenu("Kart", self.settingsAction)
         self.iface.removePluginMenu("Kart", self.aboutAction)
+        del self.toolbar
 
         QgsProject.instance().layerRemoved.disconnect(self.tracker.layerRemoved)
         QgsProject.instance().layerWasAdded.disconnect(self.tracker.layerAdded)
-
+        QgsProject.instance().crsChanged.disconnect(self.tracker.updateRubberBands)
         QgsApplication.processingRegistry().removeProvider(self.provider)
 
+        # init
         if self.translator:
             QCoreApplication.removeTranslator(self.translator)
