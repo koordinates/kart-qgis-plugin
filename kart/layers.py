@@ -225,8 +225,7 @@ class LayerTracker:
         searchRadius = iface.mapCanvas().extent().width() * 0.005
         r = QgsRectangle(pt, pt)
         r.grow(searchRadius)
-        if self.mapToolLayer and self.mapToolLayer.isValid():
-            r = self.mapTool.toLayerCoordinates(self.mapToolLayer, r)
+        r = self.mapTool.toLayerCoordinates(self.mapToolLayer, r)
 
         feats = self.mapToolLayer.getFeatures(
             QgsFeatureRequest().setFilterRect(r).setFlags(QgsFeatureRequest.Flag.ExactIntersect)
