@@ -72,7 +72,7 @@ class FeatureHistoryDialog(BASE, WIDGET):
         row = self.listCommits.currentRow()
         if row == self.listCommits.count() - 1:
             if self.listCommits.count() == 1:
-                return self.listCommits.currentItem().feature()
+                return
             else:
                 return self.listCommits.item(row - 1).oldFeature()
         else:
