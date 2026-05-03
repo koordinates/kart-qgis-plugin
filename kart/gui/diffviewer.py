@@ -75,9 +75,6 @@ class DiffViewerWidget(WIDGET, BASE):
         self.osmLayer = None
         self.showRecoverNewButton = showRecoverNewButton
         self.layerDiffLayers = {}
-        self.vertexDiffLayer = None
-        self.vertexDiffNewOutline = None
-        self.vertexDiffOldOutline = None
         self.currentFeatureItem = None
         self.currentDatasetItem = None
         self.workingCopyLayers = {}
@@ -240,13 +237,9 @@ class DiffViewerWidget(WIDGET, BASE):
         layer.triggerRepaint()
 
     def _cleanupModeLayers(self):
-        """Remove temporary mode-specific layers from the project."""
-        for layer in [self.vertexDiffNewOutline, self.vertexDiffOldOutline, self.vertexDiffLayer]:
-            if layer is not None:
-                QgsProject.instance().removeMapLayer(layer.id())
-        self.vertexDiffNewOutline = None
-        self.vertexDiffOldOutline = None
-        self.vertexDiffLayer = None
+        """Delegate cleanup to each mode — each mode owns its temporary layers."""
+        for mode in self._diffModeDispatchers.values():
+            mode.cleanup()
 
     def _addToProject(self, layer):
         """Add a layer to the project only if not already registered."""
@@ -340,12 +333,10 @@ class DiffViewerWidget(WIDGET, BASE):
         crs = self.workingCopyLayerCrs[dataset]
         options = QgsVectorLayer.LayerOptions()
         options.skipCrsValidation = True
-        self.vertexDiffLayer = QgsVectorLayer(
+        vertexDiffLayer = QgsVectorLayer(
             f"Point?crs={crs}&field=changetype:string", "vertexdiff", "memory", options
         )
 
-        # Extract vertex sets using native QGIS iteration
-        # Rounded to 5 decimal places to avoid floating-point false positives
         def vertices(geom):
             if geom is None or geom.isEmpty():
                 return set()
@@ -368,12 +359,12 @@ class DiffViewerWidget(WIDGET, BASE):
                 feat.setAttributes([changetype])
                 feats.append(feat)
 
-        self.vertexDiffLayer.dataProvider().addFeatures(feats)
+        vertexDiffLayer.dataProvider().addFeatures(feats)
 
         # Apply categorized renderer using the shared color constants.
-        marker_symbol_added = QgsSymbol.defaultSymbol(self.vertexDiffLayer.geometryType())
-        marker_symbol_removed = QgsSymbol.defaultSymbol(self.vertexDiffLayer.geometryType())
-        marker_symbol_unchanged = QgsSymbol.defaultSymbol(self.vertexDiffLayer.geometryType())
+        marker_symbol_added = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
+        marker_symbol_removed = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
+        marker_symbol_unchanged = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
 
         marker_symbol_added.setColor(COLOR_ADDED)
         marker_symbol_removed.setColor(COLOR_REMOVED)
@@ -385,9 +376,10 @@ class DiffViewerWidget(WIDGET, BASE):
             QgsRendererCategory("U", marker_symbol_unchanged, tr("Unchanged")),
         ]
 
-        self.vertexDiffLayer.setRenderer(QgsCategorizedSymbolRenderer("changetype", categories))
+        vertexDiffLayer.setRenderer(QgsCategorizedSymbolRenderer("changetype", categories))
 
-        QgsProject.instance().addMapLayer(self.vertexDiffLayer, False)
+        QgsProject.instance().addMapLayer(vertexDiffLayer, False)
+        return vertexDiffLayer
 
     # UI
     def fillTree(self):
@@ -697,6 +689,10 @@ class DiffMode:
         """
         raise NotImplementedError
 
+    def cleanup(self):
+        """Remove any temporary layers created by this mode from the project."""
+        pass
+
 
 class TransparencyMode(DiffMode):
     def setup(self, layers_data):
@@ -720,6 +716,24 @@ class SwipeMode(DiffMode):
 
 
 class VertexDiffMode(DiffMode):
+    def __init__(self, widget):
+        super().__init__(widget)
+        self._vertexDiffLayer = None
+        self._vertexDiffNewOutline = None
+        self._vertexDiffOldOutline = None
+
+    def cleanup(self):
+        for layer in [
+            self._vertexDiffNewOutline,
+            self._vertexDiffOldOutline,
+            self._vertexDiffLayer,
+        ]:
+            if layer is not None:
+                QgsProject.instance().removeMapLayer(layer.id())
+        self._vertexDiffNewOutline = None
+        self._vertexDiffOldOutline = None
+        self._vertexDiffLayer = None
+
     def setup(self, layers_data):
         if self.w.currentFeatureItem:
             old = self.w.currentFeatureItem.old
@@ -728,7 +742,7 @@ class VertexDiffMode(DiffMode):
                 self.w._geomFromGeojson(old) if old else None,
                 self.w._geomFromGeojson(new) if new else None,
             ]
-            self.w._createVertexDiffLayer(geoms)
+            self._vertexDiffLayer = self.w._createVertexDiffLayer(geoms)
 
         symbolType = type(QgsSymbol.defaultSymbol(self.w.oldLayer.geometryType()))
 
@@ -739,17 +753,17 @@ class VertexDiffMode(DiffMode):
             "outline_style": "solid",
         }
 
-        self.w.vertexDiffNewOutline = self.w.newLayer.clone()
-        self.w.vertexDiffNewOutline.setRenderer(
+        self._vertexDiffNewOutline = self.w.newLayer.clone()
+        self._vertexDiffNewOutline.setRenderer(
             QgsSingleSymbolRenderer(symbolType.createSimple(outline_style))
         )
-        self.w.vertexDiffOldOutline = self.w.oldLayer.clone()
-        self.w.vertexDiffOldOutline.setRenderer(
+        self._vertexDiffOldOutline = self.w.oldLayer.clone()
+        self._vertexDiffOldOutline.setRenderer(
             QgsSingleSymbolRenderer(symbolType.createSimple(outline_style))
         )
 
-        QgsProject.instance().addMapLayer(self.w.vertexDiffNewOutline, False)
-        QgsProject.instance().addMapLayer(self.w.vertexDiffOldOutline, False)
+        QgsProject.instance().addMapLayer(self._vertexDiffNewOutline, False)
+        QgsProject.instance().addMapLayer(self._vertexDiffOldOutline, False)
 
         if self.w.newLayer in layers_data:
             layers_data.remove(self.w.newLayer)
@@ -758,9 +772,9 @@ class VertexDiffMode(DiffMode):
 
         # Order: [top] vertex points → outlines [bottom].
         result = []
-        if self.w.vertexDiffLayer:
-            result.append(self.w.vertexDiffLayer)
-        result.extend([self.w.vertexDiffNewOutline, self.w.vertexDiffOldOutline])
+        if self._vertexDiffLayer:
+            result.append(self._vertexDiffLayer)
+        result.extend([self._vertexDiffNewOutline, self._vertexDiffOldOutline])
         return result
 
 
