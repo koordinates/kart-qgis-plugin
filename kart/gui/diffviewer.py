@@ -252,6 +252,10 @@ class DiffViewerWidget(WIDGET, BASE):
         return list(iface.mapCanvas().layers())
 
     def _baseLayersOsm(self):
+        if self.osmLayer and self.osmLayer.isValid():
+            return [self.osmLayer]
+        if self.osmLayer:
+            QgsProject.instance().removeMapLayer(self.osmLayer.id())
         uri = (
             "crs=EPSG:3857&type=xyz&"
             "url=https://tile.openstreetmap.org/{z}/{x}/{y}.png"
