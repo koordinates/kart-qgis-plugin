@@ -58,8 +58,6 @@ COLOR_REMOVED = QColor(230, 120, 120)  # red
 COLOR_MODIFIED = QColor(255, 190, 100)  # orange
 COLOR_UNCHANGED = QColor(255, 255, 255)  # white
 
-pluginPath = os.path.split(os.path.dirname(__file__))[0]
-
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui"))
 
 
