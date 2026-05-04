@@ -132,6 +132,23 @@ class DiffViewerWidget(WIDGET, BASE):
         self.tabWidget.setTabEnabled(TAB_GEOMETRY, True)
         self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, True)
         self.tabWidget.setCurrentIndex(self.mostRecentTabIndex or TAB_ATTRIBUTES)
+
+        for index, mode in self._diffModeDispatchers.items():
+            is_supported = mode.supports(current)
+            self.comboDiffType.view().setRowHidden(index, not is_supported)
+
+        if self.comboDiffType.view().isRowHidden(self.comboDiffType.currentIndex()):
+            first_valid_index = next(
+                (
+                    i
+                    for i in range(self.comboDiffType.count())
+                    if not self.comboDiffType.view().isRowHidden(i)
+                ),
+                -1,
+            )
+            if first_valid_index != -1:
+                self.comboDiffType.setCurrentIndex(first_valid_index)
+
         if isinstance(current, FeatureItem):
             self.currentFeatureItem = current
             self.currentDatasetItem = None
@@ -142,10 +159,10 @@ class DiffViewerWidget(WIDGET, BASE):
             self.btnRecoverOldVersion.setVisible(True)
             self._createLayers()
             if self._hasGeometry(current):
-                self.comboDiffType.view().setRowHidden(VERTEX_DIFF, False)
                 self.fillCanvas()
             else:
                 self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
+
         elif isinstance(current, DatasetItem):
             self.currentFeatureItem = None
             self.currentDatasetItem = current
@@ -155,11 +172,11 @@ class DiffViewerWidget(WIDGET, BASE):
             self.btnRecoverNewVersion.setVisible(False)
             self.btnRecoverOldVersion.setVisible(False)
             if self._hasGeometry(current):
-                self.comboDiffType.view().setRowHidden(VERTEX_DIFF, True)
                 self._createLayers()
                 self.fillCanvas()
             else:
                 self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
+
         else:
             self.tabWidget.setTabEnabled(TAB_GEOMETRY, False)
             self.tabWidget.setTabEnabled(TAB_ATTRIBUTES, False)
@@ -169,6 +186,7 @@ class DiffViewerWidget(WIDGET, BASE):
             self.widgetDiffConfig.setVisible(False)
             self.btnRecoverNewVersion.setVisible(False)
             self.btnRecoverOldVersion.setVisible(False)
+
         self.tabWidget.setStyleSheet(
             "QTabBar::tab::disabled {width: 0; height: 0; margin: 0; padding: 0; border: none;} "
         )
@@ -691,6 +709,10 @@ class DiffMode:
         """
         raise NotImplementedError
 
+    def supports(self, item):
+        """Defines whether this mode supports the item (Feature ou Dataset)."""
+        return True
+
     def cleanup(self):
         """Remove any temporary layers created by this mode from the project."""
         pass
@@ -723,18 +745,6 @@ class VertexDiffMode(DiffMode):
         self._vertexDiffLayer = None
         self._vertexDiffNewOutline = None
         self._vertexDiffOldOutline = None
-
-    def cleanup(self):
-        for layer in [
-            self._vertexDiffNewOutline,
-            self._vertexDiffOldOutline,
-            self._vertexDiffLayer,
-        ]:
-            if layer is not None:
-                QgsProject.instance().removeMapLayer(layer.id())
-        self._vertexDiffNewOutline = None
-        self._vertexDiffOldOutline = None
-        self._vertexDiffLayer = None
 
     def setup(self, layers_data):
         if self.w.currentFeatureItem:
@@ -778,6 +788,22 @@ class VertexDiffMode(DiffMode):
             result.append(self._vertexDiffLayer)
         result.extend([self._vertexDiffNewOutline, self._vertexDiffOldOutline])
         return result
+
+    def supports(self, item):
+        # Only supports items
+        return isinstance(item, FeatureItem)
+
+    def cleanup(self):
+        for layer in [
+            self._vertexDiffNewOutline,
+            self._vertexDiffOldOutline,
+            self._vertexDiffLayer,
+        ]:
+            if layer is not None:
+                QgsProject.instance().removeMapLayer(layer.id())
+        self._vertexDiffNewOutline = None
+        self._vertexDiffOldOutline = None
+        self._vertexDiffLayer = None
 
 
 # Data model classes
