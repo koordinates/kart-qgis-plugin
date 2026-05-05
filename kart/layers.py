@@ -227,6 +227,7 @@ class LayerTracker:
         r.grow(searchRadius)
         if self.mapToolLayer and self.mapToolLayer.isValid():
             r = self.mapTool.toLayerCoordinates(self.mapToolLayer, r)
+            
         feats = self.mapToolLayer.getFeatures(
             QgsFeatureRequest().setFilterRect(r).setFlags(QgsFeatureRequest.Flag.ExactIntersect)
         )
