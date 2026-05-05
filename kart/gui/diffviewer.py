@@ -35,7 +35,15 @@ from qgis.PyQt.QtWidgets import (
 from qgis.utils import iface
 
 from kart.gui import icons
-from kart.utils import tr
+from kart.utils import (
+    CURRENT_COLOR_ADDED,
+    CURRENT_COLOR_MODIFIED,
+    CURRENT_COLOR_REMOVED,
+    CURRENT_COLOR_UNCHANGED,
+    PALETTES,
+    setting,
+    tr,
+)
 
 from .mapswipetool import MapSwipeTool
 
@@ -51,12 +59,6 @@ VERTEX_DIFF = 2
 
 TAB_ATTRIBUTES = 0
 TAB_GEOMETRY = 1
-
-# Diff change type colors
-COLOR_ADDED = QColor(120, 200, 120)  # green
-COLOR_REMOVED = QColor(230, 120, 120)  # red
-COLOR_MODIFIED = QColor(255, 190, 100)  # orange
-COLOR_UNCHANGED = QColor(255, 255, 255)  # white
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "diffviewerwidget.ui"))
 
@@ -124,6 +126,19 @@ class DiffViewerWidget(WIDGET, BASE):
         self.fillTree()
 
         self.selectFirstChangedFeature()
+
+    def get_color(self, status):
+        """Fetches the color from QSettings, using "Standard" as fallback."""
+        key_map = {
+            "ADDED": CURRENT_COLOR_ADDED,
+            "REMOVED": CURRENT_COLOR_REMOVED,
+            "MODIFIED": CURRENT_COLOR_MODIFIED,
+            "UNCHANGED": CURRENT_COLOR_UNCHANGED,
+        }
+        color_hex = setting(key_map.get(status))
+        if color_hex:
+            return QColor(color_hex)
+        return QColor(PALETTES["Standard"][status])
 
     # Lifecycle
     def treeItemChanged(self, current, previous):
@@ -216,9 +231,9 @@ class DiffViewerWidget(WIDGET, BASE):
         self.newLayer.setOpacity(1)
         self.oldLayer.setOpacity(1)
 
-        # Apply programmatic styles using the shared color constants.
-        self._applyLayerStyle(self.newLayer, COLOR_ADDED)
-        self._applyLayerStyle(self.oldLayer, COLOR_REMOVED)
+        # Apply programmatic styles using settings colors.
+        self._applyLayerStyle(self.newLayer, self.get_color("ADDED"))
+        self._applyLayerStyle(self.oldLayer, self.get_color("REMOVED"))
 
         # Data layers start at the top of the stack.
         layers_data = [self.newLayer, self.oldLayer]
@@ -381,14 +396,13 @@ class DiffViewerWidget(WIDGET, BASE):
 
         vertexDiffLayer.dataProvider().addFeatures(feats)
 
-        # Apply categorized renderer using the shared color constants.
         marker_symbol_added = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
         marker_symbol_removed = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
         marker_symbol_unchanged = QgsSymbol.defaultSymbol(vertexDiffLayer.geometryType())
 
-        marker_symbol_added.setColor(COLOR_ADDED)
-        marker_symbol_removed.setColor(COLOR_REMOVED)
-        marker_symbol_unchanged.setColor(COLOR_UNCHANGED)
+        marker_symbol_added.setColor(self.get_color("ADDED"))
+        marker_symbol_removed.setColor(self.get_color("REMOVED"))
+        marker_symbol_unchanged.setColor(self.get_color("UNCHANGED"))
 
         categories = [
             QgsRendererCategory("A", marker_symbol_added, tr("Added")),
@@ -499,7 +513,12 @@ class DiffViewerWidget(WIDGET, BASE):
         fields.extend(old.get("properties", {}).keys())
         fields = list(set(fields))
 
-        changeTypeColor = [COLOR_ADDED, COLOR_MODIFIED, COLOR_REMOVED, COLOR_UNCHANGED]
+        changeTypeColor = [
+            self.get_color("ADDED"),
+            self.get_color("MODIFIED"),
+            self.get_color("REMOVED"),
+            self.get_color("UNCHANGED"),
+        ]
         changeTypeName = [tr("Added"), tr("Modified"), tr("Removed"), tr("Unchanged")]
 
         self.attributesTable.clear()

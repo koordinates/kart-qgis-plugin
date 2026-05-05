@@ -7,17 +7,20 @@ from qgis.utils import iface
 
 from kart.utils import (
     AUTOCOMMIT,
+    CURRENT_COLOR_ADDED,
+    CURRENT_COLOR_MODIFIED,
+    CURRENT_COLOR_REMOVED,
+    CURRENT_COLOR_UNCHANGED,
     DIFFSTYLES,
     HELPERMODE,
     KARTPATH,
+    PALETTES,
     setSetting,
     setting,
     tr,
 )
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "settingsdialog.ui"))
-
-DIFF_STYLES = ["Standard", "GeoInt"]
 
 
 class SettingsDialog(BASE, WIDGET):
@@ -36,12 +39,17 @@ class SettingsDialog(BASE, WIDGET):
         self.buttonBox.accepted.connect(self.okClicked)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.comboDiffStyles.addItems(DIFF_STYLES)
+        # Fill combo from the central dictionary
+        self.comboDiffStyles.clear()
+        self.comboDiffStyles.addItems(PALETTES.keys())
 
         self.setValues()
 
     def setValues(self):
-        self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))
+        current_style = setting(DIFFSTYLES) or "Standard"
+        if current_style in PALETTES:
+            self.comboDiffStyles.setCurrentText(current_style)
+
         self.chkHelperMode.setChecked(setting(HELPERMODE))
         self.chkAutoCommit.setChecked(setting(AUTOCOMMIT))
         self.txtKartPath.setText(setting(KARTPATH))
@@ -52,10 +60,21 @@ class SettingsDialog(BASE, WIDGET):
             textbox.setText(folder)
 
     def okClicked(self):
+        selected_style = self.comboDiffStyles.currentText()
+
         setSetting(KARTPATH, self.txtKartPath.text())
         setSetting(HELPERMODE, self.chkHelperMode.isChecked())
         setSetting(AUTOCOMMIT, self.chkAutoCommit.isChecked())
-        setSetting(DIFFSTYLES, self.comboDiffStyles.currentText())
+        setSetting(DIFFSTYLES, selected_style)
+
+        # Deploy colors from selected palette to current settings
+        if selected_style in PALETTES:
+            palette = PALETTES[selected_style]
+            setSetting(CURRENT_COLOR_ADDED, palette["ADDED"])
+            setSetting(CURRENT_COLOR_REMOVED, palette["REMOVED"])
+            setSetting(CURRENT_COLOR_MODIFIED, palette["MODIFIED"])
+            setSetting(CURRENT_COLOR_UNCHANGED, palette["UNCHANGED"])
+
         self.accept()
 
     def retranslateUi(self, *args):
