@@ -2,6 +2,7 @@ import json
 import locale
 import os
 import re
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -432,12 +433,67 @@ class Repository:
         self.executeKart(["config", "--global", "user.name", name])
         self.executeKart(["config", "--global", "user.email", email])
 
+    def _gpkgHasQgisProjects(self, gpkg_path):
+        """Return True if the GeoPackage has a qgis_projects table."""
+        try:
+            con = sqlite3.connect(gpkg_path)
+            cur = con.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='qgis_projects'"
+            )
+            found = cur.fetchone() is not None
+            con.close()
+            return found
+        except Exception:
+            return False
+
+    def _normalizeQgisProjectsForKart(self, gpkg_path):
+        """Convert qgis_projects text columns to blob so Kart's schema is satisfied."""
+        con = sqlite3.connect(gpkg_path)
+        con.execute(
+            "UPDATE qgis_projects SET metadata = CAST(metadata AS BLOB) WHERE typeof(metadata) = 'text'"
+        )
+        con.execute(
+            "UPDATE qgis_projects SET content = unhex(content) WHERE typeof(content) = 'text'"
+        )
+        con.commit()
+        con.close()
+
+    def _restoreQgisProjectsForQgis(self, gpkg_path):
+        """Convert qgis_projects blob columns back to text-hex so QGIS can open them."""
+        con = sqlite3.connect(gpkg_path)
+        con.execute(
+            "UPDATE qgis_projects SET metadata = CAST(metadata AS TEXT) WHERE typeof(metadata) = 'blob'"
+        )
+        con.execute(
+            "UPDATE qgis_projects SET content = hex(content) WHERE typeof(content) = 'blob'"
+        )
+        con.commit()
+        con.close()
+
     def commit(self, msg, dataset=None):
         if self.checkUserConfigured():
             commands = ["commit", "-m", msg, "--no-editor"]
             if dataset is not None:
                 commands.append(dataset)
-            self.executeKart(commands)
+
+            # Kart's schema declares qgis_projects.content/metadata as blob, but QGIS
+            # stores them as text-hex.  Normalize to blob before the commit, then
+            # restore to text-hex so QGIS can still open the project afterwards.
+            location = self.workingCopyLocation()
+            gpkg_path = None
+            if not location.lower().startswith("postgres"):
+                gpkg_path = os.path.join(self.path, location)
+                if self._gpkgHasQgisProjects(gpkg_path):
+                    self._normalizeQgisProjectsForKart(gpkg_path)
+                else:
+                    gpkg_path = None  # no qgis_projects table – nothing to restore
+
+            try:
+                self.executeKart(commands)
+            finally:
+                if gpkg_path is not None:
+                    self._restoreQgisProjectsForQgis(gpkg_path)
+
             return True
         else:
             return False

@@ -526,7 +526,8 @@ class DiffViewerWidget(WIDGET, BASE):
                 props = feat["properties"]
                 feature = QgsFeature(layer.fields())
                 for prop in feature.fields().names():
-                    feature[prop] = props[prop]
+                    if prop in props:
+                        feature[prop] = props[prop]
                 feature[idField] = self.currentFeatureItem.fid
                 if geom is not None:
                     feature.setGeometry(geom)
