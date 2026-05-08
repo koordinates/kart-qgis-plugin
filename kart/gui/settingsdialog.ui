@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>522</width>
-    <height>300</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,6 +66,43 @@
        <widget class="QCheckBox" name="chkAutoCommit">
         <property name="text">
          <string>Commit automatically after closing editing</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkAutoCommitOnSave">
+        <property name="text">
+         <string>Prompt to commit when saving QGIS project</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxSync">
+     <property name="title">
+      <string>Synchronisation</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayoutSync">
+      <item>
+       <widget class="QCheckBox" name="chkAutoPush">
+        <property name="text">
+         <string>Automatically push after each commit</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkWarnOnExitUncommitted">
+        <property name="text">
+         <string>Warn on exit if there are uncommitted changes</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QCheckBox" name="chkWarnOnExitUnpushed">
+        <property name="text">
+         <string>Warn on exit if there are unpushed commits</string>
         </property>
        </widget>
       </item>

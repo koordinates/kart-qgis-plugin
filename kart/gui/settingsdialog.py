@@ -7,12 +7,16 @@ from qgis.utils import iface
 
 from kart.utils import (
     AUTOCOMMIT,
+    AUTO_COMMIT_ON_SAVE,
+    AUTO_PUSH,
     DIFFSTYLES,
     HELPERMODE,
     KARTPATH,
     setSetting,
     setting,
     tr,
+    WARN_ON_EXIT_UNCOMMITTED,
+    WARN_ON_EXIT_UNPUSHED,
 )
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "settingsdialog.ui"))
@@ -44,6 +48,10 @@ class SettingsDialog(BASE, WIDGET):
         self.comboDiffStyles.setCurrentText(setting(DIFFSTYLES))
         self.chkHelperMode.setChecked(setting(HELPERMODE))
         self.chkAutoCommit.setChecked(setting(AUTOCOMMIT))
+        self.chkAutoCommitOnSave.setChecked(setting(AUTO_COMMIT_ON_SAVE))
+        self.chkAutoPush.setChecked(setting(AUTO_PUSH))
+        self.chkWarnOnExitUncommitted.setChecked(setting(WARN_ON_EXIT_UNCOMMITTED))
+        self.chkWarnOnExitUnpushed.setChecked(setting(WARN_ON_EXIT_UNPUSHED))
         self.txtKartPath.setText(setting(KARTPATH))
 
     def browse(self, textbox):
@@ -55,6 +63,10 @@ class SettingsDialog(BASE, WIDGET):
         setSetting(KARTPATH, self.txtKartPath.text())
         setSetting(HELPERMODE, self.chkHelperMode.isChecked())
         setSetting(AUTOCOMMIT, self.chkAutoCommit.isChecked())
+        setSetting(AUTO_COMMIT_ON_SAVE, self.chkAutoCommitOnSave.isChecked())
+        setSetting(AUTO_PUSH, self.chkAutoPush.isChecked())
+        setSetting(WARN_ON_EXIT_UNCOMMITTED, self.chkWarnOnExitUncommitted.isChecked())
+        setSetting(WARN_ON_EXIT_UNPUSHED, self.chkWarnOnExitUnpushed.isChecked())
         setSetting(DIFFSTYLES, self.comboDiffStyles.currentText())
         self.accept()
 
@@ -76,6 +88,13 @@ class SettingsDialog(BASE, WIDGET):
         # Auto Commit Section
         self.groupBox_3.setTitle(tr("Auto commit"))
         self.chkAutoCommit.setText(tr("Commit automatically after closing editing"))
+        self.chkAutoCommitOnSave.setText(tr("Prompt to commit when saving QGIS project"))
+
+        # Synchronisation Section
+        self.groupBoxSync.setTitle(tr("Synchronisation"))
+        self.chkAutoPush.setText(tr("Automatically push after each commit"))
+        self.chkWarnOnExitUncommitted.setText(tr("Warn on exit if there are uncommitted changes"))
+        self.chkWarnOnExitUnpushed.setText(tr("Warn on exit if there are unpushed commits"))
 
         # Diff Styles Section
         self.groupBox_2.setTitle(tr("Diff styles"))

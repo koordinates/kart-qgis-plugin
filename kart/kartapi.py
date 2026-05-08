@@ -1,3 +1,4 @@
+import difflib
 import json
 import locale
 import os
@@ -31,6 +32,11 @@ from kart import logging
 from kart.gui.installationwarningdialog import InstallationWarningDialog
 from kart.gui.userconfigdialog import UserConfigDialog
 from kart.utils import HELPERMODE, KARTPATH, setSetting, setting, tr
+
+# Suppress console windows on Windows for all subprocess calls.
+_POPEN_FLAGS = (
+    {"creationflags": subprocess.CREATE_NO_WINDOW} if os.name == "nt" else {}
+)
 
 MINIMUM_SUPPORTED_VERSION = "0.14.0"
 CURRENT_VERSION = "0.17.0"
@@ -213,6 +219,10 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             executeKart.env.pop("PYTHONHOME")
         if "GDAL_DRIVER_PATH" in executeKart.env:
             executeKart.env.pop("GDAL_DRIVER_PATH")
+        # PYTHONPATH from QGIS causes kart's `import logging` to find the
+        # plugin's kart/logging.py instead of the stdlib module.
+        if "PYTHONPATH" in executeKart.env:
+            executeKart.env.pop("PYTHONPATH")
 
     # always set the use helper env var as it is long lived and the setting may have changed
     executeKart.env["KART_USE_HELPER"] = "1" if setting(HELPERMODE) else ""
@@ -239,6 +249,7 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             universal_newlines=True,
             encoding=encoding,
             cwd=path,
+            **_POPEN_FLAGS,
         ) as proc:
             if feedback is not None:
                 output = []
@@ -267,6 +278,41 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         QApplication.restoreOverrideCursor()
 
 
+def executeKartBinary(commands, path=None):
+    """Like executeKart but returns raw bytes (for blob content)."""
+    commands.insert(0, kartExecutable())
+
+    if not hasattr(executeKart, "env"):
+        executeKart.env = os.environ.copy()
+        if "PYTHONHOME" in executeKart.env:
+            executeKart.env.pop("PYTHONHOME")
+        if "GDAL_DRIVER_PATH" in executeKart.env:
+            executeKart.env.pop("GDAL_DRIVER_PATH")
+        if "PYTHONPATH" in executeKart.env:
+            executeKart.env.pop("PYTHONPATH")
+        executeKart.env["KART_USE_HELPER"] = "1" if setting(HELPERMODE) else ""
+        executeKart.env["KART_POINT_CLOUD_VPCS"] = "1"
+        executeKart.env["KART_RASTER_VRTS"] = "1"
+
+    try:
+        with subprocess.Popen(
+            commands,
+            shell=os.name == "nt",
+            env=executeKart.env,
+            stdout=subprocess.PIPE,
+            stdin=subprocess.DEVNULL,
+            stderr=subprocess.PIPE,
+            cwd=path,
+            **_POPEN_FLAGS,
+        ) as proc:
+            stdout, stderr = proc.communicate()
+            if proc.returncode:
+                raise KartException(stderr.decode("utf-8", "replace"))
+            return stdout
+    except Exception as e:
+        raise KartException(str(e))
+
+
 class Repository:
     def __init__(self, path):
         self.path = path
@@ -275,6 +321,9 @@ class Repository:
 
     def executeKart(self, commands, jsonoutput=False):
         return executeKart(commands, self.path, jsonoutput)
+
+    def executeKartBinary(self, commands):
+        return executeKartBinary(commands, self.path)
 
     @staticmethod
     def supportedDbTypes():
@@ -770,3 +819,164 @@ class Repository:
         for layer in QgsProject.instance().mapLayers().values():
             if self.layerBelongsToRepo(layer):
                 layer.triggerRepaint()
+
+    def pathInsideRepo(self, path):
+        repo_root = os.path.abspath(self.path)
+        candidate = os.path.abspath(path)
+        try:
+            return os.path.commonpath([repo_root, candidate]) == repo_root
+        except ValueError:
+            return False
+
+    def repoRelativePath(self, path):
+        return os.path.relpath(
+            os.path.abspath(path), os.path.abspath(self.path)
+        ).replace(os.path.sep, "/")
+
+    def validRepoRelativePath(self, rel_path):
+        if not rel_path or os.path.isabs(rel_path):
+            return False
+        normalized = os.path.normpath(rel_path).replace(os.path.sep, "/")
+        return normalized == rel_path and not normalized.startswith("../") and normalized != ".."
+
+    def trackedAttachmentFiles(self, ref="HEAD"):
+        """Return all tracked attachment files at *ref* via ``kart ls-files``."""
+        out = self.executeKart(["ls-files", ref])
+        return [line.strip() for line in out.splitlines() if line.strip()]
+
+    def aheadBehind(self):
+        """Return (ahead, behind) counts via ``kart ahead-behind``. Returns (0, 0) on failure."""
+        try:
+            out = self.executeKart(["ahead-behind"]).strip()
+            parts = out.split()
+            if len(parts) == 2:
+                return int(parts[0]), int(parts[1])
+        except Exception:
+            pass
+        return 0, 0
+
+    def fileStatus(self):
+        """Return ``{"modified": [...], "untracked": [...], "deleted": [...]}`` for attachment files."""
+        ret = self.executeKart(["status", "-ojson"])
+        data = json.loads(ret)
+        status = list(data.values())[0]
+        files = (status.get("workingCopy") or {}).get("files")
+        if files is None:
+            return {"modified": [], "untracked": [], "deleted": []}
+        return files
+
+    def restoreFile(self, rel_path):
+        """Restore *rel_path* in the working directory to its HEAD state."""
+        self.executeKart(["restore", "-s", "HEAD", "--", rel_path])
+
+    def readFileFromRepo(self, rel_path, ref="HEAD"):
+        if not self.validRepoRelativePath(rel_path):
+            raise KartException("Invalid repository-relative path")
+        return self.executeKartBinary(["show-file", f"{ref}:{rel_path}"])
+
+    def showFileAtRef(self, rel_path, ref="HEAD"):
+        return self.readFileFromRepo(rel_path, ref)
+
+    def blobHash(self, rel_path, ref="HEAD"):
+        if not self.validRepoRelativePath(rel_path):
+            raise KartException("Invalid repository-relative path")
+        return self.executeKart(["blob-hash", f"{ref}:{rel_path}"]).strip()
+
+    def fileDiff(self, rel_path):
+        """Return a unified diff string comparing ``HEAD:<rel_path>`` to the working-directory file."""
+        try:
+            old_bytes = self.readFileFromRepo(rel_path)
+            old_text = old_bytes.decode("utf-8", "replace")
+            old_label = f"HEAD:{rel_path}"
+        except Exception:
+            old_text = ""
+            old_label = f"HEAD:{rel_path} (new file)"
+
+        full_path = os.path.join(self.path, rel_path.replace("/", os.sep))
+        try:
+            with open(full_path, encoding="utf-8", errors="replace") as f:
+                new_text = f.read()
+        except Exception:
+            new_text = ""
+
+        old_lines = old_text.splitlines(keepends=True)
+        new_lines = new_text.splitlines(keepends=True)
+        return "".join(
+            difflib.unified_diff(
+                old_lines,
+                new_lines,
+                fromfile=old_label,
+                tofile=f"working copy:{rel_path}",
+                lineterm="\n",
+            )
+        )
+
+    def diffFile(self, rel_path, refa="HEAD~1", refb="HEAD"):
+        if not self.validRepoRelativePath(rel_path):
+            raise KartException("Invalid repository-relative path")
+        try:
+            old_bytes = self.readFileFromRepo(rel_path, refa)
+            old_text = old_bytes.decode("utf-8", "replace")
+        except KartException:
+            old_text = ""
+        try:
+            new_bytes = self.readFileFromRepo(rel_path, refb)
+            new_text = new_bytes.decode("utf-8", "replace")
+        except KartException:
+            new_text = ""
+        return "".join(
+            difflib.unified_diff(
+                old_text.splitlines(keepends=True),
+                new_text.splitlines(keepends=True),
+                fromfile=f"{refa}:{rel_path}",
+                tofile=f"{refb}:{rel_path}",
+                lineterm="\n",
+            )
+        )
+
+    def diffFileAgainstPath(self, rel_path, source_path, ref="HEAD"):
+        """Return a unified text diff between a repository blob and a file.
+
+        Used for QGIS project saves: the candidate .qgs is written to a temporary
+        file, the user reviews this diff before the file is committed.
+        """
+        if not self.validRepoRelativePath(rel_path):
+            raise KartException("Invalid repository-relative path")
+
+        try:
+            old_bytes = self.showFileAtRef(rel_path, ref)
+            old_text = old_bytes.decode("utf-8", "replace")
+            old_label = f"{ref}:{rel_path}"
+        except KartException:
+            old_text = ""
+            old_label = f"{ref}:{rel_path} (new file)"
+
+        with open(source_path, "rb") as f:
+            new_text = f.read().decode("utf-8", "replace")
+
+        return "".join(
+            difflib.unified_diff(
+                old_text.splitlines(keepends=True),
+                new_text.splitlines(keepends=True),
+                fromfile=old_label,
+                tofile=f"working copy:{rel_path}",
+                lineterm="\n",
+            )
+        )
+
+    def commitFiles(self, message, files):
+        """Commit attachment files via ``kart commit-files``.
+
+        *files* is either a list of repo-relative paths (already in working copy)
+        or a dict mapping repo-relative paths to source filesystem paths.
+        """
+        if not self.checkUserConfigured():
+            return False
+        cmd = ["commit-files", "-m", message]
+        if isinstance(files, dict):
+            for rel_path, src_path in files.items():
+                cmd += [f"{rel_path}={src_path}"]
+        else:
+            cmd += list(files)
+        self.executeKart(cmd)
+        return True

@@ -96,8 +96,19 @@ HELPERMODE = "HelperMode"
 AUTOCOMMIT = "AutoCommit"
 DIFFSTYLES = "DiffStyles"
 LASTREPO = "LastRepo"
+WARN_ON_EXIT_UNCOMMITTED = "WarnOnExitUncommitted"
+WARN_ON_EXIT_UNPUSHED = "WarnOnExitUnpushed"
+AUTO_PUSH = "AutoPush"
+AUTO_COMMIT_ON_SAVE = "AutoCommitOnSave"
 
-setting_types = {HELPERMODE: bool, AUTOCOMMIT: bool}
+setting_types = {
+    HELPERMODE: bool,
+    AUTOCOMMIT: bool,
+    WARN_ON_EXIT_UNCOMMITTED: bool,
+    WARN_ON_EXIT_UNPUSHED: bool,
+    AUTO_PUSH: bool,
+    AUTO_COMMIT_ON_SAVE: bool,
+}
 
 
 def setSetting(name, value):

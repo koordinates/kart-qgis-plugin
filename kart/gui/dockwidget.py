@@ -12,10 +12,12 @@ from qgis.core import (
     QgsVectorLayer,
 )
 from qgis.gui import QgsDockWidget
+from qgis.PyQt.QtGui import QBrush, QColor
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import (
     QByteArray,
     QDataStream,
+    QEvent,
     QIODevice,
     QMimeData,
     Qt,
@@ -24,13 +26,20 @@ from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
     QAction,
     QDialog,
+    QDialogButtonBox,
     QFileDialog,
+    QFrame,
     QInputDialog,
+    QLabel,
     QMenu,
     QMessageBox,
+    QPushButton,
+    QTextEdit,
     QTreeWidgetItem,
+    QVBoxLayout,
 )
 from qgis.utils import iface
+from qgis.core import QgsApplication
 
 from kart.core import RepoManager
 from kart.gui import icons
@@ -52,7 +61,11 @@ from kart.kartapi import (
     executeskart,
 )
 from kart.utils import (
+    AUTO_COMMIT_ON_SAVE,
+    AUTO_PUSH,
     LASTREPO,
+    WARN_ON_EXIT_UNCOMMITTED,
+    WARN_ON_EXIT_UNPUSHED,
     confirm,
     layerFromSource,
     progressBar,
@@ -63,6 +76,17 @@ from kart.utils import (
 )
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
+
+PROJECT_MARKER_PREFIX = "kart_plugin_loaded_qgs"
+
+
+def project_tracking_keys():
+    return (
+        f"{PROJECT_MARKER_PREFIX}_repo_path",
+        f"{PROJECT_MARKER_PREFIX}_rel_path",
+        f"{PROJECT_MARKER_PREFIX}_blob_hash",
+    )
+
 
 WIDGET, BASE = uic.loadUiType(os.path.join(os.path.dirname(__file__), "dockwidget.ui"))
 
@@ -118,6 +142,17 @@ class KartDockWidget(QgsDockWidget, WIDGET):
 
         self.fillTree()
 
+        self.btnSaveProjectToKart = QPushButton(tr("Save project to Kart"), self)
+        self.btnSaveProjectToKart.setToolTip(
+            tr("Save the current dirty QGIS project as a diffable .qgs file in Kart")
+        )
+        self.btnSaveProjectToKart.clicked.connect(self.saveProjectToKartFromButton)
+        self.verticalLayout.insertWidget(1, self.btnSaveProjectToKart)
+        self.tree.currentItemChanged.connect(lambda *args: self.updateSaveProjectButton())
+        self._installProjectDirtyHooks()
+        self._installSaveShortcutFilter()
+        self.updateSaveProjectButton()
+
     def fillTree(self):
         self.tree.clear()
         self.reposItem = ReposItem()
@@ -163,6 +198,314 @@ class KartDockWidget(QgsDockWidget, WIDGET):
 
         self.setWindowTitle(tr("Kart repositories"))
         self.label_2.setText(tr("Tip: right-click on items for available actions"))
+
+    def updateSaveProjectButton(self):
+        project = QgsProject.instance()
+        info = self._activeProjectInfo()
+        self.btnSaveProjectToKart.setVisible(info is not None)
+        self.btnSaveProjectToKart.setEnabled(info is not None and project.isDirty())
+
+    def saveProjectToKartFromButton(self):
+        repo_item = self._repoItemForActiveProject()
+        if repo_item is not None:
+            repo_item.saveProjectToRepo()
+
+    def _installProjectDirtyHooks(self):
+        project = QgsProject.instance()
+        for signal_name in ("isDirtyChanged", "readProject", "cleared"):
+            signal = getattr(project, signal_name, None)
+            if signal is None:
+                continue
+            try:
+                signal.connect(lambda *args: self.updateSaveProjectButton())
+            except Exception:
+                pass
+        readProject = getattr(project, "readProject", None)
+        if readProject is not None:
+            try:
+                readProject.connect(self._onProjectRead)
+            except Exception:
+                pass
+        cleared = getattr(project, "cleared", None)
+        if cleared is not None:
+            try:
+                cleared.connect(self._onProjectCleared)
+            except Exception:
+                pass
+        projectSaved = getattr(project, "projectSaved", None)
+        if projectSaved is not None:
+            try:
+                projectSaved.connect(self._onProjectSaved)
+            except Exception:
+                pass
+        isDirtyChanged = getattr(project, "isDirtyChanged", None)
+        if isDirtyChanged is not None:
+            try:
+                isDirtyChanged.connect(self._onProjectDirtyChanged)
+            except Exception:
+                pass
+
+    def _onProjectCleared(self, *args):
+        project = QgsProject.instance()
+        repo_key, path_key, hash_key = project_tracking_keys()
+        for key in (repo_key, path_key, hash_key):
+            try:
+                project.setProperty(key, None)
+            except Exception:
+                pass
+        self.updateSaveProjectButton()
+
+    def _onProjectDirtyChanged(self, *args):
+        repo_item = self._repoItemForActiveProject() or self._currentRepoItem()
+        if repo_item is None:
+            return
+        try:
+            if hasattr(repo_item, "filesItem") and repo_item.filesItem is not None:
+                repo_item.filesItem.refreshContent()
+            repo_item.setTitle()
+        except Exception:
+            pass
+
+    def _onProjectSaved(self, *args):
+        repo_item = self._repoItemForActiveProject()
+        if repo_item is None:
+            return
+        try:
+            if hasattr(repo_item, "filesItem") and repo_item.filesItem is not None:
+                repo_item.filesItem.refreshContent()
+        except Exception:
+            pass
+
+    def _onProjectRead(self, *args):
+        """Auto-detect .qgs files opened from a Kart working copy."""
+        project = QgsProject.instance()
+        project_path = project.fileName()
+        if not project_path:
+            return
+        for i in range(self.reposItem.childCount() if hasattr(self, "reposItem") else 0):
+            item = self.reposItem.child(i)
+            if not isinstance(item, RepoItem):
+                continue
+            if item.repo.pathInsideRepo(project_path):
+                rel_path = item.repo.repoRelativePath(project_path)
+                self._setLoadedProjectMarker(item.repo.path, rel_path)
+                self.updateSaveProjectButton()
+                return
+
+    def _installSaveShortcutFilter(self):
+        try:
+            from qgis.utils import iface as _iface
+            main_win = _iface.mainWindow()
+            if main_win is not None:
+                main_win.installEventFilter(self)
+        except Exception:
+            pass
+
+    def cleanup(self):
+        try:
+            from qgis.utils import iface as _iface
+            main_win = _iface.mainWindow()
+            if main_win is not None:
+                main_win.removeEventFilter(self)
+        except Exception:
+            pass
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Close and obj is iface.mainWindow():
+            self._onMainWindowClose()
+        if (
+            event.type() == QEvent.KeyPress
+            and setting(AUTO_COMMIT_ON_SAVE)
+        ):
+            from qgis.PyQt.QtCore import Qt as _Qt
+            key = event.key()
+            mods = event.modifiers()
+            if key == _Qt.Key_S and (mods & _Qt.ControlModifier):
+                repo_item = self._repoItemForProjectSave()
+                if repo_item is not None:
+                    event.accept()
+                    repo_item.saveProjectToRepo()
+                    return True
+        return super().eventFilter(obj, event)
+
+    def _onMainWindowClose(self):
+        """Prompt on exit for unsaved QGIS project changes and uncommitted Kart changes."""
+        # 1. Unsaved QGIS project tracked in Kart
+        project = QgsProject.instance()
+        if project.isDirty():
+            info = self._activeProjectInfo()
+            if info:
+                repo_path, rel_path, _blob_hash = info
+                repo_item = self._repoItemForPath(repo_path)
+                if repo_item is not None:
+                    reply = QMessageBox.question(
+                        iface.mainWindow(),
+                        tr("Save QGIS project to Kart"),
+                        tr(
+                            "The QGIS project '{rel_path}' has unsaved changes and is tracked in a "
+                            "Kart repository.\n\nSave it to the Kart repository before quitting?"
+                        ).format(rel_path=rel_path),
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                        QMessageBox.StandardButton.No,
+                    )
+                    if reply == QMessageBox.StandardButton.Yes:
+                        try:
+                            repo_item.saveProjectToRepo()
+                        except Exception:
+                            pass
+
+        # 2. Uncommitted or unpushed Kart changes
+        warn_uncommitted = setting(WARN_ON_EXIT_UNCOMMITTED)
+        warn_unpushed = setting(WARN_ON_EXIT_UNPUSHED)
+        if not warn_uncommitted and not warn_unpushed:
+            return
+        if not hasattr(self, "reposItem"):
+            return
+        uncommitted_repos = []
+        unpushed_repos = []
+        for i in range(self.reposItem.childCount()):
+            item = self.reposItem.child(i)
+            if not isinstance(item, RepoItem):
+                continue
+            try:
+                is_clean = item.repo.isWorkingTreeClean()
+                if warn_uncommitted and not is_clean:
+                    uncommitted_repos.append(item.repo.title() or os.path.normpath(item.repo.path))
+                if warn_unpushed:
+                    ahead, _ = item.repo.aheadBehind()
+                    if ahead:
+                        unpushed_repos.append(item.repo.title() or os.path.normpath(item.repo.path))
+            except Exception:
+                pass
+        if not uncommitted_repos and not unpushed_repos:
+            return
+        parts = []
+        if uncommitted_repos:
+            names = "\n".join(f"  • {r}" for r in uncommitted_repos)
+            parts.append(f"Uncommitted changes:\n{names}")
+        if unpushed_repos:
+            names = "\n".join(f"  • {r}" for r in unpushed_repos)
+            parts.append(f"Unpushed commits:\n{names}")
+        QMessageBox.warning(
+            iface.mainWindow(),
+            tr("Unsynchronised Kart changes"),
+            "\n\n".join(parts) + "\n\n" + tr("Make sure to commit and push before quitting."),
+        )
+
+    def _activeProjectInfo(self):
+        repo_key, path_key, hash_key = project_tracking_keys()
+        project = QgsProject.instance()
+        repo_path = project.readEntry(repo_key, "/")[0] or None
+        rel_path = project.readEntry(path_key, "/")[0] or None
+        blob_hash = project.readEntry(hash_key, "/")[0] or None
+        if repo_path and rel_path:
+            return repo_path, rel_path, blob_hash
+        return None
+
+    def _repoItemForPath(self, repo_path):
+        if not hasattr(self, "reposItem"):
+            return None
+        for i in range(self.reposItem.childCount()):
+            item = self.reposItem.child(i)
+            if isinstance(item, RepoItem) and os.path.normpath(item.repo.path) == os.path.normpath(repo_path):
+                return item
+        return None
+
+    def _repoItemForActiveProject(self):
+        info = self._activeProjectInfo()
+        if info is None:
+            return None
+        return self._repoItemForPath(info[0])
+
+    def _currentRepoItem(self):
+        item = self.tree.currentItem()
+        while item is not None:
+            if isinstance(item, RepoItem):
+                return item
+            item = item.parent()
+        return None
+
+    def _repoItemForProjectSave(self):
+        project = QgsProject.instance()
+        if not project.isDirty():
+            return None
+        repo_item = self._repoItemForActiveProject()
+        if repo_item is not None:
+            return repo_item
+        project_path = project.fileName()
+        if not project_path:
+            return None
+        if not hasattr(self, "reposItem"):
+            return None
+        for i in range(self.reposItem.childCount()):
+            item = self.reposItem.child(i)
+            if isinstance(item, RepoItem) and item.repo.pathInsideRepo(project_path):
+                return item
+        return None
+
+    def _setLoadedProjectMarker(self, repo_path, rel_path):
+        project = QgsProject.instance()
+        repo_key, path_key, hash_key = project_tracking_keys()
+        project.writeEntry(repo_key, "/", repo_path)
+        project.writeEntry(path_key, "/", rel_path)
+        try:
+            blob_hash = Repository(repo_path).blobHash(rel_path)
+            project.writeEntry(hash_key, "/", blob_hash)
+        except Exception:
+            project.writeEntry(hash_key, "/", "")
+
+    def _activeProjectMarker(self):
+        return self._activeProjectInfo()
+
+    def _showTextDialog(self, title, text):
+        dlg = QDialog(iface.mainWindow())
+        dlg.setWindowTitle(title)
+        layout = QVBoxLayout(dlg)
+        edit = QTextEdit()
+        edit.setReadOnly(True)
+        edit.setPlainText(text)
+        edit.setMinimumSize(700, 500)
+        layout.addWidget(edit)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+        dlg.exec()
+
+    def _confirmProjectSave(self, rel_path, diff_text, default_message):
+        dlg = QDialog(iface.mainWindow())
+        dlg.setWindowTitle(tr("Save project to Kart"))
+        layout = QVBoxLayout(dlg)
+        if diff_text:
+            edit = QTextEdit()
+            edit.setReadOnly(True)
+            edit.setPlainText(diff_text)
+            edit.setMinimumSize(700, 400)
+            layout.addWidget(edit)
+        from qgis.PyQt.QtWidgets import QLineEdit
+        msg_edit = QLineEdit(default_message)
+        layout.addWidget(msg_edit)
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.accepted.connect(dlg.accept)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            return msg_edit.text(), True
+        return "", False
+
+    def _autoPushForRepo(self, repo_item):
+        if not setting(AUTO_PUSH):
+            return
+        try:
+            remotes = repo_item.repo.remotes()
+            if not remotes:
+                return
+            remote = next(iter(remotes))
+            branch = repo_item.repo.currentBranch()
+            repo_item.repo.push(remote, branch)
+        except Exception:
+            pass
 
 
 class RefreshableItem(QTreeWidgetItem):
@@ -299,6 +642,7 @@ class RepoItem(RefreshableItem):
         self.repo = repo
 
         self.populated = False
+        self.filesItem = None
 
         self.setTitle()
         self.setIcon(0, icons.repoIcon)
@@ -332,6 +676,8 @@ class RepoItem(RefreshableItem):
         setSetting(LASTREPO, self.repo.path)
         self.populated = True
         self.datasetsItem.setExpanded(True)
+        self.filesItem = FilesItem(self.repo)
+        self.addChild(self.filesItem)
         self.setTitle()
 
     def actions(self):
@@ -489,12 +835,75 @@ class RepoItem(RefreshableItem):
                         tr("Changes correctly committed"),
                         level=Qgis.MessageLevel.Info,
                     )
+                    self._autoPush()
                 else:
                     iface.messageBar().pushMessage(
                         tr("Commit"),
                         tr("Changes could not be commited"),
                         level=Qgis.MessageLevel.Warning,
                     )
+
+    def _autoPush(self):
+        if not setting(AUTO_PUSH):
+            return
+        try:
+            remotes = self.repo.remotes()
+            if not remotes:
+                return
+            remote = next(iter(remotes))
+            branch = self.repo.currentBranch()
+            self.repo.push(remote, branch)
+        except Exception:
+            pass
+
+    def saveProjectToRepo(self):
+        project = QgsProject.instance()
+        info = self.treeWidget().parent()._activeProjectInfo() if self.treeWidget() and self.treeWidget().parent() else None
+        # Fallback: look up from dock
+        dock = self._getDock()
+        if dock is None:
+            return
+        info = dock._activeProjectInfo()
+        if info is None:
+            return
+        repo_path, rel_path, old_hash = info
+        import tempfile as _tf
+        tmp = _tf.NamedTemporaryFile(suffix=".qgs", delete=False)
+        tmp.close()
+        try:
+            project.write(tmp.name)
+            diff = self.repo.diffFileAgainstPath(rel_path, tmp.name)
+        except Exception:
+            diff = ""
+        finally:
+            pass
+        msg, ok = dock._confirmProjectSave(rel_path, diff, f"Update {rel_path}")
+        if not ok:
+            return
+        try:
+            self.repo.commitFiles(msg, {rel_path: tmp.name})
+            import os as _os
+            _os.unlink(tmp.name)
+            new_hash = self.repo.blobHash(rel_path)
+            dock._setLoadedProjectMarker(self.repo.path, rel_path)
+            dock.updateSaveProjectButton()
+            if hasattr(self, "filesItem") and self.filesItem is not None:
+                self.filesItem.refreshContent()
+            self.setTitle()
+            dock._autoPushForRepo(self)
+        except Exception as e:
+            iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _getDock(self):
+        w = self.treeWidget()
+        if w is None:
+            return None
+        p = w.parent()
+        while p is not None:
+            if isinstance(p, KartDockWidget):
+                return p
+            p = p.parent() if hasattr(p, "parent") and callable(p.parent) else None
+        return None
 
     @executeskart
     def showChanges(self):
@@ -859,3 +1268,190 @@ class DatasetItem(QTreeWidgetItem):
             if layer:
                 QgsProject.instance().removeMapLayers([layer.id()])
                 iface.mapCanvas().refresh()
+
+
+class FilesItem(RefreshableItem):
+    def __init__(self, repo):
+        super().__init__()
+        self.repo = repo
+        self.setText(0, tr("Files"))
+        self.setIcon(0, icons.fileIcon if hasattr(icons, "fileIcon") else icons.refreshIcon)
+        self.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
+
+    def populate(self):
+        try:
+            status = self.repo.fileStatus()
+        except Exception:
+            return
+        modified = status.get("modified") or []
+        untracked = status.get("untracked") or []
+        deleted = status.get("deleted") or []
+
+        seen = set()
+        for rel_path in modified:
+            self.addChild(RepoFileItem(rel_path, self.repo, "modified"))
+            seen.add(rel_path)
+        for rel_path in untracked:
+            self.addChild(RepoFileItem(rel_path, self.repo, "untracked"))
+            seen.add(rel_path)
+        for rel_path in deleted:
+            self.addChild(RepoFileItem(rel_path, self.repo, "deleted"))
+            seen.add(rel_path)
+
+        try:
+            for rel_path in self.repo.trackedAttachmentFiles():
+                if rel_path not in seen:
+                    self.addChild(RepoFileItem(rel_path, self.repo, "tracked"))
+        except Exception:
+            pass
+
+    def _actions(self):
+        return []
+
+
+class RepoFileItem(QTreeWidgetItem):
+    def __init__(self, rel_path, repo, status="tracked"):
+        super().__init__()
+        self.rel_path = rel_path
+        self.repo = repo
+        self.status = status
+        self.setText(0, rel_path)
+        self._updateIcon()
+
+    def _updateIcon(self):
+        if self.status == "modified":
+            self.setForeground(0, QBrush(QColor(200, 100, 0)))
+        elif self.status == "untracked":
+            self.setForeground(0, QBrush(QColor(0, 150, 0)))
+        elif self.status == "deleted":
+            self.setForeground(0, QBrush(QColor(200, 0, 0)))
+
+    def onDoubleClicked(self):
+        if self.status in ("modified", "untracked"):
+            self._showFileDiff()
+
+    def actions(self):
+        acts = []
+        if self.status == "modified":
+            acts += [
+                (tr("Show working copy diff"), self._showFileDiff, icons.diffIcon if hasattr(icons, "diffIcon") else icons.refreshIcon),
+                (tr("Show last commit diff"), self._showCommitDiff, icons.diffIcon if hasattr(icons, "diffIcon") else icons.refreshIcon),
+                (tr("Commit file"), self._commitFile, icons.commitIcon if hasattr(icons, "commitIcon") else icons.refreshIcon),
+                (tr("Discard changes"), self._discardChanges, icons.refreshIcon),
+            ]
+        elif self.status == "untracked":
+            acts += [
+                (tr("Commit file (add)"), self._commitFile, icons.commitIcon if hasattr(icons, "commitIcon") else icons.refreshIcon),
+            ]
+        elif self.status == "deleted":
+            acts += [
+                (tr("Commit deletion"), self._commitFileDeletion, icons.commitIcon if hasattr(icons, "commitIcon") else icons.refreshIcon),
+                (tr("Restore file"), self._restoreFile, icons.refreshIcon),
+            ]
+        acts += [
+            (tr("Open in Explorer"), self._openInExplorer, icons.refreshIcon),
+        ]
+        return acts
+
+    def _showFileDiff(self):
+        try:
+            diff = self.repo.fileDiff(self.rel_path)
+            if not diff:
+                diff = tr("(no differences)")
+            self._showTextDialog(tr("Working copy diff: {path}").format(path=self.rel_path), diff)
+        except Exception as e:
+            iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _showCommitDiff(self):
+        try:
+            diff = self.repo.diffFile(self.rel_path)
+            if not diff:
+                diff = tr("(no differences)")
+            self._showTextDialog(tr("Last commit diff: {path}").format(path=self.rel_path), diff)
+        except Exception as e:
+            iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _showTextDialog(self, title, text):
+        dlg = QDialog(iface.mainWindow())
+        dlg.setWindowTitle(title)
+        layout = QVBoxLayout(dlg)
+        edit = QTextEdit()
+        edit.setReadOnly(True)
+        edit.setPlainText(text)
+        edit.setMinimumSize(700, 500)
+        layout.addWidget(edit)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Close)
+        buttons.rejected.connect(dlg.reject)
+        layout.addWidget(buttons)
+        dlg.exec()
+
+    def _discardChanges(self):
+        from kart.utils import confirm
+        if confirm(tr("Discard working copy changes to '{path}'?").format(path=self.rel_path)):
+            try:
+                self.repo.restoreFile(self.rel_path)
+                self._refreshAfterFileAction()
+            except Exception as e:
+                iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _restoreFile(self):
+        from kart.utils import confirm
+        if confirm(tr("Restore deleted file '{path}'?").format(path=self.rel_path)):
+            try:
+                self.repo.restoreFile(self.rel_path)
+                self._refreshAfterFileAction()
+            except Exception as e:
+                iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _commitFile(self):
+        msg, ok = QInputDialog.getText(
+            iface.mainWindow(),
+            tr("Commit message"),
+            tr("Enter a commit message for '{path}':").format(path=self.rel_path),
+        )
+        if ok and msg:
+            try:
+                self.repo.commitFiles(msg, [self.rel_path])
+                self._autoPush()
+                self._refreshAfterFileAction()
+            except Exception as e:
+                iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _commitFileDeletion(self):
+        msg, ok = QInputDialog.getText(
+            iface.mainWindow(),
+            tr("Commit message"),
+            tr("Enter a commit message for deleting '{path}':").format(path=self.rel_path),
+        )
+        if ok and msg:
+            try:
+                self.repo.commitFiles(msg, [self.rel_path])
+                self._autoPush()
+                self._refreshAfterFileAction()
+            except Exception as e:
+                iface.messageBar().pushMessage(tr("Error"), str(e), level=Qgis.MessageLevel.Warning)
+
+    def _autoPush(self):
+        if not setting(AUTO_PUSH):
+            return
+        try:
+            remotes = self.repo.remotes()
+            if not remotes:
+                return
+            remote = next(iter(remotes))
+            branch = self.repo.currentBranch()
+            self.repo.push(remote, branch)
+        except Exception:
+            pass
+
+    def _openInExplorer(self):
+        full_path = os.path.join(self.repo.path, self.rel_path.replace("/", os.sep))
+        folder = os.path.dirname(full_path)
+        if os.path.exists(folder):
+            import subprocess as _sp
+            _sp.Popen(["explorer", folder])
+
+    def _refreshAfterFileAction(self):
+        files_item = self.parent()
+        if files_item is not None:
+            files_item.refreshContent()
