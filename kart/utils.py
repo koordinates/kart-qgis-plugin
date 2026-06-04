@@ -97,6 +97,28 @@ AUTOCOMMIT = "AutoCommit"
 DIFFSTYLES = "DiffStyles"
 LASTREPO = "LastRepo"
 
+# Palette Definitions
+PALETTES = {
+    "Standard": {
+        "ADDED": "#54c35f",  # QColor(84, 195, 95)
+        "REMOVED": "#e8718d",  # QColor(232, 113, 141)
+        "MODIFIED": "#ffbe64",  # QColor(255, 190, 100)
+        "UNCHANGED": "#ffffff",  # QColor(255, 255, 255)
+    },
+    "GeoInt": {
+        "ADDED": "#1e90ff",  # QColor(30, 144, 255)
+        "REMOVED": "#ff4500",  # QColor(255, 69, 0)
+        "MODIFIED": "#ffbe64",  # QColor(255, 190, 100)
+        "UNCHANGED": "#ffffff",  # QColor(255, 255, 255)
+    },
+}
+
+# Current active colors
+CURRENT_COLOR_ADDED = "CurrentColorAdded"
+CURRENT_COLOR_REMOVED = "CurrentColorRemoved"
+CURRENT_COLOR_MODIFIED = "CurrentColorModified"
+CURRENT_COLOR_UNCHANGED = "CurrentColorUnchanged"
+
 setting_types = {HELPERMODE: bool, AUTOCOMMIT: bool}
 
 
