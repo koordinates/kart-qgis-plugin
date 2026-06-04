@@ -59,6 +59,18 @@ COLORS = [
 ]
 
 
+def commitDate(authorTime):
+    """Local-time date of a commit, used for history date filtering.
+
+    Kart records ``authorTime`` in UTC (e.g. ``2021-11-16T08:57:57Z``). The
+    date filter compares against the local-time date pickers, so the commit
+    time must be converted to local time before extracting the date,
+    otherwise commits near a UTC day boundary are filtered onto the wrong
+    day (issue #87).
+    """
+    return QDateTime.fromString(authorTime, Qt.DateFormat.ISODate).toLocalTime().date()
+
+
 class HistoryTree(QTreeWidget):
     def __init__(self, repo, dataset, parent):
         super(HistoryTree, self).__init__()
@@ -441,9 +453,7 @@ class HistoryTree(QTreeWidget):
                 hide = bool(self.filterText) and not any(
                     self.filterText in t.lower() for t in values
                 )
-                date = QDateTime.fromString(
-                    item.commit["authorTime"], Qt.DateFormat.ISODate
-                ).date()
+                date = commitDate(item.commit["authorTime"])
                 withinDates = date >= self.startDate and date <= self.endDate
                 hide = hide or not withinDates
                 item.setHidden(hide)
