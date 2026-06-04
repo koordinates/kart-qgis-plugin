@@ -651,7 +651,7 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="50"/>
+        <location filename="../gui/settingsdialog.py" line="58"/>
         <source>Select Folder</source>
         <translation></translation>
     </message>
@@ -716,62 +716,62 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="66"/>
+        <location filename="../gui/settingsdialog.py" line="85"/>
         <source>Kart Settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="69"/>
+        <location filename="../gui/settingsdialog.py" line="88"/>
         <source>Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="70"/>
+        <location filename="../gui/settingsdialog.py" line="89"/>
         <source>Path to Kart executable</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="71"/>
+        <location filename="../gui/settingsdialog.py" line="90"/>
         <source>[Leave empty to use default Kart installation path]</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="74"/>
+        <location filename="../gui/settingsdialog.py" line="93"/>
         <source>Use helper mode</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="77"/>
+        <location filename="../gui/settingsdialog.py" line="96"/>
         <source>Auto commit</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="78"/>
+        <location filename="../gui/settingsdialog.py" line="97"/>
         <source>Commit automatically after closing editing</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="81"/>
+        <location filename="../gui/settingsdialog.py" line="100"/>
         <source>Diff styles</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/settingsdialog.py" line="82"/>
+        <location filename="../gui/settingsdialog.py" line="101"/>
         <source>Styles to use for geometry diffs</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="76"/>
+        <location filename="../gui/diffviewer.py" line="696"/>
         <source>Diff viewer</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="79"/>
+        <location filename="../gui/diffviewer.py" line="699"/>
         <source>Diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="79"/>
+        <location filename="../gui/diffviewer.py" line="699"/>
         <source>Working copy has been updated</source>
         <translation></translation>
     </message>
@@ -1021,87 +1021,87 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="639"/>
+        <location filename="../gui/diffviewer.py" line="605"/>
         <source>Attributes</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="640"/>
+        <location filename="../gui/diffviewer.py" line="606"/>
         <source>Geometries</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="643"/>
+        <location filename="../gui/diffviewer.py" line="609"/>
         <source>Old Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="643"/>
+        <location filename="../gui/diffviewer.py" line="609"/>
         <source>New Value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="643"/>
+        <location filename="../gui/diffviewer.py" line="609"/>
         <source>Change type</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="648"/>
+        <location filename="../gui/diffviewer.py" line="614"/>
         <source>Additional layers:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="649"/>
+        <location filename="../gui/diffviewer.py" line="615"/>
         <source>Diff type:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="652"/>
+        <location filename="../gui/diffviewer.py" line="618"/>
         <source>Project layers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="653"/>
+        <location filename="../gui/diffviewer.py" line="619"/>
         <source>OSM basemap</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="654"/>
+        <location filename="../gui/diffviewer.py" line="620"/>
         <source>No additional layers</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="662"/>
+        <location filename="../gui/diffviewer.py" line="628"/>
         <source>Transparency</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="658"/>
+        <location filename="../gui/diffviewer.py" line="624"/>
         <source>Swipe</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="659"/>
+        <location filename="../gui/diffviewer.py" line="625"/>
         <source>Per-vertex diff</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="663"/>
+        <location filename="../gui/diffviewer.py" line="629"/>
         <source>Old version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="664"/>
+        <location filename="../gui/diffviewer.py" line="630"/>
         <source>New version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="667"/>
+        <location filename="../gui/diffviewer.py" line="633"/>
         <source>Restore old version</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="668"/>
+        <location filename="../gui/diffviewer.py" line="634"/>
         <source>Restore new version</source>
         <translation></translation>
     </message>
@@ -1171,52 +1171,52 @@ Do you want to continue?</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layers.py" line="242"/>
+        <location filename="../layers.py" line="243"/>
         <source>No feature was found at the selected point.</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layers.py" line="263"/>
+        <location filename="../layers.py" line="264"/>
         <source>There are schema changes in the working tree and changes cannot be shown</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layers.py" line="288"/>
+        <location filename="../layers.py" line="289"/>
         <source>Working copy changes for layer &apos;{}&apos; have been discarded</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../layers.py" line="312"/>
+        <location filename="../layers.py" line="313"/>
         <source>Changes could not be committed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="310"/>
+        <location filename="../gui/diffviewer.py" line="522"/>
         <source>Added</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="316"/>
+        <location filename="../gui/diffviewer.py" line="522"/>
         <source>Modified</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="313"/>
+        <location filename="../gui/diffviewer.py" line="522"/>
         <source>Removed</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="230"/>
+        <location filename="../gui/diffviewer.py" line="522"/>
         <source>Unchanged</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="237"/>
+        <location filename="../gui/diffviewer.py" line="530"/>
         <source>Old value</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../gui/diffviewer.py" line="237"/>
+        <location filename="../gui/diffviewer.py" line="530"/>
         <source>New value</source>
         <translation></translation>
     </message>
