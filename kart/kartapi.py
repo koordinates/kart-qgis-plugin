@@ -231,7 +231,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
         #  ways in which this can deadlock
         with subprocess.Popen(
             commands,
-            shell=os.name == "nt",
             env=executeKart.env,
             stdout=subprocess.PIPE,
             stdin=subprocess.DEVNULL,

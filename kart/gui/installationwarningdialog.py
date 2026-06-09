@@ -45,14 +45,17 @@ class DownloadAndInstallThread(QThread):
                     os.getenv("SystemRoot"),
                     r"system32\WindowsPowerShell\v1.0\powershell.exe",
                 )
-                command = (
-                    rf"""{powershell} -Command "& {{ Start-Process 'msiexec' """
-                    rf"""-ArgumentList @('/a', '{msipath}', '/qb', """
-                    r"""'TARGETDIR=\"%ProgramFiles%\"')"""
-                    rf""" -Verb RunAs -Wait}}" """
-                )
+                program_files = os.getenv("ProgramFiles", r"C:\Program Files")
+                command = [
+                    powershell,
+                    "-Command",
+                    "& { Start-Process 'msiexec' "
+                    f"-ArgumentList @('/a', '{msipath}', '/qb', "
+                    rf"""'TARGETDIR=\"{program_files}\"')"""
+                    " -Verb RunAs -Wait}",
+                ]
                 if msipath is not None:
-                    subprocess.call(command, shell=True)
+                    subprocess.call(command)
                     shutil.rmtree(os.path.dirname(msipath))
             elif sys.platform == "darwin":
                 arch = subprocess.check_output(["arch"], text=True).strip()
@@ -69,9 +72,8 @@ class DownloadAndInstallThread(QThread):
 
                 filename = MACOS_FILE.format(version=self.version, arch=arch)
                 pkgpath = self._download(url, filename)
-                command = f"open -W {pkgpath}"
                 if pkgpath is not None:
-                    subprocess.call(command, shell=True)
+                    subprocess.call(["open", "-W", pkgpath])
                     shutil.rmtree(os.path.dirname(pkgpath))
             else:
                 url = RELEASE_URL.format(version=self.version)
@@ -87,7 +89,7 @@ class DownloadAndInstallThread(QThread):
         dirname = tempfile.mkdtemp()
         downloadpath = os.path.join(dirname, filename)
         chunk_size = 1024
-        r = requests.get(fullurl, stream=True)
+        r = requests.get(fullurl, stream=True, timeout=30)
         file_size = r.headers.get("content-length") or 0
         file_size = int(file_size)
         percentage_per_chunk = 100.0 / (file_size / chunk_size)
