@@ -80,6 +80,48 @@ class TestKartapi(unittest.TestCase):
         version = installedVersion()
         assert re.match(r"\d+\.\d+\.\d+", version)
 
+    def testDecodesNonUtf8Output(self):
+        """
+        Kart's --version banner contains a '»' (0xbb) encoded in the Windows
+        ANSI codepage. Under QGIS 4 / Python UTF-8 mode the preferred encoding
+        is utf-8, where 0xbb is invalid and previously crashed the subprocess
+        reader thread, returning empty output (issue #137). Output must decode
+        without raising.
+        """
+        with tempfile.TemporaryDirectory() as folder:
+            fakeKart = os.path.join(folder, "kart")
+            with open(fakeKart, "w") as f:
+                f.write(
+                    "#!/usr/bin/env python3\n"
+                    "import sys\n"
+                    r"sys.stdout.buffer.write(b'Kart v1.2.3\n\xbb GDAL v3.8.5\n')"
+                    "\n"
+                )
+            os.chmod(fakeKart, 0o755)
+            setSetting(KARTPATH, folder)
+            output = executeKart(["--version"])
+            assert output.startswith("Kart v1.2.3")
+
+    def testDecodesUtf8JsonData(self):
+        """
+        Kart's JSON output is utf-8 (msgspec writes raw utf-8 bytes), so
+        non-ASCII data must be decoded as utf-8 and not the locale codepage,
+        which would silently corrupt it (e.g. on a Windows cp1252 locale).
+        """
+        with tempfile.TemporaryDirectory() as folder:
+            fakeKart = os.path.join(folder, "kart")
+            with open(fakeKart, "w", encoding="utf-8") as f:
+                f.write(
+                    "#!/usr/bin/env python3\n"
+                    "import sys\n"
+                    'sys.stdout.buffer.write(\'{"name": "caf\\u00e9"}\''
+                    ".encode('utf-8'))\n"
+                )
+            os.chmod(fakeKart, 0o755)
+            setSetting(KARTPATH, folder)
+            output = executeKart(["data"], jsonoutput=True)
+            assert output == {"name": "café"}
+
     def testStoreReposInSettings(self):
         manager = RepoManager()
         assert not manager.repos()
