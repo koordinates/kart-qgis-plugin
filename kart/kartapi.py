@@ -1,5 +1,4 @@
 import json
-import locale
 import os
 import re
 import subprocess
@@ -223,7 +222,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
     executeKart.env["KART_RASTER_VRTS"] = "1"
 
     try:
-        encoding = locale.getpreferredencoding(False)
         QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
         logging.debug(f"Command: {' '.join(commands)}")
         # TODO - all of this should be replaced by useage of QgsTask which
@@ -236,7 +234,15 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             stdin=subprocess.DEVNULL,
             stderr=subprocess.PIPE,
             universal_newlines=True,
-            encoding=encoding,
+            # Decode as utf-8 rather than the locale codepage: Kart's JSON
+            # output is utf-8 (msgspec writes raw utf-8 bytes), so on a Windows
+            # cp1252 locale the old code silently corrupted non-ASCII data. Its
+            # human banner/progress text can still contain a stray codepage byte
+            # (e.g. a '»' = 0xbb), which is invalid utf-8 and previously crashed
+            # the reader thread under QGIS 4 / Python utf-8 mode (issue #137);
+            # errors="replace" tolerates those rare cosmetic bytes.
+            encoding="utf-8",
+            errors="replace",
             cwd=path,
         ) as proc:
             if feedback is not None:
