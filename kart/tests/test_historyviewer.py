@@ -9,6 +9,7 @@ start_app()
 from kart.gui.historyviewer import commitDate  # noqa: E402
 
 
+@unittest.skipUnless(hasattr(time, "tzset"), "requires time.tzset() (not available on Windows)")
 class CommitDateTest(unittest.TestCase):
     """Regression tests for history date filtering (issue #87).
 
