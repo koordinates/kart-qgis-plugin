@@ -114,7 +114,7 @@ class TestKartapi(unittest.TestCase):
                 f.write(
                     "#!/usr/bin/env python3\n"
                     "import sys\n"
-                    'sys.stdout.buffer.write(\'{"name": "caf\\u00e9"}\''
+                    'sys.stdout.buffer.write(\'{"name": "café"}\''
                     ".encode('utf-8'))\n"
                 )
             os.chmod(fakeKart, 0o755)
