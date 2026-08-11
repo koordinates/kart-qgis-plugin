@@ -26,12 +26,19 @@ class KartPlugin(object):
         self.sideDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
 
         # Adds support for internationalization
-        locale = QSettings().value("locale/userLocale")
-        locale_path = os.path.join(self.PLUGIN_PATH, "i18n", f"kart_{locale}.qm")
-        if os.path.exists(locale_path):
-            self.translator = QTranslator()
-            self.translator.load(locale_path)
-            QCoreApplication.installTranslator(self.translator)
+        locale = QSettings().value("locale/userLocale") or ""
+        # Try the full locale first (e.g. "es_PE"), then fall back to the
+        # language code alone (e.g. "es") so any regional variant works.
+        candidates = [locale]
+        if "_" in locale:
+            candidates.append(locale.split("_")[0])
+        for candidate in candidates:
+            locale_path = os.path.join(self.PLUGIN_PATH, "i18n", f"kart_{candidate}.qm")
+            if os.path.exists(locale_path):
+                self.translator = QTranslator()
+                self.translator.load(locale_path)
+                QCoreApplication.installTranslator(self.translator)
+                break
 
     def initProcessing(self):
         self.provider = KartProvider()
