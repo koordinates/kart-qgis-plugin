@@ -244,11 +244,6 @@ def executeKart(commands, path=None, jsonoutput=False, feedback=None):
             encoding="utf-8",
             errors="replace",
             cwd=path,
-            # On Windows, prevent a console window from flashing up for
-            # every kart.exe invocation (and its helper process).
-            creationflags=(
-                subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
-            ),
         ) as proc:
             if feedback is not None:
                 output = []
