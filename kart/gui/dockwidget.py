@@ -41,6 +41,7 @@ from kart.gui.diffviewer import DiffViewerDialog
 from kart.gui.historyviewer import HistoryDialog
 from kart.gui.initdialog import InitDialog
 from kart.gui.mergedialog import MergeDialog
+from kart.gui.multitableimportdialog import MultiTableImportDialog
 from kart.gui.pulldialog import PullDialog
 from kart.gui.pushdialog import PushDialog
 from kart.gui.repopropertiesdialog import RepoPropertiesDialog
@@ -434,7 +435,35 @@ class RepoItem(RefreshableItem):
             if os.path.splitext(filepath)[-1].lower() not in [".gpkg", ".shp"]:
                 self._exportToGpkgAndImportIntoRepo(filepath)
             else:
-                self._importIntoRepo(filepath)
+                tables = self._tablesInSource(filepath)
+                if len(tables) > 1:
+                    dlg = MultiTableImportDialog(
+                        filepath, tables, self._existingDatasets(), iface.mainWindow()
+                    )
+                    if dlg.exec() == QDialog.DialogCode.Accepted:
+                        self._importIntoRepo(filepath, tables=dlg.selectedTables)
+                else:
+                    self._importIntoRepo(filepath)
+
+    @waitcursor
+    def _tablesInSource(self, source):
+        """
+        Lists the tables in the given source using Kart itself, so the list
+        always matches what `kart import` will accept. Returns an empty
+        list if the source cannot be listed (the subsequent plain import
+        will then surface the appropriate error message).
+        """
+        try:
+            return Repository.tablesToImport(source)
+        except Exception:
+            return []
+
+    def _existingDatasets(self):
+        try:
+            vectorLayers, tables = self.repo.datasets()
+            return set(vectorLayers) | set(tables)
+        except Exception:
+            return set()
 
     @waitcursor
     def _exportToGpkgAndImportIntoRepo(self, filepath):
@@ -463,10 +492,14 @@ class RepoItem(RefreshableItem):
             tmpfolder.cleanup()
 
     @executeskart
-    def _importIntoRepo(self, source):
-        self.repo.importIntoRepo(source)
+    def _importIntoRepo(self, source, tables=None):
+        self.repo.importIntoRepo(source, tables=tables)
+        if tables and len(tables) > 1:
+            message = tr("{count} layers correctly imported").format(count=len(tables))
+        else:
+            message = tr("Layer correctly imported")
         iface.messageBar().pushMessage(
-            tr("Import"), tr("Layer correctly imported"), level=Qgis.MessageLevel.Info
+            tr("Import"), message, level=Qgis.MessageLevel.Info
         )
         if self.populated:
             self.datasetsItem.refreshContent()

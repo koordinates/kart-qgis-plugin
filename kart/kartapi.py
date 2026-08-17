@@ -45,10 +45,10 @@ class KartNotSupportedOperationException(Exception):
 
 def executeskart(f):
     @wraps(f)
-    def inner(*args):
+    def inner(*args, **kwargs):
         try:
             if checkKartInstalled():
-                return f(*args)
+                return f(*args, **kwargs)
         except KartException as ex:
             dlg = QgsMessageOutput.createMessageOutput()
             dlg.setTitle("Kart")
@@ -302,7 +302,6 @@ class Repository:
     @staticmethod
     def tablesToImport(source):
         ret = executeKart(["import", "--list", source], jsonoutput=True)
-        print(ret)
         return list(list(ret.values())[0].keys())
 
     @staticmethod
@@ -418,8 +417,15 @@ class Repository:
         else:
             self.executeKart(["init"])
 
-    def importIntoRepo(self, source, dataset=None):
+    def importIntoRepo(self, source, dataset=None, tables=None):
         importArgs = [source]
+        if tables:
+            for table, target in tables:
+                if target and target != table:
+                    importArgs.append(f"{table}:{target}")
+                else:
+                    importArgs.append(table)
+
         if dataset:
             importArgs += ["--dataset", dataset]
         self.executeKart(["import"] + importArgs)
