@@ -688,9 +688,9 @@ class DatasetsItem(RefreshableItem):
 
     @executeskart
     def populate(self):
-        vectorDatasets, tables = self.repo.datasets()
-        for dataset in vectorDatasets:
-            item = DatasetItem(dataset, self.repo, False)
+        vectorDatasets, tables = self.repo.datasetsWithGeometryTypes()
+        for dataset, geometryType in vectorDatasets:
+            item = DatasetItem(dataset, self.repo, False, geometryType)
             self.addChild(item)
         for table in tables:
             item = DatasetItem(table, self.repo, True)
@@ -701,14 +701,20 @@ class DatasetsItem(RefreshableItem):
 
 
 class DatasetItem(QTreeWidgetItem):
-    def __init__(self, name, repo, isTable):
+    def __init__(self, name, repo, isTable, geometryType=None):
         QTreeWidgetItem.__init__(self)
         self.name = name
         self.repo = repo
         self.isTable = isTable
+        self.geometryType = geometryType
 
         self.setText(0, name)
-        self.setIcon(0, icons.tableIcon if isTable else icons.vectorDatasetIcon)
+        if isTable:
+            self.setIcon(0, icons.tableIcon)
+        else:
+            self.setIcon(0, icons.iconForGeometryType(geometryType))
+            if geometryType:
+                self.setToolTip(0, geometryType)
 
     def actions(self):
         actions = [(tr("Add to QGIS project"), self.addToProject, icons.addtoQgisIcon)]
