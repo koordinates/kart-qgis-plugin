@@ -45,3 +45,25 @@ restoreIcon = icon("checkout.png")
 settingsIcon = icon("settings.png")
 tableIcon = icon("table.png")
 vectorDatasetIcon = icon("vector-polyline.png")
+
+# Icons for the different dataset geometry types, in the same monochrome
+# line style as the rest of the plugin icons.
+pointDatasetIcon = icon("vector-point.png")
+lineDatasetIcon = vectorDatasetIcon
+polygonDatasetIcon = icon("vector-polygon.png")
+
+
+def iconForGeometryType(geometryType):
+    """
+    Returns the icon matching a dataset geometry type string as declared
+    in the dataset schema (e.g. "POINT", "MULTIPOLYGON", "LINESTRING Z").
+    Falls back to the generic vector dataset icon for unknown types.
+    """
+    geometryType = (geometryType or "").upper()
+    if "POINT" in geometryType:
+        return pointDatasetIcon
+    if "LINESTRING" in geometryType or "CURVE" in geometryType:
+        return lineDatasetIcon
+    if "POLYGON" in geometryType or "SURFACE" in geometryType:
+        return polygonDatasetIcon
+    return vectorDatasetIcon

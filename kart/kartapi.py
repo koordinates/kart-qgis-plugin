@@ -503,17 +503,32 @@ class Repository:
             commits.append(log[commitid])
         return commits
 
-    def datasets(self):
+    def datasetsWithGeometryTypes(self):
+        """
+        Returns a (vectorLayers, tables) tuple, where vectorLayers is a
+        list of (name, geometry_type) tuples. The geometry type is the
+        one declared in the dataset schema (e.g. "POINT", "MULTIPOLYGON"),
+        or None if it cannot be determined.
+        """
         vectorLayers = []
         tables = []
         meta = self.executeKart(["meta", "get"], True)
         for name, dataset in meta.items():
             crsProps = [k for k in dataset.keys() if k.startswith("crs/")]
             if crsProps:
-                vectorLayers.append(name)
+                geometryType = None
+                for field in dataset.get("schema.json", []):
+                    if field.get("dataType") == "geometry":
+                        geometryType = field.get("geometryType")
+                        break
+                vectorLayers.append((name, geometryType))
             else:
                 tables.append(name)
         return vectorLayers, tables
+
+    def datasets(self):
+        vectorLayers, tables = self.datasetsWithGeometryTypes()
+        return [name for name, _ in vectorLayers], tables
 
     def branches(self):
         branches = list(self.executeKart(["branch"], True).values())[0]["branches"]

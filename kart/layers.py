@@ -16,8 +16,8 @@ from qgis.core import (
     QgsVectorLayer,
     QgsWkbTypes,
 )
-from qgis.gui import QgsMapToolEmitPoint, QgsRubberBand
-from qgis.PyQt.QtCore import QPointF, QSizeF, Qt
+from qgis.gui import QgsLayerTreeViewIndicator, QgsMapToolEmitPoint, QgsRubberBand
+from qgis.PyQt.QtCore import QPointF, QSizeF, Qt, QTimer
 from qgis.PyQt.QtGui import QColor, QTextDocument
 from qgis.PyQt.QtWidgets import QAction, QInputDialog
 from qgis.utils import iface
@@ -55,6 +55,11 @@ class LayerTracker:
 
         self.connected = {}
         self.rubberBands = {}
+        self.indicators = {}
+
+        # Add the Kart indicator to layers already in the project when a
+        # repository is added to the panel.
+        RepoManager.instance().repo_added.connect(self.refreshKartIndicators)
 
         self.mapTool = QgsMapToolEmitPoint(iface.mapCanvas())
         self.mapTool.canvasClicked.connect(self.canvasClicked)
@@ -138,7 +143,39 @@ class LayerTracker:
                 if layer.wkbType() != QgsWkbTypes.Type.NoGeometry:
                     iface.addCustomActionForLayer(self.setMapToolAction, layer)
 
+                # Defer adding the indicator until the layer tree node for
+                # the newly added layer exists.
+                QTimer.singleShot(0, partial(self.addKartIndicator, layer))
+
                 self.updateRubberBands()
+
+    def addKartIndicator(self, layer):
+        """
+        Adds an indicator icon next to the layer name in the QGIS layers
+        panel, to show that the layer is versioned in a Kart repository.
+        """
+        node = QgsProject.instance().layerTreeRoot().findLayer(layer.id())
+        if node is not None and layer.id() not in self.indicators:
+            indicator = QgsLayerTreeViewIndicator(iface.layerTreeView())
+            indicator.setIcon(icons.kartIcon)
+            indicator.setToolTip(tr("This layer is versioned in a Kart repository"))
+            iface.layerTreeView().addIndicator(node, indicator)
+            self.indicators[layer.id()] = indicator
+
+    def removeKartIndicator(self, layerid):
+        indicator = self.indicators.pop(layerid, None)
+        if indicator is not None:
+            node = QgsProject.instance().layerTreeRoot().findLayer(layerid)
+            if node is not None:
+                iface.layerTreeView().removeIndicator(node, indicator)
+
+    def refreshKartIndicators(self, *args):
+        for layer in QgsProject.instance().mapLayers().values():
+            if (
+                isinstance(layer, QgsVectorLayer)
+                and RepoManager.instance().repo_for_layer(layer) is not None
+            ):
+                self.addKartIndicator(layer)
 
     def addAnnotation(self, repo, rect, layer):
         symbol = QgsMarkerSymbol()
@@ -321,6 +358,7 @@ class LayerTracker:
                 )
 
     def layerRemoved(self, layerid):
+        self.indicators.pop(layerid, None)
         self.updateRubberBands()
 
     @executeskart
@@ -340,3 +378,5 @@ class LayerTracker:
     def disconnectLayers(self):
         for layer, f in self.connected.items():
             layer.afterCommitChanges.disconnect(f)
+        for layerid in list(self.indicators.keys()):
+            self.removeKartIndicator(layerid)
